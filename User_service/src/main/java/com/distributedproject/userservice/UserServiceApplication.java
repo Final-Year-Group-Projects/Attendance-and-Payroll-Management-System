@@ -1,4 +1,4 @@
-package com.distributedproject.user_service;
+package com.distributedproject.userservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

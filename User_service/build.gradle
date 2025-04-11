@@ -7,6 +7,7 @@ plugins {
 
 group = 'com.distributedproject'
 version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
 
 java {
 	toolchain {
@@ -20,12 +21,21 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // ✅ Required for @Entity etc.
+	implementation 'org.projectlombok:lombok' // ✅ Required for @Data, @NoArgsConstructor
+	annotationProcessor 'org.projectlombok:lombok' // ✅ Needed for Lombok to work
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'org.postgresql:postgresql'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+bootJar {
+	mainClass = 'com.distributedproject.userservice.UserServiceApplication'
+}
+
