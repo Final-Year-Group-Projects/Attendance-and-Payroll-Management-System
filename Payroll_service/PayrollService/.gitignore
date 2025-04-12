@@ -32,3 +32,11 @@ build/
 ### VS Code ###
 .vscode/
 
+### PostgreSQL ###
+/postgres_data/
+
+### Logs ###
+*.log
+logs/
+
+.env
