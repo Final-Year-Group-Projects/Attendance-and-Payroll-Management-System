@@ -1,4 +1,4 @@
 package com.example.PayrollService.controller;
 
-public class UserController {
+public class PayrollController {
 }

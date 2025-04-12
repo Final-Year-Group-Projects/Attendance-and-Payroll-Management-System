@@ -1,4 +1,4 @@
 package com.example.PayrollService.repository;
 
-public interface UserRepository {
+public interface PayrollRepository {
 }
