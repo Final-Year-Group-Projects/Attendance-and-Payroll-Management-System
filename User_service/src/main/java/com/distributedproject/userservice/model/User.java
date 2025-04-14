@@ -1,15 +1,14 @@
 package com.distributedproject.userservice.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "userdata")
 public class User {
 
     @Id
-    private String userId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  // Auto-generate user_id
+    private Long userId;
     private String userName;
     private String userType;
     private String userAddress;
@@ -17,11 +16,11 @@ public class User {
 
     // Getters and setters
 
-    public String getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
