@@ -1,22 +1,25 @@
 package com.distributedproject.userservice.service;
 
 import com.distributedproject.userservice.model.User;
+import com.distributedproject.userservice.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class UserService {
-    private final List<User> users = new ArrayList<>();
 
-    public List<User> getAllUsers() {
-        return users;
+    @Autowired
+    private UserRepository userRepository;
+
+    // Create and save a new user
+    public User createUser(User user) {
+        return userRepository.save(user);
     }
 
-    public User createUser(User user) {
-        user.setId((long) (users.size() + 1)); // Just for testing
-        users.add(user);
-        return user;
+    // Retrieve all users from the database
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 }

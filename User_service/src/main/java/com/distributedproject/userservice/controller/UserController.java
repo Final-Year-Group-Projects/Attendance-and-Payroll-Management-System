@@ -4,7 +4,6 @@ import com.distributedproject.userservice.model.User;
 import com.distributedproject.userservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -15,7 +14,7 @@ public class UserController {
     private UserService userService;
 
     @GetMapping
-    public List<User> getUsers() {
+    public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
 

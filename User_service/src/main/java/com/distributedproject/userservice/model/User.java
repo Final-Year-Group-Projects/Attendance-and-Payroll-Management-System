@@ -1,39 +1,59 @@
 package com.distributedproject.userservice.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "userdata")
 public class User {
-    private Long id;
-    private String name;
-    private String email;
 
-    public User() {}
+    @Id
+    private String userId;
+    private String userName;
+    private String userType;
+    private String userAddress;
+    private String userTelephone;
 
-    public User(Long id, String name, String email) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
+    // Getters and setters
+
+    public String getUserId() {
+        return userId;
     }
 
-    public Long getId() {
-        return id;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public String getUserName() {
+        return userName;
     }
 
-    public String getName() {
-        return name;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getUserType() {
+        return userType;
     }
 
-    public String getEmail() {
-        return email;
+    public void setUserType(String userType) {
+        this.userType = userType;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public String getUserAddress() {
+        return userAddress;
+    }
+
+    public void setUserAddress(String userAddress) {
+        this.userAddress = userAddress;
+    }
+
+    public String getUserTelephone() {
+        return userTelephone;
+    }
+
+    public void setUserTelephone(String userTelephone) {
+        this.userTelephone = userTelephone;
     }
 }
