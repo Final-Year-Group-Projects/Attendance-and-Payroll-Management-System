@@ -1,0 +1,16 @@
+package com.distributedproject.userservice.validation;
+
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
+
+import java.lang.annotation.*;
+
+@Documented
+@Constraint(validatedBy = UserTypeValidator.class)
+@Target({ ElementType.FIELD })
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ValidUserType {
+    String message() default "User type must be either 'Admin' or 'Employee'";
+    Class<?>[] groups() default {};
+    Class<? extends Payload>[] payload() default {};
+}

@@ -1,17 +1,31 @@
 package com.distributedproject.userservice.model;
 
+import com.distributedproject.userservice.validation.ValidUserAddress;
+import com.distributedproject.userservice.validation.ValidUserName;
+import com.distributedproject.userservice.validation.ValidUserTelephone;
+import com.distributedproject.userservice.validation.ValidUserType;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "userdata")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)  // Auto-generate user_id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
+
+    @ValidUserName
     private String userName;
+
+    @ValidUserType
     private String userType;
+
+    @ValidUserAddress
     private String userAddress;
+
+    @ValidUserTelephone
     private String userTelephone;
 
     // Getters and setters

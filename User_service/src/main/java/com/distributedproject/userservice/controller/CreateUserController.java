@@ -1,9 +1,8 @@
 package com.distributedproject.userservice.controller;
 
 import com.distributedproject.userservice.model.User;
-import com.distributedproject.userservice.repository.UserRepository;
 import com.distributedproject.userservice.service.CreateUserService;
-import com.distributedproject.userservice.service.GetAllUsersService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,7 +15,7 @@ public class CreateUserController {
     private CreateUserService userService;
 
     @PostMapping("/users")
-    public User createUser(@RequestBody User user) {
+    public User createUser(@Valid @RequestBody User user) {
         System.out.println("Received user: " + user);
         return userService.createUser(user);
     }
