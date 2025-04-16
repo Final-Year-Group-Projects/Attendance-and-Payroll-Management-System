@@ -2,6 +2,7 @@ package com.distributedproject.userservice.controller;
 
 import com.distributedproject.userservice.model.User;
 import com.distributedproject.userservice.service.UpdateUserService;  // Import the service class
+import com.distributedproject.userservice.exception.UserNotFoundException;  // Import custom exception
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +19,16 @@ public class UpdateUserController {
 
     @PutMapping("/users/{userId}")
     public ResponseEntity<User> updateUser(@PathVariable Long userId, @RequestBody User userDetails) {
-        try {
-            User updatedUser = updateUserService.updateUser(userId, userDetails);  // Call the service to handle business logic
-            return new ResponseEntity<>(updatedUser, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        // Now we throw UserNotFoundException if the user doesn't exist
+        User updatedUser = updateUserService.updateUser(userId, userDetails);
+
+        // If user is null or not found, throw exception (UserNotFoundException)
+        if (updatedUser == null) {
+            throw new UserNotFoundException(userId);  // Trigger custom exception
         }
+
+        // If user is found and updated
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 }
+

@@ -2,12 +2,12 @@
 
 #### Get all users detals
 ```
-curl GET -X http://localhost:8080/users
+curl -X GET http://localhost:8080/users
 ```
 
 ### Get user details by ID
 ```
-curl GET -X http://localhost:8080/users/1
+curl -X GET http://localhost:8080/users/1
 ```
 
 ### Create new user
