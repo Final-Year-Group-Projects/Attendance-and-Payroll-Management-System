@@ -1,5 +1,6 @@
 package com.distributedproject.userservice.service;
 
+import com.distributedproject.userservice.exception.UserNameNotFoundException;
 import com.distributedproject.userservice.model.User;
 import com.distributedproject.userservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,10 @@ public class SearchUserByNameService {
     private UserRepository userRepository;
 
     public List<User> searchUsersByName(String name) {
-        return userRepository.findByUserNameContainingIgnoreCase(name);
+        List<User> users = userRepository.findByUserNameContainingIgnoreCase(name);
+        if (users.isEmpty()) {
+            throw new UserNameNotFoundException(name);
+        }
+        return users;
     }
 }
