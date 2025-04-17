@@ -1,4 +1,4 @@
-package com.distributedproject.userservice.validation;
+package com.distributedproject.userservice.validation.user;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

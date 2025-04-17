@@ -1,4 +1,4 @@
-package com.distributedproject.userservice.validation;
+package com.distributedproject.userservice.validation.user;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -6,11 +6,11 @@ import jakarta.validation.Payload;
 import java.lang.annotation.*;
 
 @Documented
-@Constraint(validatedBy = UserTelephoneValidator.class)
+@Constraint(validatedBy = UserNameValidator.class)
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidUserTelephone {
-    String message() default "Telephone must be a 10-digit number";
+public @interface ValidUserName {
+    String message() default "User name must only contain letters and spaces";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

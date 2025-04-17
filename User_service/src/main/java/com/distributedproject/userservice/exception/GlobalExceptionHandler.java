@@ -1,5 +1,7 @@
 package com.distributedproject.userservice.exception;
 
+import com.distributedproject.userservice.exception.user.UserNameNotFoundException;
+import com.distributedproject.userservice.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;

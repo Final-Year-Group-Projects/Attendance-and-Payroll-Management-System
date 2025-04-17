@@ -1,4 +1,4 @@
-package com.distributedproject.userservice.validation;
+package com.distributedproject.userservice.validation.user;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -6,11 +6,11 @@ import jakarta.validation.Payload;
 import java.lang.annotation.*;
 
 @Documented
-@Constraint(validatedBy = UserTypeValidator.class)
+@Constraint(validatedBy = UserAddressValidator.class)
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidUserType {
-    String message() default "User type must be either 'Admin' or 'Employee'";
+public @interface ValidUserAddress {
+    String message() default "User address cannot be empty";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

@@ -1,6 +1,6 @@
-package com.distributedproject.userservice.controller;
+package com.distributedproject.userservice.controller.user;
 
-import com.distributedproject.userservice.service.DeleteUserService;
+import com.distributedproject.userservice.service.user.DeleteUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

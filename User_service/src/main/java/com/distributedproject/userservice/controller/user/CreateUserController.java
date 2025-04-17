@@ -1,7 +1,7 @@
-package com.distributedproject.userservice.controller;
+package com.distributedproject.userservice.controller.user;
 
 import com.distributedproject.userservice.model.User;
-import com.distributedproject.userservice.service.CreateUserService;
+import com.distributedproject.userservice.service.user.CreateUserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;

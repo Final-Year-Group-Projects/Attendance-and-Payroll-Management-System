@@ -1,4 +1,4 @@
-package com.distributedproject.userservice.service;
+package com.distributedproject.userservice.service.user;
 
 import com.distributedproject.userservice.model.User;
 import com.distributedproject.userservice.repository.UserRepository;

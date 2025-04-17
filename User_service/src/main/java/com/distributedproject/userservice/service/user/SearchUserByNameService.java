@@ -1,6 +1,6 @@
-package com.distributedproject.userservice.service;
+package com.distributedproject.userservice.service.user;
 
-import com.distributedproject.userservice.exception.UserNameNotFoundException;
+import com.distributedproject.userservice.exception.user.UserNameNotFoundException;
 import com.distributedproject.userservice.model.User;
 import com.distributedproject.userservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

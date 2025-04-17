@@ -1,12 +1,10 @@
 package com.distributedproject.userservice.model;
 
-import com.distributedproject.userservice.validation.ValidUserAddress;
-import com.distributedproject.userservice.validation.ValidUserName;
-import com.distributedproject.userservice.validation.ValidUserTelephone;
-import com.distributedproject.userservice.validation.ValidUserType;
+import com.distributedproject.userservice.validation.user.ValidUserAddress;
+import com.distributedproject.userservice.validation.user.ValidUserName;
+import com.distributedproject.userservice.validation.user.ValidUserTelephone;
+import com.distributedproject.userservice.validation.user.ValidUserType;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "userdata")
@@ -28,8 +26,15 @@ public class User {
     @ValidUserTelephone
     private String userTelephone;
 
+    private Long departmentId;
+
     // Getters and setters
 
+    public Long getDepartmentId(){return departmentId;}
+
+    public void setDepartmentId(Long departmentId) {
+        this.departmentId = departmentId;
+    }
     public Long getUserId() {
         return userId;
     }

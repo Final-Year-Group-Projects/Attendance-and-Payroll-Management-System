@@ -1,4 +1,4 @@
-package com.distributedproject.userservice.exception;
+package com.distributedproject.userservice.exception.user;
 
 public class UserNameNotFoundException extends RuntimeException {
     public UserNameNotFoundException(String name) {

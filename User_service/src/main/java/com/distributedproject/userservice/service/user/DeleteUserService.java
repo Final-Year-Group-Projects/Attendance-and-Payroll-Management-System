@@ -1,6 +1,6 @@
-package com.distributedproject.userservice.service;
+package com.distributedproject.userservice.service.user;
 
-import com.distributedproject.userservice.exception.UserNotFoundException;
+import com.distributedproject.userservice.exception.user.UserNotFoundException;
 import com.distributedproject.userservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
