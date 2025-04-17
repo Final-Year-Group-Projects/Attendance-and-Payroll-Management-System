@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Data
 @NoArgsConstructor
@@ -21,16 +22,13 @@ public class PayrollServiceImpl implements PayrollService {
     private PayrollRepository payrollRepository;
 
     @Override
-    public PayrollResponseDTO createPayroll(PayrollRequestDTO dto){
-        PayrollRecord payrollRecord = new PayrollRecord();
-
-//        Double netSalary = ((dto.getBasicSalary()/30.0)*(dto.getWorkingDays()- dto.getLeavesTaken()))- dto.getDeductions();
-
+    public PayrollResponseDTO createPayroll(PayrollRequestDTO dto) {
         int payableDays = dto.getWorkingDays() - dto.getNotApprovedLeaves();
         double perDaySalary = dto.getBasicSalary() / dto.getWorkingDays();
         double gross = perDaySalary * payableDays;
         double netSalary = gross - dto.getDeductions();
 
+        PayrollRecord payrollRecord = new PayrollRecord();
         payrollRecord.setEmployeeId(dto.getEmployeeId());
         payrollRecord.setBasicSalary(dto.getBasicSalary());
         payrollRecord.setWorkingDays(dto.getWorkingDays());
@@ -49,7 +47,62 @@ public class PayrollServiceImpl implements PayrollService {
         response.setGeneratedDate(saved.getGeneratedDate());
 
         return response;
-
     }
 
+    @Override
+    public PayrollResponseDTO getPayrollById(Long id) {
+        Optional<PayrollRecord> payrollRecord = payrollRepository.findById(id);
+        if (payrollRecord.isPresent()) {
+            PayrollRecord record = payrollRecord.get();
+            PayrollResponseDTO response = new PayrollResponseDTO();
+            response.setId(record.getId());
+            response.setEmployeeId(record.getEmployeeId());
+            response.setNetSalary(record.getNetSalary());
+            response.setGeneratedDate(record.getGeneratedDate());
+            return response;
+        }
+        return null;
+    }
+
+    @Override
+    public PayrollResponseDTO updatePayroll(Long id, PayrollRequestDTO dto) {
+        Optional<PayrollRecord> payrollRecordOptional = payrollRepository.findById(id);
+        if (!payrollRecordOptional.isPresent()) {
+            return null;
+        }
+
+        PayrollRecord payrollRecord = payrollRecordOptional.get();
+
+        int payableDays = dto.getWorkingDays() - dto.getNotApprovedLeaves();
+        double perDaySalary = dto.getBasicSalary() / dto.getWorkingDays();
+        double gross = perDaySalary * payableDays;
+        double netSalary = gross - dto.getDeductions();
+
+        payrollRecord.setBasicSalary(dto.getBasicSalary());
+        payrollRecord.setWorkingDays(dto.getWorkingDays());
+        payrollRecord.setApprovedLeaves(dto.getApprovedLeaves());
+        payrollRecord.setNotApprovedLeaves(dto.getNotApprovedLeaves());
+        payrollRecord.setDeductions(dto.getDeductions());
+        payrollRecord.setNetSalary(netSalary);
+        payrollRecord.setGeneratedDate(LocalDate.now());
+
+        PayrollRecord updated = payrollRepository.save(payrollRecord);
+
+        PayrollResponseDTO response = new PayrollResponseDTO();
+        response.setId(updated.getId());
+        response.setEmployeeId(updated.getEmployeeId());
+        response.setNetSalary(updated.getNetSalary());
+        response.setGeneratedDate(updated.getGeneratedDate());
+
+        return response;
+    }
+
+    @Override
+    public boolean deletePayroll(Long id) {
+        if (!payrollRepository.existsById(id)) {
+            return false;
+        }
+        payrollRepository.deleteById(id);
+        return true;
+    }
 }
