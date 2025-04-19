@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Data
@@ -105,4 +106,18 @@ public class PayrollServiceImpl implements PayrollService {
         payrollRepository.deleteById(id);
         return true;
     }
+
+    @Override
+    public List<PayrollResponseDTO> getPayrollsByEmployeeId(Long employeeId) {
+        List<PayrollRecord> records = payrollRepository.findByEmployeeId(employeeId);
+        return records.stream().map(record -> {
+            PayrollResponseDTO dto = new PayrollResponseDTO();
+            dto.setId(record.getId());
+            dto.setEmployeeId(record.getEmployeeId());
+            dto.setNetSalary(record.getNetSalary());
+            dto.setGeneratedDate(record.getGeneratedDate());
+            return dto;
+        }).toList();
+    }
+
 }

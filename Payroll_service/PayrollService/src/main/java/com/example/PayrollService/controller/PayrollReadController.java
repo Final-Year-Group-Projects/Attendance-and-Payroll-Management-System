@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/payrolls")
 public class PayrollReadController {
@@ -20,5 +22,15 @@ public class PayrollReadController {
         }
         return ResponseEntity.ok(payrollResponse);
     }
+
+    @GetMapping("/employee/{employeeId}")
+    public ResponseEntity<List<PayrollResponseDTO>> getPayrollsByEmployeeId(@PathVariable Long employeeId) {
+        List<PayrollResponseDTO> payrolls = payrollService.getPayrollsByEmployeeId(employeeId);
+        if (payrolls.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(payrolls);
+    }
+
 }
 
