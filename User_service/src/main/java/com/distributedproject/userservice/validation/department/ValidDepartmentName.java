@@ -1,6 +1,5 @@
 package com.distributedproject.userservice.validation.department;
 
-import com.distributedproject.userservice.validation.department.DepartmentNameValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -11,7 +10,7 @@ import java.lang.annotation.*;
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidDepartmentName {
-    String message() default "Department name must only contain letters and spaces";
+    String message() default "Role Name must be one of 'Human Resources', 'Finance', 'Quality Assurance', 'Sales and Marketing', 'Customer Support'";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }
