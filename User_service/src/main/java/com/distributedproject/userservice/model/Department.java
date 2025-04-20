@@ -1,5 +1,7 @@
 package com.distributedproject.userservice.model;
 
+import com.distributedproject.userservice.validation.department.ValidDepartmentHead;
+import com.distributedproject.userservice.validation.department.ValidDepartmentName;
 import jakarta.persistence.*;
 
 @Entity
@@ -10,8 +12,10 @@ public class Department {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long departmentId;
 
+    @ValidDepartmentName
     private String departmentName;
-
+    
+    @ValidDepartmentHead
     private String department_head;
 
 

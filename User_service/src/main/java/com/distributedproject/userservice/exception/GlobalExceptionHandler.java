@@ -1,5 +1,7 @@
 package com.distributedproject.userservice.exception;
 
+import com.distributedproject.userservice.exception.department.DepartmentNameNotFoundException;
+import com.distributedproject.userservice.exception.department.DepartmentNotFoundException;
 import com.distributedproject.userservice.exception.user.UserNameNotFoundException;
 import com.distributedproject.userservice.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -30,6 +32,21 @@ public class GlobalExceptionHandler {
         error.put("error", ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(DepartmentNameNotFoundException.class)
+    public ResponseEntity<String> handleDepartmentsNotFoundException(DepartmentNameNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(DepartmentNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleDepartmentNotFound(com.distributedproject.userservice.exception.department.DepartmentNotFoundException ex) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        error.put("error", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {

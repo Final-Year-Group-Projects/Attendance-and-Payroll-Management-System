@@ -1,6 +1,5 @@
 package com.distributedproject.userservice.service.department;
 
-
 import com.distributedproject.userservice.exception.department.DepartmentNotFoundException;
 import com.distributedproject.userservice.repository.DepartmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +15,7 @@ public class DeleteDepartmentService {
         if (departmentRepository.existsById(String.valueOf(departmentId))) {
             departmentRepository.deleteById(String.valueOf(departmentId));
         } else {
-            throw new DepartmentNotFoundException(departmentId);  // Throw custom exception if user not found
+            throw new DepartmentNotFoundException(departmentId);
         }
     }
 }
