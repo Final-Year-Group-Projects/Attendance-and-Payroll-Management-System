@@ -1,5 +1,6 @@
 package com.distributedproject.authservice.service;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -8,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class JwtService {
@@ -32,5 +35,22 @@ public class JwtService {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+
+    public String extractRole(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        List<Map<String, String>> authorities = (List<Map<String, String>>) claims.get("authorities");
+
+        // Get the first role from the list
+        if (authorities != null && !authorities.isEmpty()) {
+            return authorities.get(0).get("authority");
+        }
+
+        return null;
     }
 }

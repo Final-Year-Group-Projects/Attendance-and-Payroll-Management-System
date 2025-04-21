@@ -1,4 +1,3 @@
-// WebConfig.java
 package com.distributedproject.userservice.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +15,7 @@ public class WebConfig {
     public FilterRegistrationBean<TokenValidationFilter> loggingFilter() {
         FilterRegistrationBean<TokenValidationFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(tokenValidationFilter);
-        registrationBean.addUrlPatterns("/users/*", "/departments/*");
+        registrationBean.addUrlPatterns("/users/*", "/users", "/departments/*");
         return registrationBean;
     }
 }

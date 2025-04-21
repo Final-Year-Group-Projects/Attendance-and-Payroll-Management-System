@@ -1,4 +1,3 @@
-// TokenValidationFilter.java
 package com.distributedproject.userservice.config;
 
 import jakarta.servlet.FilterChain;
@@ -46,8 +45,26 @@ public class TokenValidationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            // You can optionally store username in request attributes if needed
-            request.setAttribute("username", validationResponse.getBody().get("username"));
+            Map<String, Object> responseBody = validationResponse.getBody();
+            String username = (String) responseBody.get("username");
+            String role = (String) responseBody.get("role");
+
+            request.setAttribute("username", username);
+            request.setAttribute("role", role);
+
+            String path = request.getRequestURI();
+
+            // Authorization checks
+            if (path.equals("/users") && !"Admin".equals(role)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("Access denied: admin role required");
+                return;
+            } else if (path.matches("^/users/[^/]+$") && !(role.equals("Admin") || role.equals("Employee"))) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("Access denied: admin or employee role required");
+                return;
+            }
+
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Token validation error: " + e.getMessage());
