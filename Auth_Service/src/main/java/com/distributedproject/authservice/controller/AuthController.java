@@ -45,7 +45,7 @@ public class AuthController {
         }
 
         String token = jwtService.generateToken(new org.springframework.security.core.userdetails.User(
-                u.getUsername(), u.getPassword(), List.of(new SimpleGrantedAuthority(u.getRole()))
+                u.getUsername(), u.getPassword(), List.of()
         ));
 
         return ResponseEntity.ok(Map.of("accessToken", token));
