@@ -6,7 +6,6 @@ import com.distributedproject.authservice.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,4 +49,17 @@ public class AuthController {
 
         return ResponseEntity.ok(Map.of("accessToken", token));
     }
+
+    @PostMapping("/validate")
+    public ResponseEntity<?> validateToken(@RequestBody Map<String, String> request) {
+        String token = request.get("token");
+        try {
+            String username = jwtService.extractUsername(token);
+            return ResponseEntity.ok(Map.of("username", username));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
+    }
+
 }
+
