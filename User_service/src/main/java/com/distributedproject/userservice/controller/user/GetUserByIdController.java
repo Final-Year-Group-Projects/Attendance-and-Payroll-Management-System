@@ -13,7 +13,7 @@ public class GetUserByIdController {
     @Autowired
     private GetUserByIdService userService;
 
-    @GetMapping("/users/{userId}")
+    @GetMapping("/get/users/{userId}")
     public ResponseEntity<User> getUserById(@PathVariable Long userId) {
         User user = userService.getUserById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));

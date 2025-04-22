@@ -17,7 +17,7 @@ public class UpdateUserController {
     @Autowired
     private UpdateUserService updateUserService;  // Autowire the correct service class
 
-    @PutMapping("/users/{userId}")
+    @PutMapping("/update/users/{userId}")
     public ResponseEntity<User> updateUser(@PathVariable Long userId, @RequestBody User userDetails) {
         // Now we throw UserNotFoundException if the user doesn't exist
         User updatedUser = updateUserService.updateUser(userId, userDetails);

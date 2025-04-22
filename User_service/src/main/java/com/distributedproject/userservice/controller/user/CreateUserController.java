@@ -14,7 +14,7 @@ public class CreateUserController {
     @Autowired
     private CreateUserService userService;
 
-    @PostMapping("/users")
+    @PostMapping("/create/users")
     public User createUser(@Valid @RequestBody User user) {
         System.out.println("Received user: " + user);
         return userService.createUser(user);

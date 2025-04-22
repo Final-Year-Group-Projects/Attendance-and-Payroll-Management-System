@@ -54,15 +54,18 @@ public class TokenValidationFilter extends OncePerRequestFilter {
 
             String path = request.getRequestURI();
 
-            // Authorization checks
-            if (path.equals("/users") && !"Admin".equals(role)) {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.getWriter().write("Access denied: admin role required");
-                return;
-            } else if (path.matches("^/users/[^/]+$") && !(role.equals("Admin") || role.equals("Employee"))) {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.getWriter().write("Access denied: admin or employee role required");
-                return;
+            // Admin can access everything
+            if (!"Admin".equals(role)) {
+                // Employee access restrictions
+                boolean isEmployeeAllowed =
+                        (role.equals("Employee") &&
+                                (path.matches("^/get/users/.*") || path.equals("/get/users/search") || path.matches("^/update/users/.*")));
+
+                if (!isEmployeeAllowed) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.getWriter().write("Access denied: insufficient permissions");
+                    return;
+                }
             }
 
         } catch (Exception e) {

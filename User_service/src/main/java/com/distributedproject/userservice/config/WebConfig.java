@@ -15,7 +15,18 @@ public class WebConfig {
     public FilterRegistrationBean<TokenValidationFilter> loggingFilter() {
         FilterRegistrationBean<TokenValidationFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(tokenValidationFilter);
-        registrationBean.addUrlPatterns("/users/*", "/users", "/departments/*");
+
+        // Register all protected endpoint patterns here
+        registrationBean.addUrlPatterns(
+                "/get/users/*",
+                "/getAll/users/*",
+                "/get/users/search",
+                "/update/users/*",
+                "/delete/users/*",
+                "/create/users/*",
+                "/departments/*"
+        );
+
         return registrationBean;
     }
 }

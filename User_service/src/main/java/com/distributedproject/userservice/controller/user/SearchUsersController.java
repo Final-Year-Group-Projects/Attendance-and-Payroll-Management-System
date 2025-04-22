@@ -14,7 +14,7 @@ public class SearchUsersController {
     @Autowired
     private SearchUserByNameService userService;
 
-    @GetMapping("/users/search")
+    @GetMapping("/get/users/search")
     public List<User> searchUsers(@RequestParam String name) {
         return userService.searchUsersByName(name);
     }
