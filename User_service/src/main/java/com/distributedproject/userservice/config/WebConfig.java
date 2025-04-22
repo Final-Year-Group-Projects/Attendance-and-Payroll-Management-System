@@ -24,7 +24,8 @@ public class WebConfig {
                 "/update/users/*",
                 "/delete/users/*",
                 "/create/users/*",
-                "/departments/*"
+                "/departments/*",
+                "/roles/*"
         );
 
         return registrationBean;
