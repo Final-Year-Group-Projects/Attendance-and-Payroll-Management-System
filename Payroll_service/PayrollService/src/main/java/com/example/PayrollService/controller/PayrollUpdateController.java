@@ -21,4 +21,13 @@ public class PayrollUpdateController {
         }
         return ResponseEntity.ok(response);
     }
+
+    @PutMapping("/{payrollId}/status")
+    public ResponseEntity<PayrollResponseDTO> updateStatus(
+            @PathVariable Long payrollId,
+            @RequestParam("status") String status) {
+
+        PayrollResponseDTO updatedPayroll = payrollService.updatePayrollStatus(payrollId, status);
+        return ResponseEntity.ok(updatedPayroll);
+    }
 }

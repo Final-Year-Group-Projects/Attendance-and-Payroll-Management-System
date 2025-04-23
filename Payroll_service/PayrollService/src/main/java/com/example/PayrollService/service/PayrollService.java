@@ -15,6 +15,8 @@ public interface PayrollService {
     void generatePayrollsForAllEmployees(Integer month, Integer year);
     List<PayrollResponseDTO> getAllPayrolls();
     PayrollNotificationResponseDTO generatePayrollNotification(Long employeeId);
+    PayrollResponseDTO updatePayrollStatus(Long id, String status);
+
 
 
 }

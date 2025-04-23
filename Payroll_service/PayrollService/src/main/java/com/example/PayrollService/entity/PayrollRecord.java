@@ -27,7 +27,7 @@ public class PayrollRecord {
     private LocalDate generatedDate;
     private Integer month;
     private Integer year;
-
+    private String status;
 
 
     // Getters
@@ -118,5 +118,13 @@ public class PayrollRecord {
 
     public void setYear(Integer year) {
         this.year = year;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

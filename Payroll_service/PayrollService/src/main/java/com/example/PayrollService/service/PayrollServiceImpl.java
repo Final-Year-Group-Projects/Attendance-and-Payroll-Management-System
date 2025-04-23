@@ -4,6 +4,7 @@ import com.example.PayrollService.dto.PayrollNotificationResponseDTO;
 import com.example.PayrollService.dto.PayrollRequestDTO;
 import com.example.PayrollService.dto.PayrollResponseDTO;
 import com.example.PayrollService.entity.PayrollRecord;
+import com.example.PayrollService.exception.ResourceNotFoundException;
 import com.example.PayrollService.repository.PayrollRepository;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -196,6 +197,28 @@ public class PayrollServiceImpl implements PayrollService {
         dto.setNetSalary(record.getNetSalary());
         dto.setGeneratedDate(record.getGeneratedDate());
         return dto;
+    }
+
+    @Override
+    public PayrollResponseDTO updatePayrollStatus(Long id, String status) {
+        Optional<PayrollRecord> payrollRecordOptional = payrollRepository.findById(id);
+        if (!payrollRecordOptional.isPresent()) {
+            throw new ResourceNotFoundException("Payroll record not found with ID: " + id);
+        }
+
+        PayrollRecord payrollRecord = payrollRecordOptional.get();
+        payrollRecord.setStatus(status);
+        payrollRepository.save(payrollRecord);
+
+        // Convert the updated payroll record to PayrollResponseDTO
+        PayrollResponseDTO responseDTO = new PayrollResponseDTO();
+        responseDTO.setId(payrollRecord.getId());
+        responseDTO.setEmployeeId(payrollRecord.getEmployeeId());
+        responseDTO.setNetSalary(payrollRecord.getNetSalary());
+        responseDTO.setGeneratedDate(payrollRecord.getGeneratedDate());
+        responseDTO.setStatus(payrollRecord.getStatus()); // Assuming 'status' field exists in the response
+
+        return responseDTO;
     }
 }
 
