@@ -25,4 +25,13 @@ public class PayrollCreationController {
         PayrollResponseDTO response = payrollService.createPayroll(requestDTO);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
+    @PostMapping("/generateAll")
+    public ResponseEntity<String> generatePayrollsForAll(
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer year
+    ) {
+        payrollService.generatePayrollsForAllEmployees(month, year);
+        return ResponseEntity.ok("Payrolls generated for all employees.");
+    }
 }

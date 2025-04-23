@@ -25,6 +25,10 @@ public class PayrollRecord {
     private Double deductions;
     private Double netSalary;
     private LocalDate generatedDate;
+    private Integer month;
+    private Integer year;
+
+
 
     // Getters
     public Long getId() {
@@ -63,6 +67,14 @@ public class PayrollRecord {
         return generatedDate;
     }
 
+    public Integer getMonth() {
+        return month;
+    }
+
+    public Integer getYear() {
+        return year;
+    }
+
     // Setters
     public void setId(Long id) {
         this.id = id;
@@ -98,5 +110,13 @@ public class PayrollRecord {
 
     public void setGeneratedDate(LocalDate generatedDate) {
         this.generatedDate = generatedDate;
+    }
+
+    public void setMonth(Integer month) {
+        this.month = month;
+    }
+
+    public void setYear(Integer year) {
+        this.year = year;
     }
 }

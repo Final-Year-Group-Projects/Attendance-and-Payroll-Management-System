@@ -32,5 +32,12 @@ public class PayrollReadController {
         return ResponseEntity.ok(payrolls);
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<PayrollResponseDTO>> getAllPayrolls() {
+        List<PayrollResponseDTO> allPayrolls = payrollService.getAllPayrolls();
+        return ResponseEntity.ok(allPayrolls);
+    }
+
+
 }
 

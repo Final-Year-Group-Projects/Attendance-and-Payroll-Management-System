@@ -12,5 +12,7 @@ public interface PayrollService {
     boolean deletePayroll(Long id);
 
     List<PayrollResponseDTO> getPayrollsByEmployeeId(Long employeeId);
+    void generatePayrollsForAllEmployees(Integer month, Integer year);
 
+    List<PayrollResponseDTO> getAllPayrolls();
 }

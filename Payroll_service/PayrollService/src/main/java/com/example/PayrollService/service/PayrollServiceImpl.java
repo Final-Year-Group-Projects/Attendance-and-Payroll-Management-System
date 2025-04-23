@@ -41,6 +41,15 @@ public class PayrollServiceImpl implements PayrollService {
 
         PayrollRecord saved = payrollRepository.save(payrollRecord);
 
+        String simulatedMessage = String.format(
+                "Notification simulated: Sent payroll (ID: %d, Net Salary: %.2f, Date: %s) for employee ID: %d",
+                saved.getId(),
+                saved.getNetSalary(),
+                saved.getGeneratedDate(),
+                saved.getEmployeeId()
+        );
+        System.out.println(simulatedMessage);
+
         PayrollResponseDTO response = new PayrollResponseDTO();
         response.setId(saved.getId());
         response.setEmployeeId(saved.getEmployeeId());
@@ -119,5 +128,41 @@ public class PayrollServiceImpl implements PayrollService {
             return dto;
         }).toList();
     }
+
+    @Override
+    public void generatePayrollsForAllEmployees(Integer month, Integer year) {
+        // TODO: Replace this with your actual method to get employee IDs
+        List<Long> allEmployeeIds = payrollRepository.findAllEmployeeIdsDistinct();
+
+        for (Long empId : allEmployeeIds) {
+            // Simulate or fetch required data per employee
+            PayrollRequestDTO dto = new PayrollRequestDTO();
+            dto.setEmployeeId(empId);
+            dto.setBasicSalary(30000.0);  // Dummy value
+            dto.setWorkingDays(30);     // Dummy value
+            dto.setApprovedLeaves(2);   // Dummy value
+            dto.setNotApprovedLeaves(1); // Dummy value
+            dto.setDeductions(500.0);     // Dummy value
+
+            createPayroll(dto);
+        }
+
+        System.out.println("Generated payrolls for all employees.");
+    }
+
+    @Override
+    public List<PayrollResponseDTO> getAllPayrolls() {
+        List<PayrollRecord> records = payrollRepository.findAll();
+        return records.stream().map(record -> {
+            PayrollResponseDTO dto = new PayrollResponseDTO();
+            dto.setId(record.getId());
+            dto.setEmployeeId(record.getEmployeeId());
+            dto.setNetSalary(record.getNetSalary());
+            dto.setGeneratedDate(record.getGeneratedDate());
+            return dto;
+        }).toList();
+    }
+
+
 
 }
