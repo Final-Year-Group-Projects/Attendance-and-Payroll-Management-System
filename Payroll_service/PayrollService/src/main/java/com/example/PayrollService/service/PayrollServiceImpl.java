@@ -1,5 +1,6 @@
 package com.example.PayrollService.service;
 
+import com.example.PayrollService.dto.PayrollNotificationResponseDTO;
 import com.example.PayrollService.dto.PayrollRequestDTO;
 import com.example.PayrollService.dto.PayrollResponseDTO;
 import com.example.PayrollService.entity.PayrollRecord;
@@ -163,6 +164,38 @@ public class PayrollServiceImpl implements PayrollService {
         }).toList();
     }
 
+    @Override
+    public PayrollNotificationResponseDTO generatePayrollNotification(Long employeeId) {
+        List<PayrollRecord> payrolls = payrollRepository.findByEmployeeId(employeeId);
 
+        if (payrolls.isEmpty()) {
+            return new PayrollNotificationResponseDTO(
+                    "error",
+                    "No payroll records found for employee ID: " + employeeId,
+                    employeeId
+            );
+        }
 
+        PayrollRecord latest = payrolls.get(payrolls.size() - 1);
+        PayrollResponseDTO payrollDTO = convertToResponseDTO(latest);
+
+        String message = String.format(
+                "Payroll notification sent: ID %d, Net Salary %.2f, Date %s",
+                payrollDTO.getId(),
+                payrollDTO.getNetSalary(),
+                payrollDTO.getGeneratedDate()
+        );
+
+        return new PayrollNotificationResponseDTO("success", message, employeeId);
+    }
+
+    private PayrollResponseDTO convertToResponseDTO(PayrollRecord record) {
+        PayrollResponseDTO dto = new PayrollResponseDTO();
+        dto.setId(record.getId());
+        dto.setEmployeeId(record.getEmployeeId());
+        dto.setNetSalary(record.getNetSalary());
+        dto.setGeneratedDate(record.getGeneratedDate());
+        return dto;
+    }
 }
+

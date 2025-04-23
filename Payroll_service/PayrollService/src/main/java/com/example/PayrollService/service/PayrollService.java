@@ -1,5 +1,6 @@
 package com.example.PayrollService.service;
 
+import com.example.PayrollService.dto.PayrollNotificationResponseDTO;
 import com.example.PayrollService.dto.PayrollRequestDTO;
 import com.example.PayrollService.dto.PayrollResponseDTO;
 
@@ -10,9 +11,10 @@ public interface PayrollService {
     PayrollResponseDTO getPayrollById(Long id);
     PayrollResponseDTO updatePayroll(Long id, PayrollRequestDTO dto);
     boolean deletePayroll(Long id);
-
     List<PayrollResponseDTO> getPayrollsByEmployeeId(Long employeeId);
     void generatePayrollsForAllEmployees(Integer month, Integer year);
-
     List<PayrollResponseDTO> getAllPayrolls();
+    PayrollNotificationResponseDTO generatePayrollNotification(Long employeeId);
+
+
 }
