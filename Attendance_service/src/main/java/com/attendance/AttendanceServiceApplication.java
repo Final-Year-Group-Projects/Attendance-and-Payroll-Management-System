@@ -9,7 +9,7 @@ import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 @SpringBootApplication(exclude = {
 		SecurityAutoConfiguration.class,
 		ManagementWebSecurityAutoConfiguration.class,
-		FeignAutoConfiguration.class // Disable Feign clients
+		FeignAutoConfiguration.class
 })
 public class AttendanceServiceApplication {
 
