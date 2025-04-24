@@ -2,9 +2,15 @@ package com.attendance;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 
-
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+		SecurityAutoConfiguration.class,
+		ManagementWebSecurityAutoConfiguration.class,
+		FeignAutoConfiguration.class // Disable Feign clients
+})
 public class AttendanceServiceApplication {
 
 	public static void main(String[] args) {
