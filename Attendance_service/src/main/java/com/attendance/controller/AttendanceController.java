@@ -3,6 +3,7 @@ package com.attendance.controller;
 import com.attendance.dto.AttendanceRequest;
 import com.attendance.dto.CheckInRequest;
 import com.attendance.dto.CheckOutRequest;
+import com.attendance.dto.WorkingHoursResponse;
 import com.attendance.entity.Attendance;
 import com.attendance.repository.AttendanceRepository;
 import com.attendance.service.AttendanceService;
@@ -125,5 +126,19 @@ public class AttendanceController {
             throw new IllegalArgumentException("No attendance records found for employeeId: " + employeeId);
         }
         return ResponseEntity.ok(records);
+    }
+
+    @Operation(summary = "Calculate working hours for an attendance record")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Working hours calculated successfully"),
+            @ApiResponse(responseCode = "404", description = "Attendance record not found"),
+            @ApiResponse(responseCode = "400", description = "Cannot calculate hours due to missing check-in or check-out"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @GetMapping("/hours/{recordId}")
+    public ResponseEntity<WorkingHoursResponse> getWorkingHours(@PathVariable Long recordId) {
+        logger.info("Retrieving working hours for recordId: {}", recordId);
+        double hours = attendanceService.calculateWorkingHours(recordId);
+        return ResponseEntity.ok(new WorkingHoursResponse(hours));
     }
 }
