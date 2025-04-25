@@ -55,11 +55,13 @@ public class TokenValidationFilter extends OncePerRequestFilter {
             String path = request.getRequestURI();
 
             // Admin can access everything
-            if (!"Admin".equals(role)) {
+            if (!"Admin".equals(role) && !"Super_Admin".equals(role)) {
                 // Employee access restrictions
                 boolean isEmployeeAllowed =
-                        (role.equals("Employee") &&
-                                (path.matches("^/get/users/.*") || path.equals("/get/users/search") || path.matches("^/update/users/.*")));
+                        ("Employee".equals(role) &&
+                                (path.matches("^/get/users/.*") ||
+                                        path.equals("/get/users/search") ||
+                                        path.matches("^/update/users/.*")));
 
                 if (!isEmployeeAllowed) {
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -67,6 +69,7 @@ public class TokenValidationFilter extends OncePerRequestFilter {
                     return;
                 }
             }
+
 
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

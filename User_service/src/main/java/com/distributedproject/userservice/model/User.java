@@ -27,6 +27,7 @@ public class User {
     private String userTelephone;
 
     private Long departmentId;
+    private Long roleId;
 
     // Getters and setters
 
@@ -35,6 +36,13 @@ public class User {
     public void setDepartmentId(Long departmentId) {
         this.departmentId = departmentId;
     }
+
+    public Long getRoleId(){return roleId;}
+
+    public void setRoleId(Long roleId) {
+        this.roleId = roleId;
+    }
+
     public Long getUserId() {
         return userId;
     }
