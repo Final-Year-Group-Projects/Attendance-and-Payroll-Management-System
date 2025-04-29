@@ -7,6 +7,6 @@ public class UserTelephoneValidator implements ConstraintValidator<ValidUserTele
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        return value != null && value.matches("^\\d{10}$");
+        return value == null || value.matches("^\\d{10}$");
     }
 }

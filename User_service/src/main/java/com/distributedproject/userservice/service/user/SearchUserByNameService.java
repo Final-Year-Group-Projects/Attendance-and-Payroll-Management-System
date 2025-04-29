@@ -15,7 +15,7 @@ public class SearchUserByNameService {
     private UserRepository userRepository;
 
     public List<User> searchUsersByName(String name) {
-        List<User> users = userRepository.findByUserNameContainingIgnoreCase(name);
+        List<User> users = userRepository.findByUserFullNameContainingIgnoreCase(name);
         if (users.isEmpty()) {
             throw new UserNameNotFoundException(name);
         }

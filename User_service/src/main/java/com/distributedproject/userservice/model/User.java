@@ -15,7 +15,7 @@ public class User {
     private Long userId;
 
     @ValidUserName
-    private String userName;
+    private String userFullName;
 
     @ValidUserType
     private String userType;
@@ -52,11 +52,11 @@ public class User {
     }
 
     public String getUserName() {
-        return userName;
+        return userFullName;
     }
 
     public void setUserName(String userName) {
-        this.userName = userName;
+        this.userFullName = userName;
     }
 
     public String getUserType() {

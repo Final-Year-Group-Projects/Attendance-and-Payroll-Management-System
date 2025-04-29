@@ -7,6 +7,7 @@ public class UserAddressValidator implements ConstraintValidator<ValidUserAddres
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        return value != null && !value.trim().isEmpty();
+        // Return true if value is null, else check if it's not empty or whitespace
+        return value == null || !value.trim().isEmpty();
     }
 }
