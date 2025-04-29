@@ -18,6 +18,11 @@ public class RegisterController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
+
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            return ResponseEntity.badRequest().body("Error: Username is already taken!");
+        }
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
         return ResponseEntity.ok("User created");
