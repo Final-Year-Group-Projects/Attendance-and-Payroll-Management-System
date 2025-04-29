@@ -1,14 +1,13 @@
 package com.distributedproject.authservice.controller;
 
 import com.distributedproject.authservice.dto.LoginRequest;
+import com.distributedproject.authservice.exception.InvalidCredentialsException;
 import com.distributedproject.authservice.model.User;
 import com.distributedproject.authservice.repository.UserRepository;
 import com.distributedproject.authservice.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,10 +28,10 @@ public class LoginController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         User u = userRepository.findByUsername(loginRequest.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid username"));
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), u.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            throw new InvalidCredentialsException("Invalid password");
         }
 
         String token = jwtService.generateToken(new org.springframework.security.core.userdetails.User(
