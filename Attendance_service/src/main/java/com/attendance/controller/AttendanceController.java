@@ -4,7 +4,9 @@ import com.attendance.dto.AttendanceRequest;
 import com.attendance.dto.CheckInRequest;
 import com.attendance.dto.CheckOutRequest;
 import com.attendance.dto.WorkingHoursResponse;
+import com.attendance.dto.TotalWorkingHoursResponse;
 import com.attendance.entity.Attendance;
+import com.attendance.exception.ValidationException;
 import com.attendance.repository.AttendanceRepository;
 import com.attendance.service.AttendanceService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
@@ -109,13 +112,16 @@ public class AttendanceController {
         LocalTime checkInTime = attendance.getCheckInTime();
         if (checkInTime == null) {
             logger.warn("Check-in time is missing for recordId: {}", recordId);
-            throw new IllegalArgumentException("Cannot record check-out: Check-in time is missing for recordId: " + recordId);
+            throw new ValidationException("Cannot record check-out: Check-in time is missing for recordId: " + recordId);
         }
 
         LocalTime checkOutTime = LocalTime.parse(request.getCheckOutTime(), TIME_FORMATTER);
         if (!checkOutTime.isAfter(checkInTime)) {
-            logger.warn("Check-out time {} is not after check-in time {} for recordId: {}", checkOutTime, checkInTime, recordId);
-            throw new IllegalArgumentException("Check-out time must be after check-in time");
+            logger.warn("Check-out time {} is not after check-in time {} for recordId: {}",
+                    checkOutTime.format(TIME_FORMATTER),
+                    checkInTime.format(TIME_FORMATTER),
+                    recordId);
+            throw new ValidationException("Check-out time must be after check-in time");
         }
 
         attendance.setCheckOutTime(checkOutTime);
@@ -152,5 +158,25 @@ public class AttendanceController {
         logger.info("Retrieving working hours for recordId: {}", recordId);
         double hours = attendanceService.calculateWorkingHours(recordId);
         return ResponseEntity.ok(new WorkingHoursResponse(hours));
+    }
+
+    @Operation(summary = "Calculate total working hours for an employee over a date range")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Total working hours calculated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid date range or input"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @GetMapping("/employee/{employeeId}/hours")
+    public ResponseEntity<TotalWorkingHoursResponse> getTotalWorkingHours(
+            @PathVariable Long employeeId,
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate) {
+        logger.info("Retrieving total working hours for employeeId: {} from {} to {}", employeeId, startDate, endDate);
+
+        LocalDate start = LocalDate.parse(startDate, DATE_FORMATTER);
+        LocalDate end = LocalDate.parse(endDate, DATE_FORMATTER);
+
+        double totalHours = attendanceService.calculateTotalWorkingHours(employeeId, start, end);
+        return ResponseEntity.ok(new TotalWorkingHoursResponse(totalHours));
     }
 }
