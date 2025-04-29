@@ -94,7 +94,7 @@ public class AttendanceController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Check-out recorded successfully"),
             @ApiResponse(responseCode = "404", description = "Attendance record not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "400", description = "Invalid input or check-out time is not after check-in time"),
             @ApiResponse(responseCode = "500", description = "Server error")
     })
     @PutMapping("/check-out/{recordId}")
@@ -105,8 +105,20 @@ public class AttendanceController {
 
         Attendance attendance = attendanceRepository.findById(recordId)
                 .orElseThrow(() -> new IllegalArgumentException("Attendance record not found for recordId: " + recordId));
-        attendance.setCheckOutTime(LocalTime.parse(request.getCheckOutTime(), TIME_FORMATTER));
 
+        LocalTime checkInTime = attendance.getCheckInTime();
+        if (checkInTime == null) {
+            logger.warn("Check-in time is missing for recordId: {}", recordId);
+            throw new IllegalArgumentException("Cannot record check-out: Check-in time is missing for recordId: " + recordId);
+        }
+
+        LocalTime checkOutTime = LocalTime.parse(request.getCheckOutTime(), TIME_FORMATTER);
+        if (!checkOutTime.isAfter(checkInTime)) {
+            logger.warn("Check-out time {} is not after check-in time {} for recordId: {}", checkOutTime, checkInTime, recordId);
+            throw new IllegalArgumentException("Check-out time must be after check-in time");
+        }
+
+        attendance.setCheckOutTime(checkOutTime);
         Attendance updatedAttendance = attendanceService.saveAttendance(attendance);
         return ResponseEntity.ok(updatedAttendance);
     }
