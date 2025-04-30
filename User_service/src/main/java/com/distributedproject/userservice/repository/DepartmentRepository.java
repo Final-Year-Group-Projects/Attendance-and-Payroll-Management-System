@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface DepartmentRepository extends JpaRepository<Department, String> {
     List<Department> findByDepartmentNameContainingIgnoreCase(String departmentName);
+    boolean existsByDepartmentNameIgnoreCase(String departmentName);
 }
