@@ -1,11 +1,14 @@
 package com.attendance.controller;
 
+import com.attendance.client.UserServiceClient;
 import com.attendance.dto.AttendanceRequest;
 import com.attendance.dto.CheckInRequest;
 import com.attendance.dto.CheckOutRequest;
+import com.attendance.dto.LeaveRequest;
 import com.attendance.dto.WorkingHoursResponse;
 import com.attendance.dto.TotalWorkingHoursResponse;
 import com.attendance.entity.Attendance;
+import com.attendance.entity.Leave;
 import com.attendance.exception.ValidationException;
 import com.attendance.repository.AttendanceRepository;
 import com.attendance.service.AttendanceService;
@@ -17,14 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -41,13 +37,17 @@ public class AttendanceController {
 
     private final AttendanceService attendanceService;
     private final AttendanceRepository attendanceRepository;
+    private final UserServiceClient userServiceClient;
 
     @Autowired
     public AttendanceController(
             AttendanceService attendanceService,
-            AttendanceRepository attendanceRepository) {
+            AttendanceRepository attendanceRepository,
+            UserServiceClient userServiceClient) {
         this.attendanceService = attendanceService;
         this.attendanceRepository = attendanceRepository;
+        this.userServiceClient = userServiceClient;
+        logger.info("AttendanceController initialized");
     }
 
     @Operation(summary = "Record attendance for an employee (check-in and check-out) - Legacy")
@@ -61,6 +61,13 @@ public class AttendanceController {
             @PathVariable Long employeeId,
             @Valid @RequestBody AttendanceRequest request) {
         logger.info("Recording attendance for employeeId: {}", employeeId);
+
+        // Validate employee
+        UserServiceClient.EmployeeDTO employee = userServiceClient.getUserById(employeeId);
+        if (employee == null) {
+            logger.warn("Employee with ID {} not found", employeeId);
+            throw new IllegalArgumentException("Employee not found");
+        }
 
         Attendance attendance = new Attendance();
         attendance.setEmployeeId(employeeId);
@@ -83,6 +90,13 @@ public class AttendanceController {
             @PathVariable Long employeeId,
             @Valid @RequestBody CheckInRequest request) {
         logger.info("Recording check-in for employeeId: {}", employeeId);
+
+        // Validate employee
+        UserServiceClient.EmployeeDTO employee = userServiceClient.getUserById(employeeId);
+        if (employee == null) {
+            logger.warn("Employee with ID {} not found", employeeId);
+            throw new IllegalArgumentException("Employee not found");
+        }
 
         Attendance attendance = new Attendance();
         attendance.setEmployeeId(employeeId);
@@ -178,5 +192,39 @@ public class AttendanceController {
 
         double totalHours = attendanceService.calculateTotalWorkingHours(employeeId, start, end);
         return ResponseEntity.ok(new TotalWorkingHoursResponse(totalHours));
+    }
+
+    @Operation(summary = "Submit a leave request for an employee")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Leave request submitted successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input or employee not found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @SuppressWarnings("unused") // Suppress unused warning since this method is called via HTTP
+    @PostMapping("/leaves/request")
+    public ResponseEntity<Leave> requestLeave(
+            @RequestHeader(value = "employeeId", required = true) Long employeeId,
+            @Valid @RequestBody LeaveRequest request) {
+        if (employeeId == null) {
+            logger.warn("Employee ID header is missing");
+            throw new IllegalArgumentException("Employee ID header is required");
+        }
+
+        logger.info("Processing leave request for employee ID: {}", employeeId);
+
+        // Validate employee
+        UserServiceClient.EmployeeDTO employee = userServiceClient.getUserById(employeeId);
+        if (employee == null) {
+            logger.warn("Employee with ID {} not found", employeeId);
+            throw new IllegalArgumentException("Employee not found");
+        }
+
+        // Directly use the LocalDate fields; no parsing needed
+        LocalDate startDate = request.getStartDate();
+        LocalDate endDate = request.getEndDate();
+
+        Leave savedLeave = attendanceService.saveLeaveRequest(employeeId, startDate, endDate, request.getReason());
+        logger.info("Leave request submitted successfully for employee ID: {}", employeeId);
+        return ResponseEntity.ok(savedLeave);
     }
 }

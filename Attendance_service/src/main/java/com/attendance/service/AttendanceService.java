@@ -1,7 +1,9 @@
 package com.attendance.service;
 
 import com.attendance.entity.Attendance;
+import com.attendance.entity.Leave;
 import com.attendance.repository.AttendanceRepository;
+import com.attendance.repository.LeaveRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +20,12 @@ public class AttendanceService {
     private static final Logger logger = LoggerFactory.getLogger(AttendanceService.class);
 
     private final AttendanceRepository attendanceRepository;
+    private final LeaveRepository leaveRepository;
 
     @Autowired
-    public AttendanceService(AttendanceRepository attendanceRepository) {
+    public AttendanceService(AttendanceRepository attendanceRepository, LeaveRepository leaveRepository) {
         this.attendanceRepository = attendanceRepository;
+        this.leaveRepository = leaveRepository;
     }
 
     public Attendance saveAttendance(Attendance attendance) {
@@ -87,5 +91,20 @@ public class AttendanceService {
 
         logger.info("Total working hours for employeeId {}: {}", employeeId, totalHours);
         return totalHours;
+    }
+
+    public Leave saveLeaveRequest(Long employeeId, LocalDate startDate, LocalDate endDate, String reason) {
+        logger.info("Saving leave request for employeeId: {} from {} to {}", employeeId, startDate, endDate);
+        // Validate that endDate is not before startDate
+        if (endDate.isBefore(startDate)) {
+            logger.warn("Invalid date range: endDate {} is before startDate {}", endDate, startDate);
+            throw new IllegalArgumentException("End date cannot be before start date");
+        }
+
+        // Create a new Leave entity with status PENDING
+        Leave leave = new Leave(employeeId, startDate, endDate, reason, "PENDING");
+        Leave savedLeave = leaveRepository.save(leave);
+        logger.info("Leave request saved successfully for employeeId: {}", employeeId);
+        return savedLeave;
     }
 }
