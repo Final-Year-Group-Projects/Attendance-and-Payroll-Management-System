@@ -10,7 +10,7 @@ import java.lang.annotation.*;
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidDepartmentName {
-    String message() default "Role Name must be one of 'Human Resources', 'Finance', 'Quality Assurance', 'Sales and Marketing', 'Customer Support'";
+    String message() default "Department Name must be one of 'Human Resources', 'Finance', 'Quality Assurance', 'Sales and Marketing', 'Customer Support'";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

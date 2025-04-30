@@ -4,7 +4,9 @@ import com.distributedproject.userservice.exception.department.DepartmentNotFoun
 import com.distributedproject.userservice.model.Department;
 import com.distributedproject.userservice.repository.DepartmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -15,20 +17,22 @@ public class UpdateDepartmentService {
     private DepartmentRepository departmentRepository;
 
     public Department updateDepartment(Long departmentId, Department departmentDetails) {
-        // Use Optional to find the user by ID
         Optional<Department> existingDepartment = departmentRepository.findById(String.valueOf(departmentId));
 
-        // If user is found, update the user details
         if (existingDepartment.isPresent()) {
+            // Check if new name already exists in another department
+            Optional<Department> departmentByName = departmentRepository.findByDepartmentNameIgnoreCase(departmentDetails.getDepartmentName());
+            if (departmentByName.isPresent() && !departmentByName.get().getDepartmentId().equals(departmentId)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Department name is already taken.");
+            }
+
             Department departmentToUpdate = existingDepartment.get();
             departmentToUpdate.setDepartmentName(departmentDetails.getDepartmentName());
             departmentToUpdate.setDepartmentHead(departmentDetails.getDepartmentHead());
 
-            // Save the updated user to the repository
             return departmentRepository.save(departmentToUpdate);
         } else {
-            // If user is not found, throw custom exception
-            throw new DepartmentNotFoundException(departmentId);  // Use custom exception here
+            throw new DepartmentNotFoundException(departmentId);
         }
     }
 }

@@ -3,6 +3,7 @@ package com.distributedproject.userservice.controller.department;
 import com.distributedproject.userservice.exception.department.DepartmentNotFoundException;
 import com.distributedproject.userservice.model.Department;
 import com.distributedproject.userservice.service.department.UpdateDepartmentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ public class UpdateDepartmentController {
     private UpdateDepartmentService updateDepartmentService;  // Autowire the correct service class
 
     @PutMapping("/departments/{departmentId}")
-    public ResponseEntity<Department> updateDepartment(@PathVariable Long departmentId, @RequestBody Department departmentDetails) {
+    public ResponseEntity<Department> updateDepartment(@PathVariable Long departmentId, @Valid @RequestBody Department departmentDetails) {
         // Now we throw UserNotFoundException if the user doesn't exist
         Department updatedDepartment = updateDepartmentService.updateDepartment(departmentId, departmentDetails);
 

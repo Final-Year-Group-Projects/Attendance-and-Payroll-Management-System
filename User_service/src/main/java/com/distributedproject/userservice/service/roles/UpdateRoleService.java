@@ -4,7 +4,9 @@ import com.distributedproject.userservice.exception.role.RoleNotFoundException;
 import com.distributedproject.userservice.model.Role;
 import com.distributedproject.userservice.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -15,20 +17,21 @@ public class UpdateRoleService {
     private RoleRepository roleRepository;
 
     public Role updateRole(Long roleId, Role roleDetails) {
-        // Use Optional to find the user by ID
         Optional<Role> existingRole = roleRepository.findById(String.valueOf(roleId));
 
-        // If user is found, update the user details
         if (existingRole.isPresent()) {
+            // Check if new name already exists in another role
+            Optional<Role> roleByName = roleRepository.findByRoleNameIgnoreCase(roleDetails.getRoleName());
+            if (roleByName.isPresent() && !roleByName.get().getRoleId().equals(roleId)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Role name is already taken.");
+            }
+
             Role roleToUpdate = existingRole.get();
             roleToUpdate.setRoleName(roleDetails.getRoleName());
-            roleToUpdate.setRoleDescription(roleDetails.getRoleDescription());
 
-            // Save the updated user to the repository
             return roleRepository.save(roleToUpdate);
         } else {
-            // If user is not found, throw custom exception
-            throw new RoleNotFoundException(roleId);  // Use custom exception here
+            throw new RoleNotFoundException(roleId);
         }
     }
 }

@@ -4,7 +4,9 @@ import com.distributedproject.userservice.model.User;
 import com.distributedproject.userservice.repository.UserRepository;
 import com.distributedproject.userservice.exception.user.UserNotFoundException;  // Import custom exception
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -20,6 +22,12 @@ public class UpdateUserService {
 
         // If user is found, update the user details
         if (existingUser.isPresent()) {
+
+            Optional<User> userByName = userRepository.findByUserFullNameIgnoreCase(userDetails.getUserName());
+            if (userByName.isPresent() && !userByName.get().getUserId().equals(userId)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User name is already taken.");
+            }
+
             User userToUpdate = existingUser.get();
             userToUpdate.setUserName(userDetails.getUserName());
             userToUpdate.setUserAddress(userDetails.getUserAddress());
