@@ -10,6 +10,7 @@ import com.example.PayrollService.dto.ReimbursementRequestDTO;
 import com.example.PayrollService.dto.ReimbursementResponseDTO;
 import com.example.PayrollService.entity.ReimbursementRecord;
 import com.example.PayrollService.repository.ReimbursementRepository;
+import com.example.PayrollService.service.PayrollServiceImpl;
 import com.example.PayrollService.service.ReimbursementService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -67,6 +68,10 @@ class PayrollControllerTest {
 
     @InjectMocks
     private ReimbursementController reimbursementController;
+
+    @InjectMocks
+    private PayrollServiceImpl payrollServiceImpl;
+
 
     private PayrollRecord createTestPayrollRecord() {
         PayrollRecord record = new PayrollRecord();
@@ -327,5 +332,39 @@ class PayrollControllerTest {
         verify(reimbursementService, times(1)).deleteRequest(reimbursementId);
     }
 
+    @Test
+    void createPayroll_WithApprovedReimbursements_IncludesReimbursementInNetSalary() {
+        // Arrange
+        PayrollRequestDTO request = new PayrollRequestDTO();
+        request.setEmployeeId(1L);
+        request.setBasicSalary(50000.0);
+        request.setWorkingDays(30);
+        request.setApprovedLeaves(2);
+        request.setNotApprovedLeaves(1);
+        request.setDeductions(5000.0);
+
+        List<ReimbursementRecord> approvedReimbursements = Arrays.asList(createTestReimbursementRecord());
+        when(reimbursementRepository.findByEmployeeId(1L)).thenReturn(approvedReimbursements);
+
+        when(payrollRepository.save(any(PayrollRecord.class))).thenAnswer(invocation -> {
+            PayrollRecord record = invocation.getArgument(0);
+            record.setId(1L); // simulate DB ID generation
+            return record;
+        });
+
+        // Calculate expected net salary
+        int payableDays = request.getWorkingDays() - request.getNotApprovedLeaves();
+        double perDaySalary = request.getBasicSalary() / request.getWorkingDays();
+        double gross = perDaySalary * payableDays;
+        double expectedNetSalary = gross - request.getDeductions() + 1500.0; // reimbursement amount
+
+        // Act
+        PayrollResponseDTO response = payrollServiceImpl.createPayroll(request);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(1L, response.getId());
+        assertEquals(expectedNetSalary, response.getNetSalary(), 0.01);
+    }
 
 }
