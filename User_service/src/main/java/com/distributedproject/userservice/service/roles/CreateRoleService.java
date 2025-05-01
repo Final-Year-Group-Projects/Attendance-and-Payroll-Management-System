@@ -10,14 +10,18 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class CreateRoleService {
 
+    private final RoleRepository roleRepository;
+
     @Autowired
-    private RoleRepository RoleRepository;
+    public CreateRoleService(RoleRepository roleRepository) {
+        this.roleRepository = roleRepository;
+    }
 
     public Role createRole(Role role) {
-        if (RoleRepository.existsByRoleNameIgnoreCase(role.getRoleName())) {
+        if (roleRepository.existsByRoleNameIgnoreCase(role.getRoleName())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Role name already taken.");
         }
 
-        return RoleRepository.save(role);
+        return roleRepository.save(role);
     }
 }
