@@ -5,6 +5,12 @@ import com.example.PayrollService.dto.*;
 import com.example.PayrollService.entity.PayrollRecord;
 import com.example.PayrollService.repository.PayrollRepository;
 import com.example.PayrollService.service.PayrollService;
+import com.example.PayrollService.controller.ReimbursementController;
+import com.example.PayrollService.dto.ReimbursementRequestDTO;
+import com.example.PayrollService.dto.ReimbursementResponseDTO;
+import com.example.PayrollService.entity.ReimbursementRecord;
+import com.example.PayrollService.repository.ReimbursementRepository;
+import com.example.PayrollService.service.ReimbursementService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
@@ -52,6 +59,15 @@ class PayrollControllerTest {
     @InjectMocks
     private PayslipController payslipController;
 
+    @Mock
+    private ReimbursementService reimbursementService;
+
+    @Mock
+    private ReimbursementRepository reimbursementRepository;
+
+    @InjectMocks
+    private ReimbursementController reimbursementController;
+
     private PayrollRecord createTestPayrollRecord() {
         PayrollRecord record = new PayrollRecord();
         record.setEmployeeId(1L);
@@ -64,6 +80,19 @@ class PayrollControllerTest {
         record.setGeneratedDate(LocalDate.now());
         return record;
     }
+
+    private ReimbursementRecord createTestReimbursementRecord() {
+        ReimbursementRecord record = new ReimbursementRecord();
+        record.setId(1L);
+        record.setEmployeeId(1L);
+        record.setType("travel");
+        record.setAmount(1500.0);
+        record.setDescription("Taxi fare for client meeting");
+        record.setStatus("APPROVED");
+        record.setRequestDate(LocalDate.now());
+        return record;
+    }
+
 
     // ==================== PayrollCreationController Tests ====================
     @Test
@@ -213,4 +242,90 @@ class PayrollControllerTest {
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
+
+// ==================== ReimbursementController Tests ====================
+
+    @Test
+    void submitReimbursementRequest_ValidRequest_ReturnsCreatedResponse() {
+        // Arrange
+        ReimbursementRequestDTO request = new ReimbursementRequestDTO();
+        request.setEmployeeId(1L);
+        request.setType("travel");
+        request.setAmount(1500.0);
+        request.setDescription("Taxi fare for client meeting");
+
+        ReimbursementResponseDTO mockResponse = new ReimbursementResponseDTO();
+        mockResponse.setId(1L);
+        mockResponse.setEmployeeId(1L);
+        mockResponse.setType("travel");
+        mockResponse.setAmount(1500.0);
+        mockResponse.setDescription("Taxi fare for client meeting");
+        mockResponse.setStatus("PENDING");
+        mockResponse.setRequestDate(LocalDate.now());
+
+        when(reimbursementService.submitRequest(any(ReimbursementRequestDTO.class))).thenReturn(mockResponse);
+
+        // Act
+        ReimbursementResponseDTO response = reimbursementController.submitRequest(request);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(mockResponse, response);
+        verify(reimbursementService, times(1)).submitRequest(any(ReimbursementRequestDTO.class));
+    }
+
+    @Test
+    void getRequestsByEmployee_ExistingEmployee_ReturnsReimbursementsList() {
+        // Arrange
+        Long employeeId = 1L;
+        List<ReimbursementResponseDTO> mockResponses = Arrays.asList(
+                new ReimbursementResponseDTO(1L, employeeId, "travel", 1500.0, "Taxi fare", "APPROVED", LocalDate.now()),
+                new ReimbursementResponseDTO(2L, employeeId, "medical", 2000.0, "Doctor visit", "PENDING", LocalDate.now())
+        );
+
+        when(reimbursementService.getRequestsByEmployee(employeeId)).thenReturn(mockResponses);
+
+        // Act
+        List<ReimbursementResponseDTO> responses = reimbursementController.getRequestsByEmployee(employeeId);
+
+        // Assert
+        assertEquals(2, responses.size());
+        assertEquals(mockResponses, responses);
+        verify(reimbursementService, times(1)).getRequestsByEmployee(employeeId);
+    }
+
+    @Test
+    void updateStatus_ValidRequest_ReturnsUpdatedReimbursement() {
+        // Arrange
+        Long reimbursementId = 1L;
+        String status = "APPROVED";
+
+        ReimbursementResponseDTO mockResponse = new ReimbursementResponseDTO();
+        mockResponse.setId(reimbursementId);
+        mockResponse.setStatus(status);
+
+        when(reimbursementService.updateStatus(reimbursementId, status)).thenReturn(mockResponse);
+
+        // Act
+        ReimbursementResponseDTO response = reimbursementController.updateStatus(reimbursementId, status);
+
+        // Assert
+        assertEquals(status, response.getStatus());
+        verify(reimbursementService, times(1)).updateStatus(reimbursementId, status);
+    }
+
+    @Test
+    void deleteRequest_ExistingId_CallsServiceMethod() {
+        // Arrange
+        Long reimbursementId = 1L;
+        doNothing().when(reimbursementService).deleteRequest(reimbursementId);
+
+        // Act
+        reimbursementController.deleteRequest(reimbursementId);
+
+        // Assert
+        verify(reimbursementService, times(1)).deleteRequest(reimbursementId);
+    }
+
+
 }
