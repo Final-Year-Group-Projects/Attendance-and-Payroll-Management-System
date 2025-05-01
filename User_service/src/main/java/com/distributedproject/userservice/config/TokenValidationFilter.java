@@ -1,9 +1,12 @@
 package com.distributedproject.userservice.config;
 
+import com.distributedproject.userservice.model.User;
+import com.distributedproject.userservice.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.http.*;
@@ -11,11 +14,15 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 public class TokenValidationFilter extends OncePerRequestFilter {
 
     private final RestTemplate restTemplate = new RestTemplate();
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -56,12 +63,29 @@ public class TokenValidationFilter extends OncePerRequestFilter {
 
             // Admin can access everything
             if (!"Admin".equals(role) && !"Super_Admin".equals(role)) {
-                // Employee access restrictions
-                boolean isEmployeeAllowed =
-                        ("Employee".equals(role) &&
-                                (path.matches("^/get/users/.*") ||
-                                        path.equals("/get/users/search") ||
-                                        path.matches("^/update/users/.*")));
+                boolean isEmployeeAllowed = false;
+
+                if ("Employee".equals(role)) {
+                    boolean isGetAllowed =
+                            path.matches("^/get/users/.*") || path.equals("/get/users/search");
+
+                    boolean isUpdateOwnInfo = false;
+
+                    if (path.matches("^/update/users/\\d+$")) {
+                        // Extract userId from path
+                        String[] pathParts = path.split("/");
+                        Long pathUserId = Long.parseLong(pathParts[pathParts.length - 1]);
+
+                        // Fetch actual user ID using username
+                        Optional<User> optionalUser = userRepository.findByUserFullNameIgnoreCase(username);
+                        if (optionalUser.isPresent()) {
+                            Long actualUserId = optionalUser.get().getUserId();
+                            isUpdateOwnInfo = actualUserId.equals(pathUserId);
+                        }
+                    }
+
+                    isEmployeeAllowed = isGetAllowed || isUpdateOwnInfo;
+                }
 
                 if (!isEmployeeAllowed) {
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
