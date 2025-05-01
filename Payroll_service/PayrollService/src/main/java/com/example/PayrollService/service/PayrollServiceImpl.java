@@ -1,11 +1,13 @@
 package com.example.PayrollService.service;
 
-import com.example.PayrollService.dto.PayrollNotificationResponseDTO;
 import com.example.PayrollService.dto.PayrollRequestDTO;
 import com.example.PayrollService.dto.PayrollResponseDTO;
+import com.example.PayrollService.dto.PayrollNotificationResponseDTO;
 import com.example.PayrollService.entity.PayrollRecord;
+import com.example.PayrollService.entity.ReimbursementRecord;
 import com.example.PayrollService.exception.ResourceNotFoundException;
 import com.example.PayrollService.repository.PayrollRepository;
+import com.example.PayrollService.repository.ReimbursementRepository;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,16 +23,45 @@ import java.util.Optional;
 @AllArgsConstructor
 @Service
 public class PayrollServiceImpl implements PayrollService {
+
     @Autowired
     private PayrollRepository payrollRepository;
 
+    @Autowired
+    private ReimbursementRepository reimbursementRepository;
+
     @Override
     public PayrollResponseDTO createPayroll(PayrollRequestDTO dto) {
+        // Calculate payable days
         int payableDays = dto.getWorkingDays() - dto.getNotApprovedLeaves();
-        double perDaySalary = dto.getBasicSalary() / dto.getWorkingDays();
-        double gross = perDaySalary * payableDays;
-        double netSalary = gross - dto.getDeductions();
 
+        // Calculate per day salary
+        double perDaySalary = dto.getBasicSalary() / dto.getWorkingDays();
+
+        // Calculate gross salary based on payable days
+        double gross = perDaySalary * payableDays;
+
+        // Fetch approved reimbursements for this employee for the current month and year
+        LocalDate today = LocalDate.now();
+        int month = today.getMonthValue();
+        int year = today.getYear();
+
+        List<ReimbursementRecord> approvedReimbursements = reimbursementRepository.findByEmployeeId(dto.getEmployeeId())
+                .stream()
+                .filter(r -> "APPROVED".equalsIgnoreCase(r.getStatus())
+                        && r.getRequestDate().getMonthValue() == month
+                        && r.getRequestDate().getYear() == year)
+                .toList();
+
+        // Sum approved reimbursements
+        double totalReimbursements = approvedReimbursements.stream()
+                .mapToDouble(ReimbursementRecord::getAmount)
+                .sum();
+
+        // Calculate net salary: gross - deductions + reimbursements
+        double netSalary = gross - dto.getDeductions() + totalReimbursements;
+
+        // Create PayrollRecord entity
         PayrollRecord payrollRecord = new PayrollRecord();
         payrollRecord.setEmployeeId(dto.getEmployeeId());
         payrollRecord.setBasicSalary(dto.getBasicSalary());
@@ -39,10 +70,15 @@ public class PayrollServiceImpl implements PayrollService {
         payrollRecord.setNotApprovedLeaves(dto.getNotApprovedLeaves());
         payrollRecord.setDeductions(dto.getDeductions());
         payrollRecord.setNetSalary(netSalary);
-        payrollRecord.setGeneratedDate(LocalDate.now());
+        payrollRecord.setGeneratedDate(today);
+        payrollRecord.setMonth(month);
+        payrollRecord.setYear(year);
+        payrollRecord.setStatus("GENERATED");
 
+        // Save payroll record
         PayrollRecord saved = payrollRepository.save(payrollRecord);
 
+        // Simulate notification (optional)
         String simulatedMessage = String.format(
                 "Notification simulated: Sent payroll (ID: %d, Net Salary: %.2f, Date: %s) for employee ID: %d",
                 saved.getId(),
@@ -52,11 +88,13 @@ public class PayrollServiceImpl implements PayrollService {
         );
         System.out.println(simulatedMessage);
 
+        // Prepare response DTO
         PayrollResponseDTO response = new PayrollResponseDTO();
         response.setId(saved.getId());
         response.setEmployeeId(saved.getEmployeeId());
         response.setNetSalary(saved.getNetSalary());
         response.setGeneratedDate(saved.getGeneratedDate());
+        response.setStatus(saved.getStatus());
 
         return response;
     }
