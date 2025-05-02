@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PayrollRequestDTO {
-    private Long employeeId;
+    private String employeeId;
     private Double basicSalary;
     private Integer workingDays;
     private Integer approvedLeaves;
@@ -17,7 +17,7 @@ public class PayrollRequestDTO {
     private String role;
 
     // Getters
-    public Long getEmployeeId() {
+    public String getEmployeeId() {
         return employeeId;
     }
 
@@ -46,7 +46,7 @@ public class PayrollRequestDTO {
     }
 
     // Setters
-    public void setEmployeeId(Long employeeId) {
+    public void setEmployeeId(String employeeId) {
         this.employeeId = employeeId;
     }
 

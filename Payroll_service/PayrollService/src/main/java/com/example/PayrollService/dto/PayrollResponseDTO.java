@@ -5,14 +5,14 @@ import java.time.LocalDate;
 
 public class PayrollResponseDTO {
     private Long id;
-    private Long employeeId;
+    private String employeeId;
     private Double netSalary;
     private LocalDate generatedDate;
     private String status;
 
     public PayrollResponseDTO() {}
 
-    public PayrollResponseDTO(Long id, Long employeeId, Double netSalary, LocalDate generatedDate, String status) {
+    public PayrollResponseDTO(Long id, String employeeId, Double netSalary, LocalDate generatedDate, String status) {
         this.id = id;
         this.employeeId = employeeId;
         this.netSalary = netSalary;
@@ -35,7 +35,7 @@ public class PayrollResponseDTO {
         return id;
     }
 
-    public Long getEmployeeId() {
+    public String getEmployeeId() {
         return employeeId;
     }
 
@@ -56,7 +56,7 @@ public class PayrollResponseDTO {
         this.id = id;
     }
 
-    public void setEmployeeId(Long employeeId) {
+    public void setEmployeeId(String employeeId) {
         this.employeeId = employeeId;
     }
 

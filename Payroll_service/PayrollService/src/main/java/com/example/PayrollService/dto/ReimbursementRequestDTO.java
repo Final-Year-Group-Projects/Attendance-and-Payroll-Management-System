@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReimbursementRequestDTO {
-    private Long employeeId;
+    private String employeeId;
     private String type; // e.g., "travel", "medical"
     private Double amount;
     private String description;

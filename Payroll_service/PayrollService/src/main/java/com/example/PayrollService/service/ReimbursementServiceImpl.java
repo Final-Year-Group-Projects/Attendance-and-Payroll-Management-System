@@ -31,7 +31,7 @@ public class ReimbursementServiceImpl implements ReimbursementService {
     }
 
     @Override
-    public List<ReimbursementResponseDTO> getRequestsByEmployee(Long employeeId) {
+    public List<ReimbursementResponseDTO> getRequestsByEmployee(String employeeId) {
         return reimbursementRepository.findByEmployeeId(employeeId)
                 .stream().map(this::toDTO).collect(Collectors.toList());
     }

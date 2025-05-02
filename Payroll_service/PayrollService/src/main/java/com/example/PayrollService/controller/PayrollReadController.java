@@ -24,7 +24,7 @@ public class PayrollReadController {
     }
 
     @GetMapping("/employee/{employeeId}")
-    public ResponseEntity<List<PayrollResponseDTO>> getPayrollsByEmployeeId(@PathVariable Long employeeId) {
+    public ResponseEntity<List<PayrollResponseDTO>> getPayrollsByEmployeeId(@PathVariable String employeeId) {
         List<PayrollResponseDTO> payrolls = payrollService.getPayrollsByEmployeeId(employeeId);
         if (payrolls.isEmpty()) {
             return ResponseEntity.noContent().build();

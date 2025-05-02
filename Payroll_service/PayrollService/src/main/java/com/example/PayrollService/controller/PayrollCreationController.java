@@ -14,12 +14,6 @@ public class PayrollCreationController {
     @Autowired
     private PayrollService payrollService;
 
-    //For testing application
-//    @GetMapping("/")
-//    public String home() {
-//        return "Payroll Service is running!";
-//    }
-
     @PostMapping
     public ResponseEntity<PayrollResponseDTO> createPayroll(@RequestBody PayrollRequestDTO requestDTO) {
         PayrollResponseDTO response = payrollService.createPayroll(requestDTO);

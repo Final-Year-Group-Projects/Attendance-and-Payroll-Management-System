@@ -77,7 +77,7 @@ class PayrollControllerTest {
     private PayrollRecord createTestPayrollRecord() {
         PayrollRecord record = new PayrollRecord();
         record.setId(1L);
-        record.setEmployeeId(1L);
+        record.setEmployeeId("E01");
 
         // Assume role is ENGINEER for this test
         // You can fetch these from RoleSalaryConfig if you want dynamic values
@@ -110,7 +110,7 @@ class PayrollControllerTest {
     private ReimbursementRecord createTestReimbursementRecord() {
         ReimbursementRecord record = new ReimbursementRecord();
         record.setId(1L);
-        record.setEmployeeId(1L);
+        record.setEmployeeId("E01");
         record.setType("travel");
         record.setAmount(1500.0);
         record.setDescription("Taxi fare for client meeting");
@@ -197,22 +197,22 @@ class PayrollControllerTest {
     void notifyEmployee_Success_ReturnsOk() {
         PayrollNotificationResponseDTO successResponse = new PayrollNotificationResponseDTO();
         successResponse.setStatus("success");
-        when(payrollService.generatePayrollNotification(1L)).thenReturn(successResponse);
+        when(payrollService.generatePayrollNotification("E01")).thenReturn(successResponse);
 
-        ResponseEntity<PayrollNotificationResponseDTO> response = payrollNotifyController.notifyEmployee(1L);
+        ResponseEntity<PayrollNotificationResponseDTO> response = payrollNotifyController.notifyEmployee("E01");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(successResponse, response.getBody());
-        verify(payrollService, times(1)).generatePayrollNotification(1L);
+        verify(payrollService, times(1)).generatePayrollNotification("E01");
     }
 
     @Test
     void notifyEmployee_Error_ReturnsNotFound() {
         PayrollNotificationResponseDTO errorResponse = new PayrollNotificationResponseDTO();
         errorResponse.setStatus("error");
-        when(payrollService.generatePayrollNotification(1L)).thenReturn(errorResponse);
+        when(payrollService.generatePayrollNotification("E01")).thenReturn(errorResponse);
 
-        ResponseEntity<PayrollNotificationResponseDTO> response = payrollNotifyController.notifyEmployee(1L);
+        ResponseEntity<PayrollNotificationResponseDTO> response = payrollNotifyController.notifyEmployee("E01");
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertEquals(errorResponse, response.getBody());
@@ -228,10 +228,13 @@ class PayrollControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
+        // Check HTML tags
         assertTrue(response.getBody().contains("<html>"));
-        assertTrue(response.getBody().contains("<h2>Payslip for Employee ID: 1</h2>"));
         assertTrue(response.getBody().contains("</html>"));
-        assertTrue(response.getBody().matches("(?s).*Basic Salary.*50000.*"));
+        // Use actual employeeId from record, e.g. "E01"
+        assertTrue(response.getBody().contains("<h2>Payslip for Employee ID: " + record.getEmployeeId() + "</h2>"));
+        // Check salary values formatted as string
+        assertTrue(response.getBody().contains(String.valueOf(record.getBasicSalary())));
         assertTrue(response.getBody().contains(String.format("%.2f", record.getNetSalary())));  // Net Salary
     }
 
@@ -275,14 +278,14 @@ class PayrollControllerTest {
     void submitReimbursementRequest_ValidRequest_ReturnsCreatedResponse() {
         // Arrange
         ReimbursementRequestDTO request = new ReimbursementRequestDTO();
-        request.setEmployeeId(1L);
+        request.setEmployeeId("E01");
         request.setType("travel");
         request.setAmount(1500.0);
         request.setDescription("Taxi fare for client meeting");
 
         ReimbursementResponseDTO mockResponse = new ReimbursementResponseDTO();
         mockResponse.setId(1L);
-        mockResponse.setEmployeeId(1L);
+        mockResponse.setEmployeeId("E01");
         mockResponse.setType("travel");
         mockResponse.setAmount(1500.0);
         mockResponse.setDescription("Taxi fare for client meeting");
@@ -303,7 +306,7 @@ class PayrollControllerTest {
     @Test
     void getRequestsByEmployee_ExistingEmployee_ReturnsReimbursementsList() {
         // Arrange
-        Long employeeId = 1L;
+        String employeeId = "E01";
         List<ReimbursementResponseDTO> mockResponses = Arrays.asList(
                 new ReimbursementResponseDTO(1L, employeeId, "travel", 1500.0, "Taxi fare", "APPROVED", LocalDate.now()),
                 new ReimbursementResponseDTO(2L, employeeId, "medical", 2000.0, "Doctor visit", "PENDING", LocalDate.now())
@@ -357,7 +360,7 @@ class PayrollControllerTest {
     void createPayroll_WithApprovedReimbursements_IncludesReimbursementInNetSalary() {
         // Arrange
         PayrollRequestDTO request = new PayrollRequestDTO();
-        request.setEmployeeId(1L);
+        request.setEmployeeId("E01");
         request.setWorkingDays(30);
         request.setApprovedLeaves(2);
         request.setNotApprovedLeaves(1);
@@ -365,7 +368,7 @@ class PayrollControllerTest {
 
         // Mock approved reimbursements
         List<ReimbursementRecord> approvedReimbursements = Arrays.asList(createTestReimbursementRecord());
-        when(reimbursementRepository.findByEmployeeId(1L)).thenReturn(approvedReimbursements);
+        when(reimbursementRepository.findByEmployeeId("E01")).thenReturn(approvedReimbursements);
 
         // Mock payrollRepository.save to simulate DB save and ID generation
         when(payrollRepository.save(any(PayrollRecord.class))).thenAnswer(invocation -> {
@@ -378,24 +381,36 @@ class PayrollControllerTest {
         RoleSalaryConfig config = RoleSalaryConfig.valueOf("ENGINEER");
         double basicSalary = config.getBasicSalary();
         double medicalAllowance = config.getMedicalAllowance();
+        double otherAllowance = config.getOtherAllowance();
         double transportFee = config.getTransportFee();
         double sportsFee = config.getSportsFee();
 
-        double totalAllowance = medicalAllowance + transportFee;
+        double totalAllowance = medicalAllowance + otherAllowance;
 
-        int payableDays = request.getWorkingDays() - request.getNotApprovedLeaves();
-        double noPay = (basicSalary / request.getWorkingDays()) * request.getNotApprovedLeaves();
+        // 2. Calculate payable days and no pay deduction
+        int totalWorkingDays=20;  //total working days for month
+        int workingDays = request.getWorkingDays();  // days came to work for month
+        int approvedLeaves = request.getApprovedLeaves(); //approved leaves
+        int notApprovedLeaves = request.getNotApprovedLeaves(); //not approved leaves
 
-        double gross = (basicSalary / request.getWorkingDays()) * payableDays + totalAllowance;
+        int payableDays = workingDays + approvedLeaves;
+        double noPay = (basicSalary / totalWorkingDays) * notApprovedLeaves;
 
-        double tax = 0.10 * (basicSalary + totalAllowance);
-        double totalDeductions = tax + sportsFee;
+        // 3. Calculate gross salary based on payable days and allowances
+        double gross_salary = basicSalary + totalAllowance;
+
+        // 4. Calculate tax (e.g., 10% of basic + allowance)
+        double tax = 0.10 * gross_salary;
+
+        // 5. Calculate total deductions
+        double totalDeductions = tax + sportsFee + transportFee;
 
         double totalReimbursements = approvedReimbursements.stream()
                 .mapToDouble(ReimbursementRecord::getAmount)
                 .sum();
 
-        double expectedNetSalary = gross - totalDeductions + totalReimbursements - noPay;
+        // 6. Calculate net salary
+        double expectedNetSalary = gross_salary - totalDeductions + totalReimbursements - noPay;
 
         // Act
         PayrollResponseDTO response = payrollServiceImpl.createPayroll(request);

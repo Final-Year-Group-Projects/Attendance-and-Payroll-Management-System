@@ -11,10 +11,10 @@ import java.util.Optional;
 
 @Repository
 public interface PayrollRepository extends JpaRepository<PayrollRecord, Long> {
-    List<PayrollRecord> findByEmployeeId(Long employeeId);
+    List<PayrollRecord> findByEmployeeId(String employeeId);
 
     @Query("SELECT DISTINCT p.employeeId FROM PayrollRecord p")
-    List<Long> findAllEmployeeIdsDistinct();
+    List<String> findAllEmployeeIdsDistinct();
 
     Optional<PayrollRecord> findById(Long id);
 

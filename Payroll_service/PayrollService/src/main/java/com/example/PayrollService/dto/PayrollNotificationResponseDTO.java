@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 public class PayrollNotificationResponseDTO {
     private String status;
     private String message;
-    private Long employeeId;
+    private String employeeId;
 
-    public PayrollNotificationResponseDTO(String status, String message, Long employeeId) {
+    public PayrollNotificationResponseDTO(String status, String message, String employeeId) {
         this.status = status;
         this.message = message;
         this.employeeId = employeeId;
@@ -26,7 +26,7 @@ public class PayrollNotificationResponseDTO {
         return message;
     }
 
-    public Long getEmployeeId() {
+    public String getEmployeeId() {
         return employeeId;
     }
 
@@ -38,7 +38,7 @@ public class PayrollNotificationResponseDTO {
         this.message = message;
     }
 
-    public void setEmployeeId(Long employeeId) {
+    public void setEmployeeId(String employeeId) {
         this.employeeId = employeeId;
     }
 }

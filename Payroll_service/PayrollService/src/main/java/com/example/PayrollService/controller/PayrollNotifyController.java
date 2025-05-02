@@ -15,7 +15,7 @@ public class PayrollNotifyController {
 
     @PostMapping("/{employeeId}/notify")
     public ResponseEntity<PayrollNotificationResponseDTO> notifyEmployee(
-            @PathVariable Long employeeId
+            @PathVariable String employeeId
     ) {
         PayrollNotificationResponseDTO response = payrollService.generatePayrollNotification(employeeId);
         return response.getStatus().equals("error")

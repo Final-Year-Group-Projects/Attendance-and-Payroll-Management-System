@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @Builder
 public class ReimbursementResponseDTO {
     private Long id;
-    private Long employeeId;
+    private String employeeId;
     private String type;
     private Double amount;
     private String description;

@@ -12,13 +12,6 @@ public class PayrollDeleteController {
     private PayrollService payrollService;
 
     @DeleteMapping("/{id}")
-//    public ResponseEntity<Void> deletePayroll(@PathVariable Long id) {
-//        boolean isDeleted = payrollService.deletePayroll(id);
-//        if (!isDeleted) {
-//            return ResponseEntity.notFound().build();
-//        }
-//        return ResponseEntity.noContent().build();
-//    }
     public ResponseEntity<String> deletePayroll(@PathVariable Long id) {
         boolean isDeleted = payrollService.deletePayroll(id);
         if (!isDeleted) {

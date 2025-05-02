@@ -21,7 +21,7 @@ public class ReimbursementController {
     }
 
     @GetMapping("/employee/{employeeId}")
-    public List<ReimbursementResponseDTO> getRequestsByEmployee(@PathVariable Long employeeId) {
+    public List<ReimbursementResponseDTO> getRequestsByEmployee(@PathVariable String employeeId) {
         return reimbursementService.getRequestsByEmployee(employeeId);
     }
 

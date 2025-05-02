@@ -11,10 +11,10 @@ public interface PayrollService {
     PayrollResponseDTO getPayrollById(Long id);
     PayrollResponseDTO updatePayroll(Long id, PayrollRequestDTO dto);
     boolean deletePayroll(Long id);
-    List<PayrollResponseDTO> getPayrollsByEmployeeId(Long employeeId);
+    List<PayrollResponseDTO> getPayrollsByEmployeeId(String employeeId);
     void generatePayrollsForAllEmployees(Integer month, Integer year);
     List<PayrollResponseDTO> getAllPayrolls();
-    PayrollNotificationResponseDTO generatePayrollNotification(Long employeeId);
+    PayrollNotificationResponseDTO generatePayrollNotification(String employeeId);
     PayrollResponseDTO updatePayrollStatus(Long id, String status);
 
 

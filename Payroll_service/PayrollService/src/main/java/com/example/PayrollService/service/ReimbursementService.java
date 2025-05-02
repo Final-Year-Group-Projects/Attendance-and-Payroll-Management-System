@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ReimbursementService {
     ReimbursementResponseDTO submitRequest(ReimbursementRequestDTO dto);
-    List<ReimbursementResponseDTO> getRequestsByEmployee(Long employeeId);
+    List<ReimbursementResponseDTO> getRequestsByEmployee(String employeeId);
     ReimbursementResponseDTO updateStatus(Long id, String status);
     void deleteRequest(Long id);
 }
