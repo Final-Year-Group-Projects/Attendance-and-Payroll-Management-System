@@ -1,5 +1,6 @@
 package com.distributedproject.authservice.model;
 
+import com.distributedproject.authservice.validation.ValidRole;
 import jakarta.persistence.*;
 
 @Entity
@@ -13,6 +14,8 @@ public class User {
     private String username;
 
     private String password;
+
+    @ValidRole
     private String role;
 
 

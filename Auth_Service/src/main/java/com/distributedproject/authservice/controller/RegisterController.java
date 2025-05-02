@@ -1,10 +1,9 @@
 package com.distributedproject.authservice.controller;
 
 import com.distributedproject.authservice.model.User;
-import com.distributedproject.authservice.repository.UserRepository;
+import com.distributedproject.authservice.service.RegisterService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -12,19 +11,11 @@ import org.springframework.web.bind.annotation.*;
 public class RegisterController {
 
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private RegisterService registerService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
-
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            return ResponseEntity.badRequest().body("Error: Username is already taken!");
-        }
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-        return ResponseEntity.ok("User created");
+    public User register(@Valid @RequestBody User user) {
+        System.out.println("Received user: " + user);
+        return registerService.register(user);
     }
 }
