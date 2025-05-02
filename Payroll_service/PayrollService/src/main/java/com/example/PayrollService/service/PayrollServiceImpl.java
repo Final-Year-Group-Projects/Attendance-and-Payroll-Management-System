@@ -1,5 +1,6 @@
 package com.example.PayrollService.service;
 
+import com.example.PayrollService.config.RoleSalaryConfig;
 import com.example.PayrollService.dto.PayrollRequestDTO;
 import com.example.PayrollService.dto.PayrollResponseDTO;
 import com.example.PayrollService.dto.PayrollNotificationResponseDTO;
@@ -8,14 +9,18 @@ import com.example.PayrollService.entity.ReimbursementRecord;
 import com.example.PayrollService.exception.ResourceNotFoundException;
 import com.example.PayrollService.repository.PayrollRepository;
 import com.example.PayrollService.repository.ReimbursementRepository;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Data
@@ -32,16 +37,40 @@ public class PayrollServiceImpl implements PayrollService {
 
     @Override
     public PayrollResponseDTO createPayroll(PayrollRequestDTO dto) {
-        // Calculate payable days
-        int payableDays = dto.getWorkingDays() - dto.getNotApprovedLeaves();
+        // 1. Get role and fetch fixed salary config
+        String role = dto.getRole();
+        if (role == null || role.isBlank()) {
+            throw new IllegalArgumentException("Role must be provided");
+        }
+        RoleSalaryConfig config = RoleSalaryConfig.valueOf(role.toUpperCase());
 
-        // Calculate per day salary
-        double perDaySalary = dto.getBasicSalary() / dto.getWorkingDays();
+        double basicSalary = config.getBasicSalary();
+        double medicalAllowance = config.getMedicalAllowance();
+        double otherAllowance = config.getOtherAllowance();
+        double transportFee = config.getTransportFee();
+        double sportsFee = config.getSportsFee();
 
-        // Calculate gross salary based on payable days
-        double gross = perDaySalary * payableDays;
+        double totalAllowance = medicalAllowance + otherAllowance;
 
-        // Fetch approved reimbursements for this employee for the current month and year
+        // 2. Calculate payable days and no pay deduction
+        int totalWorkingDays=20;  //total working days for month
+        int workingDays = dto.getWorkingDays();  // days came to work for month
+        int approvedLeaves = dto.getApprovedLeaves(); //approved leaves
+        int notApprovedLeaves = dto.getNotApprovedLeaves(); //not approved leaves
+
+        int payableDays = workingDays + approvedLeaves;
+        double noPay = (basicSalary / totalWorkingDays) * notApprovedLeaves;
+
+        // 3. Calculate gross salary based on payable days and allowances
+        double gross_salary = basicSalary + totalAllowance;
+
+        // 4. Calculate tax (e.g., 10% of basic + allowance)
+        double tax = 0.10 * gross_salary;
+
+        // 5. Calculate total deductions
+        double totalDeductions = tax + sportsFee + transportFee;
+
+        // 6. Fetch approved reimbursements for current month/year
         LocalDate today = LocalDate.now();
         int month = today.getMonthValue();
         int year = today.getYear();
@@ -53,50 +82,38 @@ public class PayrollServiceImpl implements PayrollService {
                         && r.getRequestDate().getYear() == year)
                 .toList();
 
-        // Sum approved reimbursements
         double totalReimbursements = approvedReimbursements.stream()
                 .mapToDouble(ReimbursementRecord::getAmount)
                 .sum();
 
-        // Calculate net salary: gross - deductions + reimbursements
-        double netSalary = gross - dto.getDeductions() + totalReimbursements;
+        // 7. Calculate net salary
+        double netSalary = gross_salary - totalDeductions + totalReimbursements - noPay;
 
-        // Create PayrollRecord entity
+        // 8. Create and save PayrollRecord entity
         PayrollRecord payrollRecord = new PayrollRecord();
         payrollRecord.setEmployeeId(dto.getEmployeeId());
-        payrollRecord.setBasicSalary(dto.getBasicSalary());
-        payrollRecord.setWorkingDays(dto.getWorkingDays());
+        payrollRecord.setMedicalAllowance(medicalAllowance);
+        payrollRecord.setTransportFee(transportFee);
+        payrollRecord.setSportsFee(sportsFee);
+        payrollRecord.setTaxDeduction(tax);
+        payrollRecord.setNoPay(noPay);
+        payrollRecord.setWorkingDays(workingDays);
         payrollRecord.setApprovedLeaves(dto.getApprovedLeaves());
-        payrollRecord.setNotApprovedLeaves(dto.getNotApprovedLeaves());
-        payrollRecord.setDeductions(dto.getDeductions());
+        payrollRecord.setNotApprovedLeaves(notApprovedLeaves);
         payrollRecord.setNetSalary(netSalary);
         payrollRecord.setGeneratedDate(today);
         payrollRecord.setMonth(month);
         payrollRecord.setYear(year);
         payrollRecord.setStatus("GENERATED");
 
-        // Save payroll record
         PayrollRecord saved = payrollRepository.save(payrollRecord);
 
-        // Simulate notification (optional)
-        String simulatedMessage = String.format(
-                "Notification simulated: Sent payroll (ID: %d, Net Salary: %.2f, Date: %s) for employee ID: %d",
-                saved.getId(),
-                saved.getNetSalary(),
-                saved.getGeneratedDate(),
-                saved.getEmployeeId()
-        );
-        System.out.println(simulatedMessage);
+        // 9. Optional: simulate notification
+        System.out.printf("Notification simulated: Sent payroll (ID: %d, Net Salary: %.2f, Date: %s) for employee ID: %d%n",
+                saved.getId(), saved.getNetSalary(), saved.getGeneratedDate(), saved.getEmployeeId());
 
-        // Prepare response DTO
-        PayrollResponseDTO response = new PayrollResponseDTO();
-        response.setId(saved.getId());
-        response.setEmployeeId(saved.getEmployeeId());
-        response.setNetSalary(saved.getNetSalary());
-        response.setGeneratedDate(saved.getGeneratedDate());
-        response.setStatus(saved.getStatus());
-
-        return response;
+        // 10. Prepare and return response DTO
+        return PayrollResponseDTO.fromRecord(saved);
     }
 
     @Override
@@ -123,29 +140,81 @@ public class PayrollServiceImpl implements PayrollService {
 
         PayrollRecord payrollRecord = payrollRecordOptional.get();
 
-        int payableDays = dto.getWorkingDays() - dto.getNotApprovedLeaves();
-        double perDaySalary = dto.getBasicSalary() / dto.getWorkingDays();
-        double gross = perDaySalary * payableDays;
-        double netSalary = gross - dto.getDeductions();
+        // 1. Get role and fetch fixed salary config
+        String role = dto.getRole();
+        if (role == null || role.isBlank()) {
+            throw new IllegalArgumentException("Role must be provided");
+        }
 
-        payrollRecord.setBasicSalary(dto.getBasicSalary());
-        payrollRecord.setWorkingDays(dto.getWorkingDays());
+        RoleSalaryConfig config = RoleSalaryConfig.valueOf(role.toUpperCase());
+
+        double basicSalary = config.getBasicSalary();
+        double medicalAllowance = config.getMedicalAllowance();
+        double otherAllowance = config.getOtherAllowance();
+        double transportFee = config.getTransportFee();
+        double sportsFee = config.getSportsFee();
+
+        double totalAllowance = medicalAllowance + otherAllowance;
+
+        // 2. Calculate payable days and no pay deduction
+        int totalWorkingDays=20;  //total working days for month
+        int workingDays = dto.getWorkingDays();  // days came to work for month
+        int approvedLeaves = dto.getApprovedLeaves(); //approved leaves
+        int notApprovedLeaves = dto.getNotApprovedLeaves(); //not approved leaves
+
+        int payableDays = workingDays + approvedLeaves;
+        double noPay = (basicSalary / totalWorkingDays) * notApprovedLeaves;
+
+        // 3. Calculate gross salary based on payable days and allowances
+        double gross_salary = basicSalary + totalAllowance;
+
+        // 4. Calculate tax (e.g., 10% of basic + allowance)
+        double tax = 0.10 * gross_salary;
+
+        // 5. Calculate total deductions
+        double totalDeductions = tax + sportsFee + transportFee;
+
+        // 6. Fetch approved reimbursements for current month/year
+        LocalDate today = LocalDate.now();
+        int month = today.getMonthValue();
+        int year = today.getYear();
+
+        List<ReimbursementRecord> approvedReimbursements = reimbursementRepository.findByEmployeeId(dto.getEmployeeId())
+                .stream()
+                .filter(r -> "APPROVED".equalsIgnoreCase(r.getStatus())
+                        && r.getRequestDate().getMonthValue() == month
+                        && r.getRequestDate().getYear() == year)
+                .toList();
+
+        double totalReimbursements = approvedReimbursements.stream()
+                .mapToDouble(ReimbursementRecord::getAmount)
+                .sum();
+
+        // 7. Calculate net salary
+        double netSalary = gross_salary - totalDeductions + totalReimbursements - noPay;
+
+
+        // 8. Update the payroll record
+        payrollRecord.setMedicalAllowance(medicalAllowance);
+        payrollRecord.setTransportFee(transportFee);
+        payrollRecord.setSportsFee(sportsFee);
+        payrollRecord.setTaxDeduction(tax);
+        payrollRecord.setNoPay(noPay);
+        payrollRecord.setWorkingDays(workingDays);
         payrollRecord.setApprovedLeaves(dto.getApprovedLeaves());
-        payrollRecord.setNotApprovedLeaves(dto.getNotApprovedLeaves());
-        payrollRecord.setDeductions(dto.getDeductions());
+        payrollRecord.setNotApprovedLeaves(notApprovedLeaves);
         payrollRecord.setNetSalary(netSalary);
-        payrollRecord.setGeneratedDate(LocalDate.now());
+        payrollRecord.setGeneratedDate(today);
+        payrollRecord.setMonth(month);
+        payrollRecord.setYear(year);
+        payrollRecord.setStatus("UPDATED");
 
         PayrollRecord updated = payrollRepository.save(payrollRecord);
 
-        PayrollResponseDTO response = new PayrollResponseDTO();
-        response.setId(updated.getId());
-        response.setEmployeeId(updated.getEmployeeId());
-        response.setNetSalary(updated.getNetSalary());
-        response.setGeneratedDate(updated.getGeneratedDate());
-
-        return response;
+        // 9. Prepare and return response DTO
+        return PayrollResponseDTO.fromRecord(updated);
     }
+
 
     @Override
     public boolean deletePayroll(Long id) {
@@ -178,17 +247,31 @@ public class PayrollServiceImpl implements PayrollService {
             // Simulate or fetch required data per employee
             PayrollRequestDTO dto = new PayrollRequestDTO();
             dto.setEmployeeId(empId);
-            dto.setBasicSalary(30000.0);  // Dummy value
-            dto.setWorkingDays(30);     // Dummy value
+
+            // 1. Get the employee's role (replace with actual role-fetching logic)
+            String role = getEmployeeRole(empId);
+            dto.setRole(role);
+
+            dto.setWorkingDays(17);     // Dummy value
             dto.setApprovedLeaves(2);   // Dummy value
             dto.setNotApprovedLeaves(1); // Dummy value
-            dto.setDeductions(500.0);     // Dummy value
+            // No basicSalary or deductions needed in DTO
 
             createPayroll(dto);
         }
 
         System.out.println("Generated payrolls for all employees.");
     }
+
+    private String getEmployeeRole(Long employeeId) {
+        // In-memory map for employee roles (replace with database or user service later)
+        Map<Long, String> employeeRoles = new HashMap<>();
+        employeeRoles.put(1L, "ENGINEER");
+        employeeRoles.put(2L, "MANAGER");
+        employeeRoles.put(3L, "HR");
+        return employeeRoles.getOrDefault(employeeId, "ENGINEER"); // Default to ENGINEER if not found
+    }
+
 
     @Override
     public List<PayrollResponseDTO> getAllPayrolls() {

@@ -14,6 +14,7 @@ public class PayrollRequestDTO {
     private Integer approvedLeaves;
     private Integer notApprovedLeaves;
     private Double deductions;
+    private String role;
 
     // Getters
     public Long getEmployeeId() {
@@ -40,6 +41,10 @@ public class PayrollRequestDTO {
         return deductions;
     }
 
+    public String getRole() {
+        return role;
+    }
+
     // Setters
     public void setEmployeeId(Long employeeId) {
         this.employeeId = employeeId;
@@ -48,6 +53,7 @@ public class PayrollRequestDTO {
     public void setBasicSalary(Double basicSalary) {
         this.basicSalary = basicSalary;
     }
+
 
     public void setWorkingDays(Integer workingDays) {
         this.workingDays = workingDays;
@@ -65,4 +71,7 @@ public class PayrollRequestDTO {
         this.deductions = deductions;
     }
 
+    public void setRole(String role) {
+        this.role = role;
+    }
 }

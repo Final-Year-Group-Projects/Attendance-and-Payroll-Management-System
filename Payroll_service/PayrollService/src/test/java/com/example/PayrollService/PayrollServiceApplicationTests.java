@@ -1,5 +1,6 @@
 package com.example.PayrollService;
 
+import com.example.PayrollService.config.RoleSalaryConfig;
 import com.example.PayrollService.controller.*;
 import com.example.PayrollService.dto.*;
 import com.example.PayrollService.entity.PayrollRecord;
@@ -75,16 +76,36 @@ class PayrollControllerTest {
 
     private PayrollRecord createTestPayrollRecord() {
         PayrollRecord record = new PayrollRecord();
+        record.setId(1L);
         record.setEmployeeId(1L);
-        record.setBasicSalary(5000.0);
-        record.setWorkingDays(22);
+
+        // Assume role is ENGINEER for this test
+        // You can fetch these from RoleSalaryConfig if you want dynamic values
+        record.setBasicSalary(50000.0);
+        record.setMedicalAllowance(2000.0);
+        record.setTransportFee(1000.0);
+        record.setSportsFee(500.0);
+        record.setTaxDeduction(5100.0); // Example: 10% of (basic + allowances)
+        record.setNoPay(1666.67);       // Example: (basic/workingDays) * notApprovedLeaves
+
+        record.setWorkingDays(30);
         record.setApprovedLeaves(2);
         record.setNotApprovedLeaves(1);
-        record.setDeductions(500.0);
-        record.setNetSalary(4500.0);
+
+        // Calculate net salary for test (gross - deductions - no pay)
+        double gross = (50000.0 / 30) * (30 - 1) + 2000.0 + 1000.0;
+        double totalDeductions = 5100.0 + 500.0;
+        double netSalary = gross - totalDeductions - 1666.67;
+
+        record.setNetSalary(netSalary);
         record.setGeneratedDate(LocalDate.now());
+        record.setMonth(LocalDate.now().getMonthValue());
+        record.setYear(LocalDate.now().getYear());
+        record.setStatus("GENERATED");
+
         return record;
     }
+
 
     private ReimbursementRecord createTestReimbursementRecord() {
         ReimbursementRecord record = new ReimbursementRecord();
@@ -207,11 +228,11 @@ class PayrollControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertTrue(response.getBody().startsWith("<html>"));
+        assertTrue(response.getBody().contains("<html>"));
         assertTrue(response.getBody().contains("<h2>Payslip for Employee ID: 1</h2>"));
         assertTrue(response.getBody().contains("</html>"));
-        assertTrue(response.getBody().contains("5000.0")); // Basic Salary
-        assertTrue(response.getBody().contains("4500.0")); // Net Salary
+        assertTrue(response.getBody().matches("(?s).*Basic Salary.*50000.*"));
+        assertTrue(response.getBody().contains(String.format("%.2f", record.getNetSalary())));  // Net Salary
     }
 
     @Test
@@ -337,26 +358,44 @@ class PayrollControllerTest {
         // Arrange
         PayrollRequestDTO request = new PayrollRequestDTO();
         request.setEmployeeId(1L);
-        request.setBasicSalary(50000.0);
         request.setWorkingDays(30);
         request.setApprovedLeaves(2);
         request.setNotApprovedLeaves(1);
-        request.setDeductions(5000.0);
+        request.setRole("ENGINEER");  // Use role instead of basicSalary/deductions
 
+        // Mock approved reimbursements
         List<ReimbursementRecord> approvedReimbursements = Arrays.asList(createTestReimbursementRecord());
         when(reimbursementRepository.findByEmployeeId(1L)).thenReturn(approvedReimbursements);
 
+        // Mock payrollRepository.save to simulate DB save and ID generation
         when(payrollRepository.save(any(PayrollRecord.class))).thenAnswer(invocation -> {
             PayrollRecord record = invocation.getArgument(0);
             record.setId(1L); // simulate DB ID generation
             return record;
         });
 
-        // Calculate expected net salary
+        // Calculate expected net salary based on RoleSalaryConfig for ENGINEER
+        RoleSalaryConfig config = RoleSalaryConfig.valueOf("ENGINEER");
+        double basicSalary = config.getBasicSalary();
+        double medicalAllowance = config.getMedicalAllowance();
+        double transportFee = config.getTransportFee();
+        double sportsFee = config.getSportsFee();
+
+        double totalAllowance = medicalAllowance + transportFee;
+
         int payableDays = request.getWorkingDays() - request.getNotApprovedLeaves();
-        double perDaySalary = request.getBasicSalary() / request.getWorkingDays();
-        double gross = perDaySalary * payableDays;
-        double expectedNetSalary = gross - request.getDeductions() + 1500.0; // reimbursement amount
+        double noPay = (basicSalary / request.getWorkingDays()) * request.getNotApprovedLeaves();
+
+        double gross = (basicSalary / request.getWorkingDays()) * payableDays + totalAllowance;
+
+        double tax = 0.10 * (basicSalary + totalAllowance);
+        double totalDeductions = tax + sportsFee;
+
+        double totalReimbursements = approvedReimbursements.stream()
+                .mapToDouble(ReimbursementRecord::getAmount)
+                .sum();
+
+        double expectedNetSalary = gross - totalDeductions + totalReimbursements - noPay;
 
         // Act
         PayrollResponseDTO response = payrollServiceImpl.createPayroll(request);

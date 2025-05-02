@@ -22,12 +22,18 @@ public class PayrollRecord {
     private Integer workingDays;
     private Integer approvedLeaves;
     private Integer notApprovedLeaves;
-    private Double deductions;
+//    private Double deductions;
     private Double netSalary;
     private LocalDate generatedDate;
     private Integer month;
     private Integer year;
     private String status;
+    private Double medicalAllowance;
+    private Double transportFee;
+    private Double otherAllowance;
+    private Double taxDeduction;
+    private Double sportsFee;
+    private Double noPay;
 
 
     // Getters
@@ -55,9 +61,9 @@ public class PayrollRecord {
         return notApprovedLeaves;
     }
 
-    public Double getDeductions() {
-        return deductions;
-    }
+//    public Double getDeductions() {
+//        return deductions;
+//    }
 
     public Double getNetSalary() {
         return netSalary;
@@ -73,6 +79,30 @@ public class PayrollRecord {
 
     public Integer getYear() {
         return year;
+    }
+
+    public Double getMedicalAllowance() {
+        return medicalAllowance;
+    }
+
+    public Double getTransportFee() {
+        return transportFee;
+    }
+
+    public Double getOtherAllowance() {
+        return otherAllowance;
+    }
+
+    public Double getTaxDeduction() {
+        return taxDeduction;
+    }
+
+    public Double getSportsFee() {
+        return sportsFee;
+    }
+
+    public Double getNoPay() {
+        return noPay;
     }
 
     // Setters
@@ -100,9 +130,9 @@ public class PayrollRecord {
         this.notApprovedLeaves = notApprovedLeaves;
     }
 
-    public void setDeductions(Double deductions) {
-        this.deductions = deductions;
-    }
+//    public void setDeductions(Double deductions) {
+//        this.deductions = deductions;
+//    }
 
     public void setNetSalary(Double netSalary) {
         this.netSalary = netSalary;
@@ -127,4 +157,29 @@ public class PayrollRecord {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public void setMedicalAllowance(Double medicalAllowance) {
+        this.medicalAllowance = medicalAllowance;
+    }
+
+    public void setTransportAllowance(Double transportFee) {
+        this.transportFee = transportFee;
+    }
+
+    public void setOtherAllowance(Double otherAllowance) {
+        this.otherAllowance = otherAllowance;
+    }
+
+    public void setTaxDeduction(Double taxDeduction) {
+        this.taxDeduction = taxDeduction;
+    }
+
+    public void setSportsFee(Double sportsFee) {
+        this.sportsFee = sportsFee;
+    }
+
+    public void setNoPay(Double noPay) {
+        this.noPay = noPay;
+    }
+
 }

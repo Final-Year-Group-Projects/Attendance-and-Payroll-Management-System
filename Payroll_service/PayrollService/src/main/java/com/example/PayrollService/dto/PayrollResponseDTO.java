@@ -1,16 +1,8 @@
 package com.example.PayrollService.dto;
 
 import com.example.PayrollService.entity.PayrollRecord;
-import com.example.PayrollService.exception.ResourceNotFoundException;
-import com.example.PayrollService.repository.PayrollRepository;
-import lombok.*;
-
 import java.time.LocalDate;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class PayrollResponseDTO {
     private Long id;
     private Long employeeId;
@@ -18,14 +10,24 @@ public class PayrollResponseDTO {
     private LocalDate generatedDate;
     private String status;
 
+    public PayrollResponseDTO() {}
+
+    public PayrollResponseDTO(Long id, Long employeeId, Double netSalary, LocalDate generatedDate, String status) {
+        this.id = id;
+        this.employeeId = employeeId;
+        this.netSalary = netSalary;
+        this.generatedDate = generatedDate;
+        this.status = status;
+    }
+
     public static PayrollResponseDTO fromRecord(PayrollRecord record) {
-        return PayrollResponseDTO.builder()
-                .id(record.getId())
-                .employeeId(record.getEmployeeId())
-                .netSalary(record.getNetSalary())
-                .generatedDate(record.getGeneratedDate())
-                .status(record.getStatus())
-                .build();
+        return new PayrollResponseDTO(
+                record.getId(),
+                record.getEmployeeId(),
+                record.getNetSalary(),
+                record.getGeneratedDate(),
+                record.getStatus()
+        );
     }
 
     // Getters
@@ -45,6 +47,10 @@ public class PayrollResponseDTO {
         return generatedDate;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
     // Setters
     public void setId(Long id) {
         this.id = id;
@@ -62,12 +68,7 @@ public class PayrollResponseDTO {
         this.generatedDate = generatedDate;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
     public void setStatus(String status) {
         this.status = status;
     }
-
 }

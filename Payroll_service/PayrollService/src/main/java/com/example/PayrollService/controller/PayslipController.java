@@ -7,6 +7,7 @@ import com.lowagie.text.Font;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +40,11 @@ public class PayslipController {
                 + "<tr><td><b>Working Days</b></td><td>" + record.getWorkingDays() + "</td></tr>"
                 + "<tr><td><b>Approved Leaves</b></td><td>" + record.getApprovedLeaves() + "</td></tr>"
                 + "<tr><td><b>Unapproved Leaves</b></td><td>" + record.getNotApprovedLeaves() + "</td></tr>"
-                + "<tr><td><b>Deductions</b></td><td>" + record.getDeductions() + "</td></tr>"
+                + "<tr><td><b>Medical Allowance</b></td><td>" + record.getMedicalAllowance() + "</td></tr>"
+                + "<tr><td><b>Transport Fee</b></td><td>" + record.getTransportFee() + "</td></tr>"
+                + "<tr><td><b>Sports Fee</b></td><td>" + record.getSportsFee() + "</td></tr>"
+                + "<tr><td><b>Tax Deduction</b></td><td>" + record.getTaxDeduction() + "</td></tr>"
+                + "<tr><td><b>No Pay</b></td><td>" + record.getNoPay() + "</td></tr>"
                 + "<tr><td><b>Net Salary</b></td><td><b>" + record.getNetSalary() + "</b></td></tr>"
                 + "<tr><td><b>Generated Date</b></td><td>" + record.getGeneratedDate() + "</td></tr>"
                 + "</table><br>"
@@ -89,8 +94,22 @@ public class PayslipController {
             table.addCell(record.getApprovedLeaves().toString());
             table.addCell("Unapproved Leaves");
             table.addCell(record.getNotApprovedLeaves().toString());
-            table.addCell("Deductions");
-            table.addCell(record.getDeductions().toString());
+
+            // Allowances
+            table.addCell("Medical Allowance");
+            table.addCell(record.getMedicalAllowance().toString());
+            table.addCell("Transport Fee");
+            table.addCell(record.getTransportFee().toString());
+
+            // Deductions
+            table.addCell("Sports Fee");
+            table.addCell(record.getSportsFee().toString());
+            table.addCell("Tax Deduction");
+            table.addCell(record.getTaxDeduction().toString());
+            table.addCell("No Pay");
+            table.addCell(record.getNoPay().toString());
+
+            // Net Salary
             table.addCell("Net Salary");
             table.addCell(record.getNetSalary().toString());
 
@@ -108,5 +127,4 @@ public class PayslipController {
             return ResponseEntity.internalServerError().build();
         }
     }
-
 }
