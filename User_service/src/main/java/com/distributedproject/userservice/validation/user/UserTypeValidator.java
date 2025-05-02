@@ -7,7 +7,7 @@ import java.util.Set;
 
 public class UserTypeValidator implements ConstraintValidator<ValidUserType, String> {
 
-    private static final Set<String> VALID_USER_TYPES = Set.of("admin", "employee");
+    private static final Set<String> VALID_USER_TYPES = Set.of("admin", "employee", "super_admin");
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {

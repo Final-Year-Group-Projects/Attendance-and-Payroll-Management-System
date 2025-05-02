@@ -7,7 +7,7 @@ import java.util.Set;
 
 public class RoleValidator implements ConstraintValidator<ValidRole, String> {
 
-    private static final Set<String> VALID_ROLES = Set.of("user", "employee");
+    private static final Set<String> VALID_ROLES = Set.of("admin", "employee", "super_admin");
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {

@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidRole {
-    String message() default "Role must be either 'Admin' or 'Employee'";
+    String message() default "Role must be either 'Admin' 'Super_Admin' or 'Employee'";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }
