@@ -8,44 +8,49 @@ import java.time.LocalDate;
 public class LeaveRequest {
 
     @NotNull(message = "Start date is required")
-    @FutureOrPresent(message = "Start date must be in the present or future (format: dd-MM-yyyy, e.g., 20-04-2025)")
+    @FutureOrPresent(message = "Start date must be in the present or future (format: yyyy-MM-dd)")
     private LocalDate startDate;
 
     @NotNull(message = "End date is required")
-    @FutureOrPresent(message = "End date must be in the present or future (format: dd-MM-yyyy, e.g., 22-04-2025)")
+    @FutureOrPresent(message = "End date must be in the present or future (format: yyyy-MM-dd)")
     private LocalDate endDate;
 
     @NotBlank(message = "Reason is required")
     private String reason;
 
+    @NotBlank(message = "Leave type is required")
+    private String leaveType; // Must be "Annual", "Casual", or "Half Day"
+
     // Getters and setters
-    @SuppressWarnings("unused")
     public LocalDate getStartDate() {
         return startDate;
     }
 
-    @SuppressWarnings("unused")
     public void setStartDate(LocalDate startDate) {
         this.startDate = startDate;
     }
 
-    @SuppressWarnings("unused")
     public LocalDate getEndDate() {
         return endDate;
     }
 
-    @SuppressWarnings("unused")
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
 
-    @SuppressWarnings("unused")
     public String getReason() {
         return reason;
     }
 
-    @SuppressWarnings("unused")
     public void setReason(String reason) {
         this.reason = reason;
+    }
+
+    public String getLeaveType() {
+        return leaveType;
+    }
+
+    public void setLeaveType(String leaveType) {
+        this.leaveType = leaveType;
     }
 }

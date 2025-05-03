@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -93,16 +94,58 @@ public class AttendanceService {
         return totalHours;
     }
 
-    public Leave saveLeaveRequest(Long employeeId, LocalDate startDate, LocalDate endDate, String reason) {
-        logger.info("Saving leave request for employeeId: {} from {} to {}", employeeId, startDate, endDate);
+    public Leave saveLeaveRequest(Long employeeId, LocalDate startDate, LocalDate endDate, String reason, String leaveType) {
+        logger.info("Saving leave request for employeeId: {} from {} to {} with leaveType: {}",
+                employeeId, startDate, endDate, leaveType);
+
         // Validate that endDate is not before startDate
         if (endDate.isBefore(startDate)) {
             logger.warn("Invalid date range: endDate {} is before startDate {}", endDate, startDate);
             throw new IllegalArgumentException("End date cannot be before start date");
         }
 
-        // Create a new Leave entity with status PENDING
-        Leave leave = new Leave(employeeId, startDate, endDate, reason, "PENDING");
+        // Validate leave type
+        String normalizedLeaveType = leaveType.trim().toUpperCase();
+        if (!normalizedLeaveType.equals("ANNUAL") && !normalizedLeaveType.equals("CASUAL") && !normalizedLeaveType.equals("HALF DAY")) {
+            logger.warn("Invalid leave type: {}", leaveType);
+            throw new IllegalArgumentException("Leave type must be 'Annual', 'Casual', or 'Half Day'");
+        }
+
+        // Calculate number of leave days
+        long daysBetween = ChronoUnit.DAYS.between(startDate, endDate) + 1;
+
+        // Check monthly limits
+        LocalDate monthStart = startDate.withDayOfMonth(1);
+        LocalDate monthEnd = monthStart.plusMonths(1).minusDays(1);
+        List<Leave> existingLeaves = leaveRepository.findByEmployeeIdAndStartDateBetween(employeeId, monthStart, monthEnd);
+
+        long annualDays = existingLeaves.stream()
+                .filter(l -> l.getLeaveType().equalsIgnoreCase("ANNUAL"))
+                .mapToLong(l -> ChronoUnit.DAYS.between(l.getStartDate(), l.getEndDate()) + 1)
+                .sum();
+        long casualDays = existingLeaves.stream()
+                .filter(l -> l.getLeaveType().equalsIgnoreCase("CASUAL"))
+                .mapToLong(l -> ChronoUnit.DAYS.between(l.getStartDate(), l.getEndDate()) + 1)
+                .sum();
+        long halfDayCount = existingLeaves.stream()
+                .filter(l -> l.getLeaveType().equalsIgnoreCase("HALF DAY"))
+                .count();
+
+        if (normalizedLeaveType.equals("ANNUAL") && annualDays + daysBetween > 14) {
+            logger.warn("Annual leave limit exceeded for employeeId: {}", employeeId);
+            throw new IllegalArgumentException("Maximum 14 annual leave days allowed per month");
+        }
+        if (normalizedLeaveType.equals("CASUAL") && casualDays + daysBetween > 7) {
+            logger.warn("Casual leave limit exceeded for employeeId: {}", employeeId);
+            throw new IllegalArgumentException("Maximum 7 casual leave days allowed per month");
+        }
+        if (normalizedLeaveType.equals("HALF DAY") && halfDayCount + 1 > 2) {
+            logger.warn("Half day limit exceeded for employeeId: {}", employeeId);
+            throw new IllegalArgumentException("Maximum 2 half days allowed per month");
+        }
+
+        // Create and save the leave request
+        Leave leave = new Leave(employeeId, startDate, endDate, reason, "PENDING", normalizedLeaveType);
         Leave savedLeave = leaveRepository.save(leave);
         logger.info("Leave request saved successfully for employeeId: {}", employeeId);
         return savedLeave;

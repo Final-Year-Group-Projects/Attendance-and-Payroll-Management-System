@@ -26,17 +26,22 @@ public class Leave {
     @Column(name = "status", nullable = false)
     private String status;
 
+    @Column(name = "leave_type", nullable = false)
+    private String leaveType; // New field to store "Annual", "Casual", or "Half Day"
+
     // Constructors
     @SuppressWarnings("unused")
     public Leave() {
+        // Default constructor required by JPA
     }
 
-    public Leave(Long employeeId, LocalDate startDate, LocalDate endDate, String reason, String status) {
+    public Leave(Long employeeId, LocalDate startDate, LocalDate endDate, String reason, String status, String leaveType) {
         this.employeeId = employeeId;
         this.startDate = startDate;
         this.endDate = endDate;
         this.reason = reason;
-        this.status = status;
+        this.status = status != null ? status : "PENDING"; // Default to "PENDING" if not provided
+        this.leaveType = leaveType;
     }
 
     // Getters and setters
@@ -97,6 +102,15 @@ public class Leave {
 
     @SuppressWarnings("unused")
     public void setStatus(String status) {
-        this.status = status;
+        this.status = status != null ? status : "PENDING"; // Default to "PENDING" if not provided
+    }
+
+    public String getLeaveType() {
+        return leaveType;
+    }
+
+    @SuppressWarnings("unused")
+    public void setLeaveType(String leaveType) {
+        this.leaveType = leaveType;
     }
 }

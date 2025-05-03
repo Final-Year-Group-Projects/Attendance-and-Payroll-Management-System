@@ -200,7 +200,6 @@ public class AttendanceController {
             @ApiResponse(responseCode = "400", description = "Invalid input or employee not found"),
             @ApiResponse(responseCode = "500", description = "Server error")
     })
-    @SuppressWarnings("unused") // Suppress unused warning since this method is called via HTTP
     @PostMapping("/leaves/request")
     public ResponseEntity<Leave> requestLeave(
             @RequestHeader(value = "employeeId", required = true) Long employeeId,
@@ -223,7 +222,13 @@ public class AttendanceController {
         LocalDate startDate = request.getStartDate();
         LocalDate endDate = request.getEndDate();
 
-        Leave savedLeave = attendanceService.saveLeaveRequest(employeeId, startDate, endDate, request.getReason());
+        Leave savedLeave = attendanceService.saveLeaveRequest(
+                employeeId,
+                startDate,
+                endDate,
+                request.getReason(),
+                request.getLeaveType()
+        );
         logger.info("Leave request submitted successfully for employee ID: {}", employeeId);
         return ResponseEntity.ok(savedLeave);
     }
