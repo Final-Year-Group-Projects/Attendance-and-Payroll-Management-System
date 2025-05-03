@@ -9,6 +9,8 @@ import com.example.PayrollService.entity.ReimbursementRecord;
 import com.example.PayrollService.exception.ResourceNotFoundException;
 import com.example.PayrollService.repository.PayrollRepository;
 import com.example.PayrollService.repository.ReimbursementRepository;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -211,6 +214,8 @@ public class PayrollServiceImpl implements PayrollService {
         payrollRecord.setYear(year);
         payrollRecord.setStatus("UPDATED");
 
+        payrollRecord.setUpdatedDate(LocalDateTime.now());
+
         PayrollRecord updated = payrollRepository.save(payrollRecord);
 
         // 9. Prepare and return response DTO
@@ -307,8 +312,24 @@ public class PayrollServiceImpl implements PayrollService {
 
         PayrollRecord payrollRecord = payrollRecordOptional.get();
         payrollRecord.setStatus(status);
+        payrollRecord.setUpdatedDate(LocalDateTime.now());
         PayrollRecord updated = payrollRepository.save(payrollRecord);
 
         return PayrollResponseDTO.fromRecord(updated);
     }
+
+    @Override
+    @Transactional
+    public boolean deletePayrollsByEmployeeId(String employeeId) {
+        List<PayrollRecord> records = payrollRepository.findByEmployeeId(employeeId);
+        if (records.isEmpty()) {
+            return false;
+        }
+        payrollRepository.deleteByEmployeeId(employeeId);
+        return true;
+    }
+
+
+
+
 }

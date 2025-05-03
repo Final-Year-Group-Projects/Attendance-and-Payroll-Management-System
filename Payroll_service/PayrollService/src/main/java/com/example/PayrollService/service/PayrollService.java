@@ -16,6 +16,8 @@ public interface PayrollService {
     List<PayrollResponseDTO> getAllPayrolls();
     PayrollNotificationResponseDTO generatePayrollNotification(String employeeId);
     PayrollResponseDTO updatePayrollStatus(Long id, String status);
+    boolean deletePayrollsByEmployeeId(String employeeId);
+
 
 
 

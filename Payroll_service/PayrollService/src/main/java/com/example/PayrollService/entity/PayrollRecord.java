@@ -6,12 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "payroll_service_db")
+@Table(name = "payroll_records")
 public class PayrollRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,6 +31,7 @@ public class PayrollRecord {
     private Double noPay;
     private Double netSalary;
     private LocalDate generatedDate;
+    private LocalDateTime updatedDate;
     private Integer month;
     private Integer year;
     private String status;
@@ -66,6 +68,10 @@ public class PayrollRecord {
 
     public LocalDate getGeneratedDate() {
         return generatedDate;
+    }
+
+    public LocalDateTime getUpdatedDate() {
+        return updatedDate;
     }
 
     public Integer getMonth() {
@@ -132,6 +138,10 @@ public class PayrollRecord {
 
     public void setGeneratedDate(LocalDate generatedDate) {
         this.generatedDate = generatedDate;
+    }
+
+    public void setUpdateDate(LocalDateTime updatedDate) {
+        this.updatedDate = updatedDate;
     }
 
     public void setMonth(Integer month) {

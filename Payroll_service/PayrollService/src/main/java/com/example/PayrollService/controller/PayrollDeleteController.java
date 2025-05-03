@@ -19,4 +19,14 @@ public class PayrollDeleteController {
         }
         return ResponseEntity.ok("Payroll deleted for user " + id);
     }
+
+    @DeleteMapping("/employee/{employeeId}")
+    public ResponseEntity<?> deletePayrollsByEmployeeId(@PathVariable String employeeId) {
+        boolean deleted = payrollService.deletePayrollsByEmployeeId(employeeId);
+        if (!deleted) {
+            return ResponseEntity.status(404).body("No payroll records found for employee " + employeeId);
+        }
+        return ResponseEntity.ok("Deleted payroll records for employee " + employeeId);
+    }
+
 }

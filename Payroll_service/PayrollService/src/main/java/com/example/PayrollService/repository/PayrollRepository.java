@@ -18,4 +18,7 @@ public interface PayrollRepository extends JpaRepository<PayrollRecord, Long> {
 
     Optional<PayrollRecord> findById(Long id);
 
+    void deleteByEmployeeId(String employeeId);
+
+
 }
