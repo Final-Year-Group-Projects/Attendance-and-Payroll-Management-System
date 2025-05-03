@@ -8,18 +8,18 @@ import java.time.LocalDate;
 public class LeaveRequest {
 
     @NotNull(message = "Start date is required")
-    @FutureOrPresent(message = "Start date must be in the present or future")
+    @FutureOrPresent(message = "Start date must be in the present or future (format: dd-MM-yyyy, e.g., 20-04-2025)")
     private LocalDate startDate;
 
     @NotNull(message = "End date is required")
-    @FutureOrPresent(message = "End date must be in the present or future")
+    @FutureOrPresent(message = "End date must be in the present or future (format: dd-MM-yyyy, e.g., 22-04-2025)")
     private LocalDate endDate;
 
     @NotBlank(message = "Reason is required")
     private String reason;
 
     // Getters and setters
-    @SuppressWarnings("unused") // Suppress unused warning since used by Spring Boot
+    @SuppressWarnings("unused")
     public LocalDate getStartDate() {
         return startDate;
     }
