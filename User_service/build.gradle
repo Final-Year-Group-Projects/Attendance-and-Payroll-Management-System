@@ -26,6 +26,7 @@ dependencies {
 	implementation 'org.postgresql:postgresql' // for PostgreSQL connection
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
 }
 
 tasks.named('test') {
@@ -35,6 +36,10 @@ tasks.named('test') {
 		exceptionFormat "full"
 		showStandardStreams = true
 	}
+}
+
+tasks.withType(org.springframework.boot.gradle.tasks.aot.ProcessTestAot).configureEach {
+	enabled = false
 }
 
 bootJar {
