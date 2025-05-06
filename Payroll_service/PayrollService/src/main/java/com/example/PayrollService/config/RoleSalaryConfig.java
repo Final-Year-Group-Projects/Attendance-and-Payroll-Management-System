@@ -15,14 +15,5 @@ public enum RoleSalaryConfig {
     public final double otherAllowance;
     public final double transportFee;
     public final double sportsFee;
-
-//    RoleSalaryConfig(double basicSalary, double medicalAllowance, double otherAllowance,double transportFee, double sportsFee) {
-//        this.basicSalary = basicSalary;
-//        this.medicalAllowance = medicalAllowance;
-//        this.otherAllowance = otherAllowance;
-//        this.transportFee = transportFee;
-//        this.sportsFee = sportsFee;
-//    }
-
 }
 

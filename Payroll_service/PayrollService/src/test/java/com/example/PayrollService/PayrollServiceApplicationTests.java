@@ -9,6 +9,8 @@ import com.example.PayrollService.service.PayrollService;
 import com.example.PayrollService.controller.ReimbursementController;
 import com.example.PayrollService.dto.ReimbursementRequestDTO;
 import com.example.PayrollService.dto.ReimbursementResponseDTO;
+import com.example.PayrollService.dto.integration.AttendanceDTO;
+import com.example.PayrollService.dto.integration.UserDTO;
 import com.example.PayrollService.entity.ReimbursementRecord;
 import com.example.PayrollService.repository.ReimbursementRepository;
 import com.example.PayrollService.service.PayrollServiceImpl;
@@ -17,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -73,6 +76,12 @@ class PayrollControllerTest {
     @InjectMocks
     private PayrollServiceImpl payrollServiceImpl;
 
+    @Mock
+    private com.example.PayrollService.feign.UserServiceClient userServiceClient;
+
+    @Mock
+    private com.example.PayrollService.feign.AttendanceServiceClient attendanceServiceClient;
+
 
     private PayrollRecord createTestPayrollRecord() {
         PayrollRecord record = new PayrollRecord();
@@ -106,7 +115,6 @@ class PayrollControllerTest {
         return record;
     }
 
-
     private ReimbursementRecord createTestReimbursementRecord() {
         ReimbursementRecord record = new ReimbursementRecord();
         record.setId(1L);
@@ -119,6 +127,47 @@ class PayrollControllerTest {
         return record;
     }
 
+    @Test
+    void testCreatePayroll_withMockedUserAndAttendance() {
+        // Arrange
+        String employeeId = "1";
+        int month = 5;
+        int year = 2025;
+
+        // Mock user and attendance Feign client responses
+        Mockito.when(userServiceClient.getUserDetails(employeeId))
+                .thenReturn(new UserDTO(employeeId, "ENGINEER"));
+        Mockito.when(attendanceServiceClient.getAttendanceDetails(employeeId, month, year))
+                .thenReturn(new AttendanceDTO(employeeId, month, year, 20, 2, 1));
+
+        // Prepare complete request DTO
+        PayrollRequestDTO dto = new PayrollRequestDTO();
+        dto.setEmployeeId(employeeId);
+        dto.setMonth(month);  // This was missing!
+        dto.setYear(year);    // This was missing!
+
+        // Mock other dependencies
+        Mockito.when(reimbursementRepository.findByEmployeeId(employeeId))
+                .thenReturn(Collections.emptyList());
+        Mockito.when(payrollRepository.save(Mockito.any()))
+                .thenAnswer(invocation -> {
+                    PayrollRecord record = invocation.getArgument(0);
+                    record.setId(1L);
+                    return record;
+                });
+
+        // Act
+        PayrollResponseDTO response = payrollServiceImpl.createPayroll(dto);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(employeeId, response.getEmployeeId());
+        assertTrue(response.getNetSalary() > 0);
+
+        // Verify service interactions
+        Mockito.verify(userServiceClient).getUserDetails(employeeId);
+        Mockito.verify(attendanceServiceClient).getAttendanceDetails(employeeId, month, year);
+    }
 
     // ==================== PayrollCreationController Tests ====================
     @Test
@@ -359,58 +408,45 @@ class PayrollControllerTest {
     @Test
     void createPayroll_WithApprovedReimbursements_IncludesReimbursementInNetSalary() {
         // Arrange
+        String employeeId = "E01";
+        int month = LocalDate.now().getMonthValue();
+        int year = LocalDate.now().getYear();
+
+        // Mock User Service response
+        UserDTO user = new UserDTO(employeeId, "ENGINEER");
+        when(userServiceClient.getUserDetails(employeeId)).thenReturn(user);
+
+        // Mock Attendance Service response
+        AttendanceDTO attendance = new AttendanceDTO(employeeId, month, year, 20, 2, 1);
+        when(attendanceServiceClient.getAttendanceDetails(employeeId, month, year))
+                .thenReturn(attendance);
+
+        // Prepare request (only needs employeeId now)
         PayrollRequestDTO request = new PayrollRequestDTO();
-        request.setEmployeeId("E01");
-        request.setWorkingDays(30);
-        request.setApprovedLeaves(2);
-        request.setNotApprovedLeaves(1);
-        request.setRole("ENGINEER");  // Use role instead of basicSalary/deductions
+        request.setEmployeeId(employeeId);
+        request.setMonth(month);
+        request.setYear(year);
 
         // Mock approved reimbursements
-        List<ReimbursementRecord> approvedReimbursements = Arrays.asList(createTestReimbursementRecord());
-        when(reimbursementRepository.findByEmployeeId("E01")).thenReturn(approvedReimbursements);
+        ReimbursementRecord reimbursement = createTestReimbursementRecord();
+        when(reimbursementRepository.findByEmployeeId(employeeId))
+                .thenReturn(List.of(reimbursement));
 
-        // Mock payrollRepository.save to simulate DB save and ID generation
-        when(payrollRepository.save(any(PayrollRecord.class))).thenAnswer(invocation -> {
-            PayrollRecord record = invocation.getArgument(0);
-            record.setId(1L); // simulate DB ID generation
-            return record;
+        // Mock repository save
+        when(payrollRepository.save(any(PayrollRecord.class))).thenAnswer(inv -> {
+            PayrollRecord r = inv.getArgument(0);
+            r.setId(1L);
+            return r;
         });
 
-        // Calculate expected net salary based on RoleSalaryConfig for ENGINEER
-        RoleSalaryConfig config = RoleSalaryConfig.valueOf("ENGINEER");
+        // Expected calculations
+        RoleSalaryConfig config = RoleSalaryConfig.ENGINEER;
         double basicSalary = config.getBasicSalary();
-        double medicalAllowance = config.getMedicalAllowance();
-        double otherAllowance = config.getOtherAllowance();
-        double transportFee = config.getTransportFee();
-        double sportsFee = config.getSportsFee();
-
-        double totalAllowance = medicalAllowance + otherAllowance;
-
-        // 2. Calculate payable days and no pay deduction
-        int totalWorkingDays=20;  //total working days for month
-        int workingDays = request.getWorkingDays();  // days came to work for month
-        int approvedLeaves = request.getApprovedLeaves(); //approved leaves
-        int notApprovedLeaves = request.getNotApprovedLeaves(); //not approved leaves
-
-        int payableDays = workingDays + approvedLeaves;
-        double noPay = (basicSalary / totalWorkingDays) * notApprovedLeaves;
-
-        // 3. Calculate gross salary based on payable days and allowances
-        double gross_salary = basicSalary + totalAllowance;
-
-        // 4. Calculate tax (e.g., 10% of basic + allowance)
-        double tax = 0.10 * gross_salary;
-
-        // 5. Calculate total deductions
-        double totalDeductions = tax + sportsFee + transportFee;
-
-        double totalReimbursements = approvedReimbursements.stream()
-                .mapToDouble(ReimbursementRecord::getAmount)
-                .sum();
-
-        // 6. Calculate net salary
-        double expectedNetSalary = gross_salary - totalDeductions + totalReimbursements - noPay;
+        double allowances = config.getMedicalAllowance() + config.getOtherAllowance();
+        double tax = 0.10 * (basicSalary + allowances);
+        double deductions = tax + config.getSportsFee() + config.getTransportFee();
+        double noPay = (basicSalary / 20) * attendance.getNotApprovedLeaves();
+        double expectedNet = (basicSalary + allowances) - deductions + reimbursement.getAmount() - noPay;
 
         // Act
         PayrollResponseDTO response = payrollServiceImpl.createPayroll(request);
@@ -418,7 +454,41 @@ class PayrollControllerTest {
         // Assert
         assertNotNull(response);
         assertEquals(1L, response.getId());
-        assertEquals(expectedNetSalary, response.getNetSalary(), 0.01);
+        assertEquals(expectedNet, response.getNetSalary(), 0.01);
+
+        // Verify service interactions
+        verify(userServiceClient).getUserDetails(employeeId);
+        verify(attendanceServiceClient).getAttendanceDetails(employeeId, month, year);
+        verify(reimbursementRepository).findByEmployeeId(employeeId);
     }
 
+    @Test
+    void deletePayrollsByEmployeeId_Found_ReturnsSuccessMessage() {
+        // Arrange
+        String employeeId = "E123";
+        when(payrollService.deletePayrollsByEmployeeId(employeeId)).thenReturn(true);
+
+        // Act
+        ResponseEntity<?> response = payrollDeleteController.deletePayrollsByEmployeeId(employeeId);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Deleted payroll records for employee " + employeeId, response.getBody());
+        verify(payrollService, times(1)).deletePayrollsByEmployeeId(employeeId);
+    }
+
+    @Test
+    void deletePayrollsByEmployeeId_NotFound_ReturnsNotFound() {
+        // Arrange
+        String employeeId = "E999";
+        when(payrollService.deletePayrollsByEmployeeId(employeeId)).thenReturn(false);
+
+        // Act
+        ResponseEntity<?> response = payrollDeleteController.deletePayrollsByEmployeeId(employeeId);
+
+        // Assert
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("No payroll records found for employee " + employeeId, response.getBody());
+        verify(payrollService, times(1)).deletePayrollsByEmployeeId(employeeId);
+    }
 }

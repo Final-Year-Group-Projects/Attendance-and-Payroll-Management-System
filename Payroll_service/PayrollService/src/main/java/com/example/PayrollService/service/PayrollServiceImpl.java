@@ -4,12 +4,18 @@ import com.example.PayrollService.config.RoleSalaryConfig;
 import com.example.PayrollService.dto.PayrollRequestDTO;
 import com.example.PayrollService.dto.PayrollResponseDTO;
 import com.example.PayrollService.dto.PayrollNotificationResponseDTO;
+import com.example.PayrollService.dto.integration.AttendanceDTO;
+import com.example.PayrollService.dto.integration.UserDTO;
 import com.example.PayrollService.entity.PayrollRecord;
 import com.example.PayrollService.entity.ReimbursementRecord;
 import com.example.PayrollService.exception.ResourceNotFoundException;
+import com.example.PayrollService.feign.AttendanceServiceClient;
+import com.example.PayrollService.feign.UserServiceClient;
 import com.example.PayrollService.repository.PayrollRepository;
 import com.example.PayrollService.repository.ReimbursementRepository;
 import org.springframework.transaction.annotation.Transactional;
+
+
 
 
 import lombok.AllArgsConstructor;
@@ -33,6 +39,12 @@ import java.util.Optional;
 public class PayrollServiceImpl implements PayrollService {
 
     @Autowired
+    private UserServiceClient userServiceClient;
+
+    @Autowired
+    private AttendanceServiceClient attendanceServiceClient;
+
+    @Autowired
     private PayrollRepository payrollRepository;
 
     @Autowired
@@ -40,8 +52,20 @@ public class PayrollServiceImpl implements PayrollService {
 
     @Override
     public PayrollResponseDTO createPayroll(PayrollRequestDTO dto) {
+        // 1. Fetch user details (role)
+        UserDTO user = userServiceClient.getUserDetails(dto.getEmployeeId());
+        String role = user.getRole();
+
+        // 2. Fetch attendance details
+        AttendanceDTO attendance = attendanceServiceClient.getAttendanceDetails(
+                dto.getEmployeeId(), dto.getMonth(), dto.getYear()
+        );
+        int workingDays = attendance.getWorkingDays();
+        int approvedLeaves = attendance.getApprovedLeaves();
+        int notApprovedLeaves = attendance.getNotApprovedLeaves();
+
         // 1. Get role and fetch fixed salary config
-        String role = dto.getRole();
+//        String role = user.getRole();
         if (role == null || role.isBlank()) {
             throw new IllegalArgumentException("Role must be provided");
         }
@@ -57,9 +81,9 @@ public class PayrollServiceImpl implements PayrollService {
 
         // 2. Calculate payable days and no pay deduction
         int totalWorkingDays=20;  //total working days for month
-        int workingDays = dto.getWorkingDays();  // days came to work for month
-        int approvedLeaves = dto.getApprovedLeaves(); //approved leaves
-        int notApprovedLeaves = dto.getNotApprovedLeaves(); //not approved leaves
+//        int workingDays = dto.getWorkingDays();  // days came to work for month
+//        int approvedLeaves = dto.getApprovedLeaves(); //approved leaves
+//        int notApprovedLeaves = dto.getNotApprovedLeaves(); //not approved leaves
 
         int payableDays = workingDays + approvedLeaves;
         double noPay = (basicSalary / totalWorkingDays) * notApprovedLeaves;
@@ -105,7 +129,7 @@ public class PayrollServiceImpl implements PayrollService {
         payrollRecord.setTaxDeduction(tax);
         payrollRecord.setNoPay(noPay);
         payrollRecord.setWorkingDays(workingDays);
-        payrollRecord.setApprovedLeaves(dto.getApprovedLeaves());
+        payrollRecord.setApprovedLeaves(approvedLeaves);
         payrollRecord.setNotApprovedLeaves(notApprovedLeaves);
         payrollRecord.setNetSalary(netSalary);
         payrollRecord.setGeneratedDate(today);
@@ -141,8 +165,20 @@ public class PayrollServiceImpl implements PayrollService {
 
         PayrollRecord payrollRecord = payrollRecordOptional.get();
 
+        // 1. Fetch user details (role)
+        UserDTO user = userServiceClient.getUserDetails(dto.getEmployeeId());
+        String role = user.getRole();
+
+        // 2. Fetch attendance details
+        AttendanceDTO attendance = attendanceServiceClient.getAttendanceDetails(
+                dto.getEmployeeId(), dto.getMonth(), dto.getYear()
+        );
+        int workingDays = attendance.getWorkingDays();
+        int approvedLeaves = attendance.getApprovedLeaves();
+        int notApprovedLeaves = attendance.getNotApprovedLeaves();
+
         // 1. Get role and fetch fixed salary config
-        String role = dto.getRole();
+//        String role = dto.getRole();
         if (role == null || role.isBlank()) {
             throw new IllegalArgumentException("Role must be provided");
         }
@@ -159,9 +195,9 @@ public class PayrollServiceImpl implements PayrollService {
 
         // 2. Calculate payable days and no pay deduction
         int totalWorkingDays=20;  //total working days for month
-        int workingDays = dto.getWorkingDays();  // days came to work for month
-        int approvedLeaves = dto.getApprovedLeaves(); //approved leaves
-        int notApprovedLeaves = dto.getNotApprovedLeaves(); //not approved leaves
+//        int workingDays = dto.getWorkingDays();  // days came to work for month
+//        int approvedLeaves = dto.getApprovedLeaves(); //approved leaves
+//        int notApprovedLeaves = dto.getNotApprovedLeaves(); //not approved leaves
 
         int payableDays = workingDays + approvedLeaves;
         double noPay = (basicSalary / totalWorkingDays) * notApprovedLeaves;
@@ -206,7 +242,7 @@ public class PayrollServiceImpl implements PayrollService {
         payrollRecord.setTaxDeduction(tax);
         payrollRecord.setNoPay(noPay);
         payrollRecord.setWorkingDays(workingDays);
-        payrollRecord.setApprovedLeaves(dto.getApprovedLeaves());
+        payrollRecord.setApprovedLeaves(approvedLeaves);
         payrollRecord.setNotApprovedLeaves(notApprovedLeaves);
         payrollRecord.setNetSalary(netSalary);
         payrollRecord.setGeneratedDate(today);
@@ -244,20 +280,18 @@ public class PayrollServiceImpl implements PayrollService {
         List<String> allEmployeeIds = payrollRepository.findAllEmployeeIdsDistinct();
 
         for (String empId : allEmployeeIds) {
-            PayrollRequestDTO dto = new PayrollRequestDTO();
-            dto.setEmployeeId(String.valueOf(Long.valueOf(empId)));
+            try {
+                PayrollRequestDTO dto = new PayrollRequestDTO();
+                dto.setEmployeeId(empId);
+                dto.setMonth(month);
+                dto.setYear(year);
 
-            // 1. Get the employee's role (replace with actual role-fetching logic)
-            String role = getEmployeeRole(empId);
-            dto.setRole(role);
-
-            dto.setWorkingDays(17);     // Dummy value
-            dto.setApprovedLeaves(2);   // Dummy value
-            dto.setNotApprovedLeaves(1); // Dummy value
-
-            createPayroll(dto);
+                // This will now automatically fetch role and attendance via createPayroll()
+                createPayroll(dto);
+            } catch (Exception e) {
+                System.err.println("Failed to generate payroll for " + empId + ": " + e.getMessage());
+            }
         }
-
         System.out.println("Generated payrolls for all employees.");
     }
 

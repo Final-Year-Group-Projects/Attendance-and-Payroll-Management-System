@@ -7,10 +7,6 @@ import lombok.*;
 @AllArgsConstructor
 public class PayrollRequestDTO {
     private String employeeId;
-    private Double basicSalary;
-    private Integer workingDays;
-    private Integer approvedLeaves;
-    private Integer notApprovedLeaves;
-    private Double deductions;
-    private String role;
+    private Integer month;
+    private Integer year;
 }
