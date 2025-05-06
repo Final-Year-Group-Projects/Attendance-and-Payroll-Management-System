@@ -13,7 +13,7 @@ public class DeleteRoleController {
     @Autowired
     private DeleteRoleService roleService;
 
-    @DeleteMapping("/roles/{roleId}")
+    @DeleteMapping("/delete/roles/{roleId}")
     public ResponseEntity<String> deleteDepartment(@PathVariable Long roleId) {
         roleService.deleteRole(roleId);
         return ResponseEntity.ok("Role deleted successfully");

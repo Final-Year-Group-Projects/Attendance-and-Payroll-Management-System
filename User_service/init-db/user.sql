@@ -23,8 +23,8 @@ CREATE TABLE userdata (
     user_address VARCHAR(255),
     user_telephone VARCHAR(15),
     user_type VARCHAR(50) NOT NULL,
-    department_id INTEGER NOT NULL,
-    role_id INTEGER NOT NULL,
+    department_id INTEGER,
+    role_id INTEGER,
     CONSTRAINT fk_department
         FOREIGN KEY (department_id)
         REFERENCES department(department_id)

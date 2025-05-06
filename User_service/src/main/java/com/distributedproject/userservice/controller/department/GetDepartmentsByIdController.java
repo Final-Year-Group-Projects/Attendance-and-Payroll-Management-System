@@ -13,7 +13,7 @@ public class GetDepartmentsByIdController {
     @Autowired
     private GetDepartmentsByIdService departmentService;
 
-    @GetMapping("/departments/{departmentId}")
+    @GetMapping("/get/departments/{departmentId}")
     public ResponseEntity<Department> getUserById(@PathVariable Long departmentId) {
         Department department = departmentService.getUserById(departmentId)
                 .orElseThrow(() -> new DepartmentNotFoundException(departmentId));

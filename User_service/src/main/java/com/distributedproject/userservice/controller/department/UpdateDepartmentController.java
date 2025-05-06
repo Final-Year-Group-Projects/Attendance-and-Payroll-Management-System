@@ -18,7 +18,7 @@ public class UpdateDepartmentController {
     @Autowired
     private UpdateDepartmentService updateDepartmentService;  // Autowire the correct service class
 
-    @PutMapping("/departments/{departmentId}")
+    @PutMapping("/update/departments/{departmentId}")
     public ResponseEntity<Department> updateDepartment(@PathVariable Long departmentId, @Valid @RequestBody Department departmentDetails) {
         // Now we throw UserNotFoundException if the user doesn't exist
         Department updatedDepartment = updateDepartmentService.updateDepartment(departmentId, departmentDetails);

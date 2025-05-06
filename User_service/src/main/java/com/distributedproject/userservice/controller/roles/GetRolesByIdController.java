@@ -18,7 +18,7 @@ public class GetRolesByIdController {
     @Autowired
     private GetRolesByIdService roleService;
 
-    @GetMapping("/roles/{roleId}")
+    @GetMapping("/get/roles/{roleId}")
     public ResponseEntity<Role> getRolesById(@PathVariable Long roleId) {
         Role role = roleService.getRolesById(roleId)
                 .orElseThrow(() -> new RoleNotFoundException(roleId));

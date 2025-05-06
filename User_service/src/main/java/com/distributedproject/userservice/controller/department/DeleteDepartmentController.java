@@ -12,7 +12,7 @@ public class DeleteDepartmentController {
     @Autowired
     private DeleteDepartmentService departmentService;
 
-    @DeleteMapping("/departments/{departmentId}")
+    @DeleteMapping("/delete/departments/{departmentId}")
     public ResponseEntity<String> deleteDepartment(@PathVariable Long departmentId) {
         departmentService.deleteDepartment(departmentId);
         return ResponseEntity.ok("Department deleted successfully");

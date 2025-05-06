@@ -14,7 +14,7 @@ public class SearchDepartmentsController {
     @Autowired
     private SearchDepartmentByNameService departmentService;
 
-    @GetMapping("/departments/search")
+    @GetMapping("/get/departments/search")
     public List<Department> searchUsers(@RequestParam String name) {
         return departmentService.searchDepartmentsByName(name);
     }

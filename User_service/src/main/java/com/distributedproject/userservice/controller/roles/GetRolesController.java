@@ -14,7 +14,7 @@ public class GetRolesController {
     @Autowired
     private GetAllRolesService rolesService;
 
-    @GetMapping("/roles")
+    @GetMapping("/get/roles")
     public List<Role> getRoles() {
         return rolesService.getAllRoles();
     }
