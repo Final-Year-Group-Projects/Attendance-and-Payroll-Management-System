@@ -6,7 +6,6 @@ import com.distributedproject.userservice.repository.RoleRepository;
 import com.distributedproject.userservice.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,7 +26,6 @@ class CreateUserServiceTest {
 
         createUserService = new CreateUserService();
 
-        // Use reflection to inject the mock repositories
         try {
             var userField = CreateUserService.class.getDeclaredField("userRepository");
             userField.setAccessible(true);
@@ -48,7 +46,6 @@ class CreateUserServiceTest {
 
     @Test
     void createUser_successfulSave() {
-        // Arrange
         User user = new User();
         user.setUserFullName("John Doe");
         user.setRoleId(1L);
@@ -59,10 +56,8 @@ class CreateUserServiceTest {
         when(departmentRepository.existsById("1")).thenReturn(true);
         when(userRepository.save(user)).thenReturn(user);
 
-        // Act
         User result = createUserService.createUser(user);
 
-        // Assert
         assertNotNull(result);
         assertEquals("John Doe", result.getUserFullName());
         verify(userRepository, times(1)).save(user);
@@ -70,13 +65,11 @@ class CreateUserServiceTest {
 
     @Test
     void createUser_nameAlreadyExists_throwsException() {
-        // Arrange
         User user = new User();
         user.setUserFullName("Jane Doe");
 
         when(userRepository.existsByUserFullNameIgnoreCase("Jane Doe")).thenReturn(true);
 
-        // Act & Assert
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
                 () -> createUserService.createUser(user)
@@ -88,68 +81,62 @@ class CreateUserServiceTest {
 
     @Test
     void createUser_roleDoesNotExist_throwsException() {
-        // Arrange
         User user = new User();
-        user.setUserFullName("John Doe");
-        user.setRoleId(1L);
-        user.setDepartmentId(1L);
+        user.setUserFullName("Alice Smith");
+        user.setRoleId(2L);
+        user.setDepartmentId(3L);
 
-        when(userRepository.existsByUserFullNameIgnoreCase("John Doe")).thenReturn(false);
-        when(roleRepository.existsById("1")).thenReturn(false);
-        when(departmentRepository.existsById("1")).thenReturn(true);
+        when(userRepository.existsByUserFullNameIgnoreCase("Alice Smith")).thenReturn(false);
+        when(roleRepository.existsById("2")).thenReturn(false);
+        when(departmentRepository.existsById("3")).thenReturn(true);
 
-        // Act & Assert
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
                 () -> createUserService.createUser(user)
         );
 
-        assertTrue(exception.getMessage().contains("Role ID 1 does not exist"));
+        assertTrue(exception.getMessage().contains("Role ID 2 does not exist"));
         verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
     void createUser_departmentDoesNotExist_throwsException() {
-        // Arrange
         User user = new User();
-        user.setUserFullName("John Doe");
-        user.setRoleId(1L);
-        user.setDepartmentId(1L);
+        user.setUserFullName("Bob Lee");
+        user.setRoleId(4L);
+        user.setDepartmentId(5L);
 
-        when(userRepository.existsByUserFullNameIgnoreCase("John Doe")).thenReturn(false);
-        when(roleRepository.existsById("1")).thenReturn(true);
-        when(departmentRepository.existsById("1")).thenReturn(false);
+        when(userRepository.existsByUserFullNameIgnoreCase("Bob Lee")).thenReturn(false);
+        when(roleRepository.existsById("4")).thenReturn(true);
+        when(departmentRepository.existsById("5")).thenReturn(false);
 
-        // Act & Assert
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
                 () -> createUserService.createUser(user)
         );
 
-        assertTrue(exception.getMessage().contains("Department ID 1 does not exist"));
+        assertTrue(exception.getMessage().contains("Department ID 5 does not exist"));
         verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
     void createUser_roleAndDepartmentDoNotExist_throwsException() {
-        // Arrange
         User user = new User();
-        user.setUserFullName("John Doe");
-        user.setRoleId(1L);
-        user.setDepartmentId(1L);
+        user.setUserFullName("Charlie Kim");
+        user.setRoleId(6L);
+        user.setDepartmentId(7L);
 
-        when(userRepository.existsByUserFullNameIgnoreCase("John Doe")).thenReturn(false);
-        when(roleRepository.existsById("1")).thenReturn(false);
-        when(departmentRepository.existsById("1")).thenReturn(false);
+        when(userRepository.existsByUserFullNameIgnoreCase("Charlie Kim")).thenReturn(false);
+        when(roleRepository.existsById("6")).thenReturn(false);
+        when(departmentRepository.existsById("7")).thenReturn(false);
 
-        // Act & Assert
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
                 () -> createUserService.createUser(user)
         );
 
-        assertTrue(exception.getMessage().contains("Role ID 1 does not exist"));
-        assertTrue(exception.getMessage().contains("Department ID 1 does not exist"));
+        assertTrue(exception.getMessage().contains("Role ID 6 does not exist"));
+        assertTrue(exception.getMessage().contains("Department ID 7 does not exist"));
         verify(userRepository, never()).save(any(User.class));
     }
 }

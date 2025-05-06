@@ -1,10 +1,13 @@
 package com.distributedproject.userservice.service.user;
 
 import com.distributedproject.userservice.exception.user.UserNotFoundException;
+import com.distributedproject.userservice.model.User;
 import com.distributedproject.userservice.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -33,14 +36,16 @@ class DeleteUserServiceTest {
     void deleteUser_successfulDelete() {
         // Arrange
         Long userId = 1L;
+        User user = new User();
+        user.setUserId(userId);
 
-        when(userRepository.existsById("1")).thenReturn(true);
+        when(userRepository.findByUserId(userId)).thenReturn(Optional.of(user));
 
         // Act
         deleteUserService.deleteUser(userId);
 
         // Assert
-        verify(userRepository, times(1)).deleteById("1");
+        verify(userRepository, times(1)).delete(user);
     }
 
     @Test
@@ -48,7 +53,7 @@ class DeleteUserServiceTest {
         // Arrange
         Long userId = 1L;
 
-        when(userRepository.existsById("1")).thenReturn(false);
+        when(userRepository.findByUserId(userId)).thenReturn(Optional.empty());
 
         // Act & Assert
         UserNotFoundException exception = assertThrows(
@@ -57,6 +62,6 @@ class DeleteUserServiceTest {
         );
 
         assertEquals("User with ID 1 not found", exception.getMessage());
-        verify(userRepository, never()).deleteById(anyString());
+        verify(userRepository, never()).delete(any(User.class));
     }
 }
