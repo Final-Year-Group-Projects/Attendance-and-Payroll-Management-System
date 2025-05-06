@@ -37,12 +37,12 @@ class DeleteUserServiceTest {
         // Arrange
         Long userId = 1L;
         User user = new User();
-        user.setUserId(userId);
+        user.setUserId(String.valueOf(userId));
 
-        when(userRepository.findByUserId(userId)).thenReturn(Optional.of(user));
+        when(userRepository.findByUserId(String.valueOf(userId))).thenReturn(Optional.of(user));
 
         // Act
-        deleteUserService.deleteUser(userId);
+        deleteUserService.deleteUser(String.valueOf(userId));
 
         // Assert
         verify(userRepository, times(1)).delete(user);
@@ -53,12 +53,12 @@ class DeleteUserServiceTest {
         // Arrange
         Long userId = 1L;
 
-        when(userRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(userRepository.findByUserId(String.valueOf(userId))).thenReturn(Optional.empty());
 
         // Act & Assert
         UserNotFoundException exception = assertThrows(
                 UserNotFoundException.class,
-                () -> deleteUserService.deleteUser(userId)
+                () -> deleteUserService.deleteUser(String.valueOf(userId))
         );
 
         assertEquals("User with ID 1 not found", exception.getMessage());

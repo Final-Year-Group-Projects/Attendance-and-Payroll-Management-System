@@ -13,7 +13,7 @@ public class GetUserByIdService {
     @Autowired
     private UserRepository userRepository;
 
-    public Optional<User> getUserById(Long userId) {
-        return userRepository.findByUserId(userId);
+    public Optional<User> getUserById(String userId) {
+        return userRepository.findByUserId(String.valueOf(userId));
     }
 }

@@ -31,7 +31,7 @@ class GetAllUsersServiceTest {
     void getAllUsers_shouldReturnListOfUsers() {
         // Arrange: Creating mock users
         User user1 = new User();
-        user1.setUserId(1L);
+        user1.setUserId("E101");
         user1.setUserFullName("Alice Smith");
         user1.setUserType("Admin");
         user1.setUserAddress("123 Main St");
@@ -40,7 +40,7 @@ class GetAllUsersServiceTest {
         user1.setRoleId(1L);
 
         User user2 = new User();
-        user2.setUserId(2L);
+        user2.setUserId("E102");
         user2.setUserFullName("Bob Johnson");
         user2.setUserType("User");
         user2.setUserAddress("456 Elm St");

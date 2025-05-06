@@ -31,15 +31,13 @@ class UpdateUserServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        // Creating a mock existing user
         existingUser = new User();
-        existingUser.setUserId(1L);
+        existingUser.setUserId("E101");  // Changed from 1L to "E101"
         existingUser.setUserFullName("Alice Smith");
         existingUser.setUserType("Admin");
         existingUser.setUserAddress("123 Main St");
         existingUser.setUserTelephone("123-456-7890");
 
-        // Creating mock user details to be updated
         userDetails = new User();
         userDetails.setUserFullName("Alice Johnson");
         userDetails.setUserType("User");
@@ -49,65 +47,54 @@ class UpdateUserServiceTest {
 
     @Test
     void updateUser_shouldUpdateUserWhenUserIsFound() {
-        // Arrange: Mocking user repository to return an existing user
-        when(userRepository.findByUserId(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByUserId("E101")).thenReturn(Optional.of(existingUser));
         when(userRepository.findByUserFullNameIgnoreCase("Alice Johnson")).thenReturn(Optional.empty());
-        when(userRepository.save(any(User.class))).thenReturn(existingUser);  // Mocking save method to return the existingUser
+        when(userRepository.save(any(User.class))).thenReturn(existingUser);
 
-        // Act: Calling the update method
-        User updatedUser = updateUserService.updateUser(1L, userDetails);
+        User updatedUser = updateUserService.updateUser("E101", userDetails);  // Changed input to "E101"
 
-        // Assert: Verifying the updated user details
         assertNotNull(updatedUser);
         assertEquals("Alice Johnson", updatedUser.getUserFullName());
         assertEquals("User", updatedUser.getUserType());
         assertEquals("456 Elm St", updatedUser.getUserAddress());
         assertEquals("098-765-4321", updatedUser.getUserTelephone());
 
-        // Verify interactions with the repository
-        verify(userRepository, times(1)).findByUserId(1L);
+        verify(userRepository, times(1)).findByUserId("E101");
         verify(userRepository, times(1)).findByUserFullNameIgnoreCase("Alice Johnson");
-        verify(userRepository, times(1)).save(any(User.class));  // Verifying save was called
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
     void updateUser_shouldThrowResponseStatusExceptionWhenUserNameIsTaken() {
-        // Arrange: Mocking user repository to return an existing user and another user with the same name
-        when(userRepository.findByUserId(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByUserId("E101")).thenReturn(Optional.of(existingUser));
         User existingUserWithSameName = new User();
-        existingUserWithSameName.setUserId(2L);
-        existingUserWithSameName.setUserFullName("Alice Johnson");  // Same name as userDetails
+        existingUserWithSameName.setUserId("E102");
+        existingUserWithSameName.setUserFullName("Alice Johnson");
         when(userRepository.findByUserFullNameIgnoreCase("Alice Johnson")).thenReturn(Optional.of(existingUserWithSameName));
 
-        // Act & Assert: Calling the update method and expecting ResponseStatusException
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
-                () -> updateUserService.updateUser(1L, userDetails)
+                () -> updateUserService.updateUser("E101", userDetails)
         );
 
-        // Assert: Verifying exception details
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
         assertEquals("User name is already taken.", exception.getReason());
 
-        // Verify interactions with the repository
-        verify(userRepository, times(1)).findByUserId(1L);
+        verify(userRepository, times(1)).findByUserId("E101");
         verify(userRepository, times(1)).findByUserFullNameIgnoreCase("Alice Johnson");
     }
+
     @Test
     void updateUser_shouldThrowUserNotFoundExceptionWhenUserIsNotFound() {
-        // Arrange: Mocking user repository to return empty when user is not found
-        when(userRepository.findByUserId(1L)).thenReturn(Optional.empty());
+        when(userRepository.findByUserId("E101")).thenReturn(Optional.empty());
 
-        // Act & Assert: Calling the update method and expecting UserNotFoundException
         UserNotFoundException exception = assertThrows(
                 UserNotFoundException.class,
-                () -> updateUserService.updateUser(1L, userDetails)
+                () -> updateUserService.updateUser("E101", userDetails)
         );
 
-        // Assert: Verifying exception message
-        assertEquals("User with ID 1 not found", exception.getMessage());
+        assertEquals("User with ID E101 not found", exception.getMessage());
 
-        // Verify interaction with the repository
-        verify(userRepository, times(1)).findByUserId(1L);
+        verify(userRepository, times(1)).findByUserId("E101");
     }
 }

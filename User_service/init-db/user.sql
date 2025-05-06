@@ -18,7 +18,7 @@ CREATE TABLE role (
 -- 4. Create userdata table with department_id and role_id as foreign keys
 CREATE TABLE userdata (
     id SERIAL PRIMARY KEY,                              -- auto-incrementing primary key
-    user_id INTEGER UNIQUE NOT NULL,                                    -- manual-only user ID
+    user_id VARCHAR(50) UNIQUE NOT NULL,                                 -- manual-only user ID
     user_full_name VARCHAR(255) UNIQUE NOT NULL,
     user_address VARCHAR(255),
     user_telephone VARCHAR(15),

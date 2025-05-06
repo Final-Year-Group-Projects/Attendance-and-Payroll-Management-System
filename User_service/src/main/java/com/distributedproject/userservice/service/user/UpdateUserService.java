@@ -16,9 +16,9 @@ public class UpdateUserService {
     @Autowired
     private UserRepository userRepository;
 
-    public User updateUser(Long userId, User userDetails) {
+    public User updateUser(String userId, User userDetails) {
         // Use Optional to find the user by ID
-        Optional<User> existingUser = userRepository.findByUserId(userId);
+        Optional<User> existingUser = userRepository.findByUserId(String.valueOf(userId));
 
         // If user is found, update the user details
         if (existingUser.isPresent()) {

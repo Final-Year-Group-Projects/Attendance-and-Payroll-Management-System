@@ -2,17 +2,18 @@ package com.distributedproject.userservice.service.user;
 
 import com.distributedproject.userservice.model.User;
 import com.distributedproject.userservice.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class GetUserByIdServiceTest {
 
     @Mock
@@ -21,50 +22,50 @@ class GetUserByIdServiceTest {
     @InjectMocks
     private GetUserByIdService getUserByIdService;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
-
-    @Test
-    void getUserById_shouldReturnUserWhenFound() {
-        // Arrange: Creating a mock user
+    private User createSampleUser() {
         User user = new User();
-        user.setUserId(1L);
+        user.setUserId("E101"); // String userId
         user.setUserFullName("Alice Smith");
         user.setUserType("Admin");
         user.setUserAddress("123 Main St");
         user.setUserTelephone("123-456-7890");
         user.setDepartmentId(1L);
         user.setRoleId(1L);
+        return user;
+    }
 
-        // Mocking repository call
-        when(userRepository.findByUserId(1L)).thenReturn(Optional.of(user));
+    @Test
+    void getUserById_shouldReturnUserWhenFound() {
+        // Arrange
+        User user = createSampleUser();
+        when(userRepository.findByUserId("E101")).thenReturn(Optional.of(user));
 
-        // Act: Calling the service method
-        Optional<User> result = getUserByIdService.getUserById(1L);
+        // Act
+        Optional<User> result = getUserByIdService.getUserById("E101");
 
-        // Assert: Validating the result
-        assertTrue(result.isPresent());
-        assertEquals("Alice Smith", result.get().getUserFullName());
-        assertEquals(1L, result.get().getUserId());
+        // Assert
+        assertAll("User fields",
+                () -> assertTrue(result.isPresent(), "User should be present"),
+                () -> assertEquals("Alice Smith", result.get().getUserFullName()),
+                () -> assertEquals("E101", result.get().getUserId())
+        );
 
-        // Verify interaction with the repository
-        verify(userRepository, times(1)).findByUserId(1L);
+        verify(userRepository, times(1)).findByUserId("E101");
+        verifyNoMoreInteractions(userRepository);
     }
 
     @Test
     void getUserById_shouldReturnEmptyOptionalWhenUserNotFound() {
-        // Arrange: Mocking repository to return empty Optional when user not found
-        when(userRepository.findByUserId(99L)).thenReturn(Optional.empty());
+        // Arrange
+        when(userRepository.findByUserId("E999")).thenReturn(Optional.empty());
 
-        // Act: Calling the service method
-        Optional<User> result = getUserByIdService.getUserById(99L);
+        // Act
+        Optional<User> result = getUserByIdService.getUserById("E999");
 
-        // Assert: Validating the result
-        assertFalse(result.isPresent());
+        // Assert
+        assertFalse(result.isPresent(), "User should not be found");
 
-        // Verify interaction with the repository
-        verify(userRepository, times(1)).findByUserId(99L);
+        verify(userRepository, times(1)).findByUserId("E999");
+        verifyNoMoreInteractions(userRepository);
     }
 }

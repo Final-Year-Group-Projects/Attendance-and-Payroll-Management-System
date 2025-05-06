@@ -79,7 +79,7 @@ public class TokenValidationFilter extends OncePerRequestFilter {
                         // Fetch actual user ID using username
                         Optional<User> optionalUser = userRepository.findByUserFullNameIgnoreCase(username);
                         if (optionalUser.isPresent()) {
-                            Long actualUserId = optionalUser.get().getUserId();
+                            String actualUserId = optionalUser.get().getUserId();
                             isUpdateOwnInfo = actualUserId.equals(pathUserId);
                         }
                     }

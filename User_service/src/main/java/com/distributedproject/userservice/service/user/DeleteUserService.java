@@ -14,9 +14,9 @@ public class DeleteUserService {
     @Autowired
     private UserRepository userRepository;
 
-    public void deleteUser(Long userId) {
+    public void deleteUser(String userId) {
         // Find user by the custom user_id field
-        Optional<User> userOptional = userRepository.findByUserId(userId);
+        Optional<User> userOptional = userRepository.findByUserId(String.valueOf(userId));
 
         if (userOptional.isPresent()) {
             // Delete using the internal primary key (id)

@@ -15,8 +15,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", unique = true, nullable = false)
-    private Long userId;
+    @Column(name = "user_id", unique = true, nullable = false, length = 50)
+    private String userId;  // Changed from Long to String
 
     @ValidUserName
     private String userFullName;
@@ -30,31 +30,21 @@ public class User {
     @ValidUserTelephone
     private String userTelephone;
 
-    @NotNull(message = "Department ID is required")
     private Long departmentId;
 
-    @NotNull(message = "Role ID is required")
     private Long roleId;
 
     // Getters and setters
 
-    public Long getDepartmentId(){return departmentId;}
-
-    public void setDepartmentId(Long departmentId) {
-        this.departmentId = departmentId;
+    public Long getId() {
+        return id;
     }
 
-    public Long getRoleId(){return roleId;}
-
-    public void setRoleId(Long roleId) {
-        this.roleId = roleId;
-    }
-
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
@@ -88,5 +78,21 @@ public class User {
 
     public void setUserTelephone(String userTelephone) {
         this.userTelephone = userTelephone;
+    }
+
+    public Long getDepartmentId() {
+        return departmentId;
+    }
+
+    public void setDepartmentId(Long departmentId) {
+        this.departmentId = departmentId;
+    }
+
+    public Long getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(Long roleId) {
+        this.roleId = roleId;
     }
 }
