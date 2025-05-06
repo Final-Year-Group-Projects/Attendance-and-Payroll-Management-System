@@ -18,18 +18,18 @@ public class UpdateUserService {
 
     public User updateUser(Long userId, User userDetails) {
         // Use Optional to find the user by ID
-        Optional<User> existingUser = userRepository.findById(String.valueOf(userId));
+        Optional<User> existingUser = userRepository.findByUserId(userId);
 
         // If user is found, update the user details
         if (existingUser.isPresent()) {
 
-            Optional<User> userByName = userRepository.findByUserFullNameIgnoreCase(userDetails.getUserName());
+            Optional<User> userByName = userRepository.findByUserFullNameIgnoreCase(userDetails.getUserFullName());
             if (userByName.isPresent() && !userByName.get().getUserId().equals(userId)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User name is already taken.");
             }
 
             User userToUpdate = existingUser.get();
-            userToUpdate.setUserName(userDetails.getUserName());
+            userToUpdate.setUserFullName(userDetails.getUserFullName());
             userToUpdate.setUserAddress(userDetails.getUserAddress());
             userToUpdate.setUserTelephone(userDetails.getUserTelephone());
             userToUpdate.setUserType(userDetails.getUserType());

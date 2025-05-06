@@ -13,6 +13,9 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "user_id", unique = true, nullable = false)
     private Long userId;
 
     @ValidUserName
@@ -55,11 +58,11 @@ public class User {
         this.userId = userId;
     }
 
-    public String getUserName() {
+    public String getUserFullName() {
         return userFullName;
     }
 
-    public void setUserName(String userName) {
+    public void setUserFullName(String userName) {
         this.userFullName = userName;
     }
 

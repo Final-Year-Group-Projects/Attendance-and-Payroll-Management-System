@@ -37,7 +37,7 @@ class CreateUserControllerTest {
     void createUser_validUser_returnsSavedUser() throws Exception {
         // Arrange
         User user = new User();
-        user.setUserName("John Doe");
+        user.setUserFullName("John Doe");
         user.setRoleId(1L);
         user.setDepartmentId(2L);
 

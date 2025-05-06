@@ -50,7 +50,7 @@ class CreateUserServiceTest {
     void createUser_successfulSave() {
         // Arrange
         User user = new User();
-        user.setUserName("John Doe");
+        user.setUserFullName("John Doe");
         user.setRoleId(1L);
         user.setDepartmentId(1L);
 
@@ -64,7 +64,7 @@ class CreateUserServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals("John Doe", result.getUserName());
+        assertEquals("John Doe", result.getUserFullName());
         verify(userRepository, times(1)).save(user);
     }
 
@@ -72,7 +72,7 @@ class CreateUserServiceTest {
     void createUser_nameAlreadyExists_throwsException() {
         // Arrange
         User user = new User();
-        user.setUserName("Jane Doe");
+        user.setUserFullName("Jane Doe");
 
         when(userRepository.existsByUserFullNameIgnoreCase("Jane Doe")).thenReturn(true);
 
@@ -90,7 +90,7 @@ class CreateUserServiceTest {
     void createUser_roleDoesNotExist_throwsException() {
         // Arrange
         User user = new User();
-        user.setUserName("John Doe");
+        user.setUserFullName("John Doe");
         user.setRoleId(1L);
         user.setDepartmentId(1L);
 
@@ -112,7 +112,7 @@ class CreateUserServiceTest {
     void createUser_departmentDoesNotExist_throwsException() {
         // Arrange
         User user = new User();
-        user.setUserName("John Doe");
+        user.setUserFullName("John Doe");
         user.setRoleId(1L);
         user.setDepartmentId(1L);
 
@@ -134,7 +134,7 @@ class CreateUserServiceTest {
     void createUser_roleAndDepartmentDoNotExist_throwsException() {
         // Arrange
         User user = new User();
-        user.setUserName("John Doe");
+        user.setUserFullName("John Doe");
         user.setRoleId(1L);
         user.setDepartmentId(1L);
 

@@ -22,7 +22,7 @@ public class CreateUserService {
     private DepartmentRepository departmentRepository;
 
     public User createUser(User user) {
-        if (userRepository.existsByUserFullNameIgnoreCase(user.getUserName())) {
+        if (userRepository.existsByUserFullNameIgnoreCase(user.getUserFullName())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User full name already taken.");
         }
         boolean roleExists = roleRepository.existsById(String.valueOf(user.getRoleId()));

@@ -17,18 +17,18 @@ CREATE TABLE role (
 
 -- 4. Create userdata table with department_id and role_id as foreign keys
 CREATE TABLE userdata (
-    user_id SERIAL PRIMARY KEY,               -- auto-incrementing primary key
-    user_name VARCHAR(255) NOT NULL,          -- user name field
-    user_address VARCHAR(255),                -- user address field (nullable)
-    user_telephone VARCHAR(15),               -- user telephone field
-    user_type VARCHAR(50),                    -- user type field (e.g., 'admin', 'user')
-    department_id INTEGER,                    -- department reference
-    role_id INTEGER,                          -- role reference
+    id SERIAL PRIMARY KEY,                              -- auto-incrementing primary key
+    user_id INTEGER UNIQUE NOT NULL,                                    -- manual-only user ID
+    user_full_name VARCHAR(255) UNIQUE NOT NULL,
+    user_address VARCHAR(255),
+    user_telephone VARCHAR(15),
+    user_type VARCHAR(50) NOT NULL,
+    department_id INTEGER NOT NULL,
+    role_id INTEGER NOT NULL,
     CONSTRAINT fk_department
         FOREIGN KEY (department_id)
         REFERENCES department(department_id)
         ON DELETE SET NULL,
-
     CONSTRAINT fk_role
         FOREIGN KEY (role_id)
         REFERENCES role(role_id)

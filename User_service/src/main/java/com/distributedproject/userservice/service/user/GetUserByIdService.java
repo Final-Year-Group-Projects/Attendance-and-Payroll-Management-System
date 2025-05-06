@@ -14,6 +14,6 @@ public class GetUserByIdService {
     private UserRepository userRepository;
 
     public Optional<User> getUserById(Long userId) {
-        return userRepository.findById(String.valueOf(userId));
+        return userRepository.findByUserId(userId);
     }
 }
