@@ -209,4 +209,23 @@ public class AttendanceService {
 
         return new LeaveBalanceResponse(remainingAnnualDays, remainingCasualDays, remainingHalfDays);
     }
+
+    // New method to delete a leave request
+    public void deleteLeaveRequest(Long leaveId) {
+        logger.info("Attempting to delete leave request with leaveId: {}", leaveId);
+
+        Leave leave = leaveRepository.findById(leaveId)
+                .orElseThrow(() -> {
+                    logger.warn("Leave request with ID {} not found", leaveId);
+                    return new IllegalArgumentException("Leave request not found for leaveId: " + leaveId);
+                });
+
+        if (!leave.getStatus().equalsIgnoreCase("PENDING")) {
+            logger.warn("Cannot delete leave request with leaveId: {} because its status is {}", leaveId, leave.getStatus());
+            throw new IllegalStateException("Cannot delete leave request: It must be in PENDING status");
+        }
+
+        leaveRepository.delete(leave);
+        logger.info("Leave request with leaveId: {} deleted successfully", leaveId);
+    }
 }

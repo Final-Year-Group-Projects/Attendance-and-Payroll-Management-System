@@ -13,6 +13,7 @@ import com.attendance.entity.Attendance;
 import com.attendance.entity.Leave;
 import com.attendance.exception.ValidationException;
 import com.attendance.repository.AttendanceRepository;
+import com.attendance.repository.LeaveRepository;
 import com.attendance.service.AttendanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -39,15 +40,18 @@ public class AttendanceController {
 
     private final AttendanceService attendanceService;
     private final AttendanceRepository attendanceRepository;
+    private final LeaveRepository leaveRepository;
     private final UserServiceClient userServiceClient;
 
     @Autowired
     public AttendanceController(
             AttendanceService attendanceService,
             AttendanceRepository attendanceRepository,
+            LeaveRepository leaveRepository,
             UserServiceClient userServiceClient) {
         this.attendanceService = attendanceService;
         this.attendanceRepository = attendanceRepository;
+        this.leaveRepository = leaveRepository;
         this.userServiceClient = userServiceClient;
         logger.info("AttendanceController initialized");
     }
@@ -64,7 +68,6 @@ public class AttendanceController {
             @Valid @RequestBody AttendanceRequest request) {
         logger.info("Recording attendance for employeeId: {}", employeeId);
 
-        // Validate employee
         UserServiceClient.EmployeeDTO employee = userServiceClient.getUserById(employeeId);
         if (employee == null) {
             logger.warn("Employee with ID {} not found", employeeId);
@@ -93,7 +96,6 @@ public class AttendanceController {
             @Valid @RequestBody CheckInRequest request) {
         logger.info("Recording check-in for employeeId: {}", employeeId);
 
-        // Validate employee
         UserServiceClient.EmployeeDTO employee = userServiceClient.getUserById(employeeId);
         if (employee == null) {
             logger.warn("Employee with ID {} not found", employeeId);
@@ -213,7 +215,6 @@ public class AttendanceController {
 
         logger.info("Processing leave request for employee ID: {}", employeeId);
 
-        // Validate employee
         UserServiceClient.EmployeeDTO employee = userServiceClient.getUserById(employeeId);
         if (employee == null) {
             logger.warn("Employee with ID {} not found", employeeId);
@@ -243,17 +244,15 @@ public class AttendanceController {
     @GetMapping("/employee/{employeeId}/attendance-count")
     public ResponseEntity<AttendanceCountResponse> getAttendanceCount(
             @PathVariable Long employeeId,
-            @RequestParam("month") String month) { // Format: "yyyy-MM"
+            @RequestParam("month") String month) {
         logger.info("Retrieving attendance count for employeeId: {} for month: {}", employeeId, month);
 
-        // Validate employee
         UserServiceClient.EmployeeDTO employee = userServiceClient.getUserById(employeeId);
         if (employee == null) {
             logger.warn("Employee with ID {} not found", employeeId);
             throw new IllegalArgumentException("Employee not found");
         }
 
-        // Validate and parse the month
         if (!month.matches("\\d{4}-(0[1-9]|1[0-2])")) {
             logger.warn("Invalid month format or value: {}", month);
             throw new IllegalArgumentException("Month must be in 'yyyy-MM' format with a valid month (1-12)");
@@ -271,7 +270,6 @@ public class AttendanceController {
         return ResponseEntity.ok(new AttendanceCountResponse(attendedDays));
     }
 
-    // New endpoint for leave balance
     @Operation(summary = "Get the remaining leave balance for an employee in a specific month")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Leave balance retrieved successfully"),
@@ -305,5 +303,35 @@ public class AttendanceController {
 
         LeaveBalanceResponse leaveBalance = attendanceService.getLeaveBalance(employeeId, monthDate);
         return ResponseEntity.ok(leaveBalance);
+    }
+
+    // New endpoint to delete a leave request
+    @Operation(summary = "Delete a leave request by its ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Leave request deleted successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input, leave not found, or leave not in PENDING status"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @DeleteMapping("/leaves/{leaveId}")
+    public ResponseEntity<Void> deleteLeaveRequest(@PathVariable Long leaveId) {
+        logger.info("Processing delete request for leaveId: {}", leaveId);
+
+        // Validate that the leave exists and fetch its employee ID
+        Leave leave = leaveRepository.findById(leaveId)
+                .orElseThrow(() -> {
+                    logger.warn("Leave request with ID {} not found", leaveId);
+                    return new IllegalArgumentException("Leave request not found for leaveId: " + leaveId);
+                });
+
+        // Validate the employee associated with the leave
+        UserServiceClient.EmployeeDTO employee = userServiceClient.getUserById(leave.getEmployeeId());
+        if (employee == null) {
+            logger.warn("Employee with ID {} not found for leaveId: {}", leave.getEmployeeId(), leaveId);
+            throw new IllegalArgumentException("Employee not found for the leave request");
+        }
+
+        // Call the service to delete the leave request
+        attendanceService.deleteLeaveRequest(leaveId);
+        return ResponseEntity.noContent().build();
     }
 }
