@@ -5,7 +5,6 @@ import com.distributedproject.userservice.validation.user.ValidUserName;
 import com.distributedproject.userservice.validation.user.ValidUserTelephone;
 import com.distributedproject.userservice.validation.user.ValidUserType;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "userdata")
