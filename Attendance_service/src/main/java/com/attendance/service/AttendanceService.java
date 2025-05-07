@@ -1,5 +1,6 @@
 package com.attendance.service;
 
+import com.attendance.dto.LeaveBalanceResponse;
 import com.attendance.entity.Attendance;
 import com.attendance.entity.Leave;
 import com.attendance.repository.AttendanceRepository;
@@ -22,6 +23,11 @@ public class AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
     private final LeaveRepository leaveRepository;
+
+    // Leave limits per month
+    private static final long MAX_ANNUAL_DAYS = 14;
+    private static final long MAX_CASUAL_DAYS = 7;
+    private static final long MAX_HALF_DAYS = 2;
 
     @Autowired
     public AttendanceService(AttendanceRepository attendanceRepository, LeaveRepository leaveRepository) {
@@ -162,7 +168,7 @@ public class AttendanceService {
         // Retrieve attendance records within the month
         List<Attendance> records = attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, monthStart, monthEnd);
 
-        // Count distinct days where both check-in and check-out times are present
+        // Count distinct days when both check-in and check-out times are present
         long attendedDays = records.stream()
                 .filter(record -> record.getCheckInTime() != null && record.getCheckOutTime() != null)
                 .map(Attendance::getDate)
@@ -171,5 +177,36 @@ public class AttendanceService {
 
         logger.info("Attendance count for employeeId {} in month {}: {}", employeeId, month, attendedDays);
         return attendedDays;
+    }
+
+    // New method to get leave balance
+    public LeaveBalanceResponse getLeaveBalance(Long employeeId, LocalDate month) {
+        logger.info("Calculating leave balance for employeeId: {} for month: {}", employeeId, month);
+
+        LocalDate monthStart = month.withDayOfMonth(1);
+        LocalDate monthEnd = monthStart.plusMonths(1).minusDays(1);
+
+        List<Leave> leaves = leaveRepository.findByEmployeeIdAndStartDateBetween(employeeId, monthStart, monthEnd);
+
+        long usedAnnualDays = leaves.stream()
+                .filter(l -> l.getLeaveType().equalsIgnoreCase("ANNUAL"))
+                .mapToLong(l -> ChronoUnit.DAYS.between(l.getStartDate(), l.getEndDate()) + 1)
+                .sum();
+        long usedCasualDays = leaves.stream()
+                .filter(l -> l.getLeaveType().equalsIgnoreCase("CASUAL"))
+                .mapToLong(l -> ChronoUnit.DAYS.between(l.getStartDate(), l.getEndDate()) + 1)
+                .sum();
+        long usedHalfDays = leaves.stream()
+                .filter(l -> l.getLeaveType().equalsIgnoreCase("HALF DAY"))
+                .count();
+
+        long remainingAnnualDays = MAX_ANNUAL_DAYS - usedAnnualDays;
+        long remainingCasualDays = MAX_CASUAL_DAYS - usedCasualDays;
+        long remainingHalfDays = MAX_HALF_DAYS - usedHalfDays;
+
+        logger.info("Leave balance for employeeId {} in month {}: Annual={}, Casual={}, HalfDay={}",
+                employeeId, month, remainingAnnualDays, remainingCasualDays, remainingHalfDays);
+
+        return new LeaveBalanceResponse(remainingAnnualDays, remainingCasualDays, remainingHalfDays);
     }
 }

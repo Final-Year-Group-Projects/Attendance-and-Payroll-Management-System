@@ -8,6 +8,7 @@ import com.attendance.dto.LeaveRequest;
 import com.attendance.dto.WorkingHoursResponse;
 import com.attendance.dto.TotalWorkingHoursResponse;
 import com.attendance.dto.AttendanceCountResponse;
+import com.attendance.dto.LeaveBalanceResponse;
 import com.attendance.entity.Attendance;
 import com.attendance.entity.Leave;
 import com.attendance.exception.ValidationException;
@@ -258,7 +259,6 @@ public class AttendanceController {
             throw new IllegalArgumentException("Month must be in 'yyyy-MM' format with a valid month (1-12)");
         }
 
-        // Parse the month (e.g., "2025-05") as the first day of the month
         LocalDate monthDate;
         try {
             monthDate = LocalDate.parse(month + "-01", DATE_FORMATTER);
@@ -269,5 +269,41 @@ public class AttendanceController {
 
         long attendedDays = attendanceService.getAttendanceCountPerMonth(employeeId, monthDate);
         return ResponseEntity.ok(new AttendanceCountResponse(attendedDays));
+    }
+
+    // New endpoint for leave balance
+    @Operation(summary = "Get the remaining leave balance for an employee in a specific month")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Leave balance retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input or employee not found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @GetMapping("/employee/{employeeId}/leave-balance")
+    public ResponseEntity<LeaveBalanceResponse> getLeaveBalance(
+            @PathVariable Long employeeId,
+            @RequestParam("month") String month) {
+        logger.info("Retrieving leave balance for employeeId: {} for month: {}", employeeId, month);
+
+        UserServiceClient.EmployeeDTO employee = userServiceClient.getUserById(employeeId);
+        if (employee == null) {
+            logger.warn("Employee with ID {} not found", employeeId);
+            throw new IllegalArgumentException("Employee not found");
+        }
+
+        if (!month.matches("\\d{4}-(0[1-9]|1[0-2])")) {
+            logger.warn("Invalid month format or value: {}", month);
+            throw new IllegalArgumentException("Month must be in 'yyyy-MM' format with a valid month (1-12)");
+        }
+
+        LocalDate monthDate;
+        try {
+            monthDate = LocalDate.parse(month + "-01", DATE_FORMATTER);
+        } catch (Exception e) {
+            logger.warn("Failed to parse month: {} due to {}", month, e.getMessage());
+            throw new IllegalArgumentException("Invalid month format: " + month + ". Use 'yyyy-MM' with a valid month (1-12)");
+        }
+
+        LeaveBalanceResponse leaveBalance = attendanceService.getLeaveBalance(employeeId, monthDate);
+        return ResponseEntity.ok(leaveBalance);
     }
 }
