@@ -150,4 +150,26 @@ public class AttendanceService {
         logger.info("Leave request saved successfully for employeeId: {}", employeeId);
         return savedLeave;
     }
+
+    // New method to get attendance count per month
+    public long getAttendanceCountPerMonth(Long employeeId, LocalDate month) {
+        logger.info("Calculating attendance count for employeeId: {} for month: {}", employeeId, month);
+
+        // Determine the start and end of the month
+        LocalDate monthStart = month.withDayOfMonth(1);
+        LocalDate monthEnd = monthStart.plusMonths(1).minusDays(1);
+
+        // Retrieve attendance records within the month
+        List<Attendance> records = attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, monthStart, monthEnd);
+
+        // Count distinct days where both check-in and check-out times are present
+        long attendedDays = records.stream()
+                .filter(record -> record.getCheckInTime() != null && record.getCheckOutTime() != null)
+                .map(Attendance::getDate)
+                .distinct()
+                .count();
+
+        logger.info("Attendance count for employeeId {} in month {}: {}", employeeId, month, attendedDays);
+        return attendedDays;
+    }
 }
