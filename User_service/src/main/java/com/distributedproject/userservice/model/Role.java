@@ -1,5 +1,7 @@
 package com.distributedproject.userservice.model;
 
+import com.distributedproject.userservice.validation.role.ValidRoleDescription;
+import com.distributedproject.userservice.validation.role.ValidRoleId;
 import com.distributedproject.userservice.validation.role.ValidRoleName;
 import jakarta.persistence.*;
 
@@ -14,6 +16,7 @@ public class Role {
     @ValidRoleName
     private String roleName;
 
+    @ValidRoleDescription
     private String roleDescription;
 
 
