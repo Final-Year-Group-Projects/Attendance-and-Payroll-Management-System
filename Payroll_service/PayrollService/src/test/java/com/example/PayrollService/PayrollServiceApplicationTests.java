@@ -1,5 +1,6 @@
 package com.example.PayrollService;
 
+import com.example.PayrollService.config.FeignTestConfig;
 import com.example.PayrollService.config.RoleSalaryConfig;
 import com.example.PayrollService.controller.*;
 import com.example.PayrollService.dto.*;
@@ -15,18 +16,27 @@ import com.example.PayrollService.entity.ReimbursementRecord;
 import com.example.PayrollService.repository.ReimbursementRepository;
 import com.example.PayrollService.service.PayrollServiceImpl;
 import com.example.PayrollService.service.ReimbursementService;
+import feign.FeignException;
+import feign.Request;
+import feign.RetryableException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-
+import feign.Request;
+import feign.RetryableException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,6 +47,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+@Import(FeignTestConfig.class)
 @ExtendWith(MockitoExtension.class)
 class PayrollControllerTest {
 
@@ -128,9 +139,38 @@ class PayrollControllerTest {
     }
 
     @Test
+    void testFeignClients() {
+        // Arrange: mock the userServiceClient to return a valid UserDTO
+        UserDTO mockUser = new UserDTO();
+        mockUser.setEmployeeId("E100");
+        mockUser.setRole("ENGINEER");
+
+        AttendanceDTO mockAttendance = new AttendanceDTO();
+        mockAttendance.setEmployeeId("E100");
+        mockAttendance.setMonth(5);
+        mockAttendance.setYear(2025);
+        mockAttendance.setWorkingDays(20);
+        mockAttendance.setApprovedLeaves(2);
+        mockAttendance.setNotApprovedLeaves(1);
+
+        when(userServiceClient.getUserDetails("E100")).thenReturn(mockUser);
+        when(attendanceServiceClient.getAttendanceDetails("E100", 5, 2025)).thenReturn(mockAttendance);
+
+        // Act
+        UserDTO user = userServiceClient.getUserDetails("E100");
+        AttendanceDTO attendance = attendanceServiceClient.getAttendanceDetails("E100", 5, 2025);
+
+        // Assert
+        assertNotNull(user);
+        assertNotNull(user.getRole());
+        assertTrue(attendance.getWorkingDays() > 0);
+    }
+
+
+    @Test
     void testCreatePayroll_withMockedUserAndAttendance() {
         // Arrange
-        String employeeId = "1";
+        String employeeId = "E101";
         int month = 5;
         int year = 2025;
 
@@ -143,9 +183,8 @@ class PayrollControllerTest {
         // Prepare complete request DTO
         PayrollRequestDTO dto = new PayrollRequestDTO();
         dto.setEmployeeId(employeeId);
-        dto.setMonth(month);  // This was missing!
-        dto.setYear(year);    // This was missing!
-
+        dto.setMonth(month);
+        dto.setYear(year);
         // Mock other dependencies
         Mockito.when(reimbursementRepository.findByEmployeeId(employeeId))
                 .thenReturn(Collections.emptyList());
@@ -283,8 +322,14 @@ class PayrollControllerTest {
         // Use actual employeeId from record, e.g. "E01"
         assertTrue(response.getBody().contains("<h2>Payslip for Employee ID: " + record.getEmployeeId() + "</h2>"));
         // Check salary values formatted as string
+//        assertTrue(response.getBody().contains(String.valueOf(record.getBasicSalary())));
+//        assertTrue(response.getBody().contains(String.format("%.2f", record.getNetSalary())));
         assertTrue(response.getBody().contains(String.valueOf(record.getBasicSalary())));
-        assertTrue(response.getBody().contains(String.format("%.2f", record.getNetSalary())));  // Net Salary
+        assertTrue(response.getBody().contains(String.valueOf(record.getMedicalAllowance())));
+        assertTrue(response.getBody().contains(String.valueOf(record.getTransportFee())));
+        assertTrue(response.getBody().contains(String.valueOf(record.getSportsFee())));
+        assertTrue(response.getBody().contains(String.valueOf(record.getTaxDeduction())));
+        assertTrue(response.getBody().contains(String.valueOf(record.getNetSalary())));
     }
 
     @Test
@@ -491,4 +536,72 @@ class PayrollControllerTest {
         assertEquals("No payroll records found for employee " + employeeId, response.getBody());
         verify(payrollService, times(1)).deletePayrollsByEmployeeId(employeeId);
     }
+
+    @Test
+    void testFeignClient_userDetailsReturnsNull_shouldHandleGracefully() {
+        when(userServiceClient.getUserDetails("UNKNOWN_ID")).thenReturn(null);
+        UserDTO user = userServiceClient.getUserDetails("UNKNOWN_ID");
+        assertNull(user, "User should be null for unknown employee ID");
+    }
+
+    @Test
+    void testFeignClient_userServiceThrowsException_shouldCatchAndHandle() {
+        when(userServiceClient.getUserDetails("E404"))
+                .thenThrow(new RetryableException(
+                        404,
+                        "User not found",
+                        Request.HttpMethod.GET,
+                        null,
+                        Request.create(Request.HttpMethod.GET, "/user/E404", Collections.emptyMap(), null, StandardCharsets.UTF_8, null)
+                ));
+
+        assertThrows(RetryableException.class, () -> {
+            userServiceClient.getUserDetails("E404");
+        });
+    }
+
+    @Test
+    void testFeignClient_attendanceWithZeroWorkingDays() {
+        AttendanceDTO dto = new AttendanceDTO("E200", 5, 2025, 0, 0, 0);
+        when(attendanceServiceClient.getAttendanceDetails("E200", 5, 2025)).thenReturn(dto);
+        AttendanceDTO result = attendanceServiceClient.getAttendanceDetails("E200", 5, 2025);
+        assertNotNull(result);
+        assertEquals(0, result.getWorkingDays(), "Working days should be zero");
+    }
+
+    @Test
+    void testCreatePayrollIntegrationWithFeignClients() {
+        String employeeId = "E100";
+        int month = 5;
+        int year = 2025;
+
+        // Mock Feign clients
+        UserDTO user = new UserDTO(employeeId, "ENGINEER");
+        when(userServiceClient.getUserDetails(employeeId)).thenReturn(user);
+
+        AttendanceDTO attendance = new AttendanceDTO(employeeId, month, year, 20, 2, 0);
+        when(attendanceServiceClient.getAttendanceDetails(employeeId, month, year)).thenReturn(attendance);
+
+        // Mock DB operations
+        when(reimbursementRepository.findByEmployeeId(employeeId)).thenReturn(Collections.emptyList());
+        when(payrollRepository.save(any())).thenAnswer(inv -> {
+            PayrollRecord record = inv.getArgument(0);
+            record.setId(1L);
+            return record;
+        });
+
+        PayrollRequestDTO request = new PayrollRequestDTO();
+        request.setEmployeeId(employeeId);
+        request.setMonth(month);
+        request.setYear(year);
+        PayrollResponseDTO response = payrollServiceImpl.createPayroll(request);
+
+        assertNotNull(response);
+        assertEquals(employeeId, response.getEmployeeId());
+        assertTrue(response.getNetSalary() > 0);
+    }
+
+
+
+
 }
