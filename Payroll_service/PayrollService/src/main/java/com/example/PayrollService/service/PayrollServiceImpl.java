@@ -50,16 +50,44 @@ public class PayrollServiceImpl implements PayrollService {
     @Autowired
     private ReimbursementRepository reimbursementRepository;
 
+    // Fallback data when external services are unavailable
+    private final Map<String, String> fallbackEmployeeRoles = Map.of(
+            "1", "ENGINEER",
+            "2", "MANAGER",
+            "3", "HR"
+    );
+
+    private final Map<String, AttendanceDTO> fallbackAttendanceData = Map.of(
+            "1", new AttendanceDTO("1",5,2024,18, 2, 0),
+            "2", new AttendanceDTO("2",5,2024,19, 1, 0),
+            "3", new AttendanceDTO("3",5,2024,17, 3, 0)
+    );
+
     @Override
     public PayrollResponseDTO createPayroll(PayrollRequestDTO dto) {
-        // 1. Fetch user details (role)
-        UserDTO user = userServiceClient.getUserDetails(dto.getEmployeeId());
-        String role = user.getRole();
+        // 1. Try to fetch user details (role) with fallback
+        UserDTO user;
+        String role;
+        try {
+            user = userServiceClient.getUserDetails(dto.getEmployeeId());
+            role = user.getRole();
+        } catch (Exception e) {
+            System.err.println("UserService unavailable, using fallback data: " + e.getMessage());
+            role = fallbackEmployeeRoles.getOrDefault(dto.getEmployeeId(), "ENGINEER");
+        }
 
-        // 2. Fetch attendance details
-        AttendanceDTO attendance = attendanceServiceClient.getAttendanceDetails(
-                dto.getEmployeeId(), dto.getMonth(), dto.getYear()
-        );
+        // 2. Try to fetch attendance details with fallback
+        AttendanceDTO attendance;
+        try {
+            attendance = attendanceServiceClient.getAttendanceDetails(
+                    dto.getEmployeeId(), dto.getMonth(), dto.getYear()
+            );
+        } catch (Exception e) {
+            System.err.println("AttendanceService unavailable, using fallback data: " + e.getMessage());
+            attendance = fallbackAttendanceData.getOrDefault(dto.getEmployeeId(),
+                    new AttendanceDTO("1",5,2024,18, 2, 0)); // Default values
+        }
+
         int workingDays = attendance.getWorkingDays();
         int approvedLeaves = attendance.getApprovedLeaves();
         int notApprovedLeaves = attendance.getNotApprovedLeaves();
@@ -165,14 +193,29 @@ public class PayrollServiceImpl implements PayrollService {
 
         PayrollRecord payrollRecord = payrollRecordOptional.get();
 
-        // 1. Fetch user details (role)
-        UserDTO user = userServiceClient.getUserDetails(dto.getEmployeeId());
-        String role = user.getRole();
+        // 1. Try to fetch user details (role) with fallback
+        UserDTO user;
+        String role;
+        try {
+            user = userServiceClient.getUserDetails(dto.getEmployeeId());
+            role = user.getRole();
+        } catch (Exception e) {
+            System.err.println("UserService unavailable, using fallback data: " + e.getMessage());
+            role = fallbackEmployeeRoles.getOrDefault(dto.getEmployeeId(), "ENGINEER");
+        }
 
-        // 2. Fetch attendance details
-        AttendanceDTO attendance = attendanceServiceClient.getAttendanceDetails(
-                dto.getEmployeeId(), dto.getMonth(), dto.getYear()
-        );
+        // 2. Try to fetch attendance details with fallback
+        AttendanceDTO attendance;
+        try {
+            attendance = attendanceServiceClient.getAttendanceDetails(
+                    dto.getEmployeeId(), dto.getMonth(), dto.getYear()
+            );
+        } catch (Exception e) {
+            System.err.println("AttendanceService unavailable, using fallback data: " + e.getMessage());
+            attendance = fallbackAttendanceData.getOrDefault(dto.getEmployeeId(),
+                    new AttendanceDTO("1",5,2024,18, 2, 0)); // Default values
+        }
+
         int workingDays = attendance.getWorkingDays();
         int approvedLeaves = attendance.getApprovedLeaves();
         int notApprovedLeaves = attendance.getNotApprovedLeaves();
@@ -293,15 +336,6 @@ public class PayrollServiceImpl implements PayrollService {
             }
         }
         System.out.println("Generated payrolls for all employees.");
-    }
-
-    private String getEmployeeRole(String employeeId) {
-        // In-memory map for employee roles (replace with database or user service later)
-        Map<String, String> employeeRoles = new HashMap<>();
-        employeeRoles.put("1", "ENGINEER");
-        employeeRoles.put("2", "MANAGER");
-        employeeRoles.put("3", "HR");
-        return employeeRoles.getOrDefault(employeeId, "ENGINEER"); // Default to ENGINEER if not found
     }
 
     @Override
