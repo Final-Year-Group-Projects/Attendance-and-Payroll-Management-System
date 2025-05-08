@@ -25,6 +25,10 @@ public class CreateUserService {
         if (userRepository.existsByUserFullNameIgnoreCase(user.getUserFullName())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User full name already taken.");
         }
+        if (userRepository.existsByUserIdIgnoreCase(user.getUserId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User ID already taken.");
+        }
+
         boolean roleExists = roleRepository.existsById(String.valueOf(user.getRoleId()));
         boolean departmentExists = departmentRepository.existsById(String.valueOf(user.getDepartmentId()));
 

@@ -1,9 +1,6 @@
 package com.distributedproject.userservice.model;
 
-import com.distributedproject.userservice.validation.user.ValidUserAddress;
-import com.distributedproject.userservice.validation.user.ValidUserName;
-import com.distributedproject.userservice.validation.user.ValidUserTelephone;
-import com.distributedproject.userservice.validation.user.ValidUserType;
+import com.distributedproject.userservice.validation.user.*;
 import jakarta.persistence.*;
 
 @Entity
@@ -15,6 +12,7 @@ public class User {
     private Long id;
 
     @Column(name = "user_id", unique = true, nullable = false, length = 50)
+    @ValidUserId
     private String userId;  // Changed from Long to String
 
     @ValidUserName
