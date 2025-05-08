@@ -36,11 +36,11 @@ CREATE TABLE userdata (
 );
 
 -- Insert sample data into userdata
-INSERT INTO userdata (user_name, user_type, user_address, user_telephone)
-VALUES ('Judy', 'User', '123 User St', '123-456-7890')
-ON CONFLICT (user_id) DO NOTHING;
-
--- Query all data
-SELECT * FROM userdata;
-
-DROP Table department
+--INSERT INTO userdata (user_name, user_type, user_address, user_telephone)
+--VALUES ('Judy', 'User', '123 User St', '123-456-7890')
+--ON CONFLICT (user_id) DO NOTHING;
+--
+---- Query all data
+--SELECT * FROM userdata;
+--
+--DROP Table department

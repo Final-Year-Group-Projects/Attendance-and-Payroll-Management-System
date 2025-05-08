@@ -12,9 +12,9 @@ CREATE TABLE userdata (
 );
 
 -- 3. Insert sample user
-INSERT INTO userdata (username, password, role)
-VALUES ('Judy', '123456', 'Admin')
-ON CONFLICT (username) DO NOTHING;
-
--- 4. Select all users
-SELECT * FROM userdata;
+--INSERT INTO userdata (username, password, role)
+--VALUES ('Judy', '123456', 'Admin')
+--ON CONFLICT (username) DO NOTHING;
+--
+---- 4. Select all users
+--SELECT * FROM userdata;
