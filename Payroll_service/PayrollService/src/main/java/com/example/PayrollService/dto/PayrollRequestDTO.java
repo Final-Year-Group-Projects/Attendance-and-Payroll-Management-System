@@ -22,8 +22,15 @@ public class PayrollRequestDTO {
     @Min(value = 2000, message = "Year must be 2000 or later")
     private Integer year;
 
-    private Integer workingDays = 0;
-    private Integer approvedLeaves = 0;
-    private Integer notApprovedLeaves = 0;
+    @Min(value = 0, message = "Working days cannot be negative")
+    private Integer workingDays;
+
+    @Min(value = 0, message = "Approved leaves cannot be negative")
+    private Integer approvedLeaves;
+
+    @Min(value = 0, message = "Not approved leaves cannot be negative")
+    private Integer notApprovedLeaves;
+
+    @NotBlank(message = "Employee ID cannot be blank")
     private String role;
 }
