@@ -17,6 +17,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
@@ -27,8 +30,11 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(UserNameNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleUsersNotFoundException(UserNameNotFoundException ex) {
+        logger.error("Error occurred while creating user: StatusCode: {}, Timestamp: {}, Message: {}", HttpStatus.NOT_FOUND.value(),LocalDateTime.now(), ex.getMessage() );
         Map<String, Object> error = new HashMap<>();
         error.put("errorMessage", ex.getMessage());
         error.put("error", "Not Found");
@@ -40,6 +46,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleUserNotFound(UserNotFoundException ex) {
+        logger.error("Error occurred while creating user: StatusCode: {}, Timestamp: {}, Message: {}", HttpStatus.NOT_FOUND.value(),LocalDateTime.now(), ex.getMessage() );
         Map<String, Object> error = new HashMap<>();
         error.put("errorMessage", ex.getMessage());
         error.put("error", "Not Found");
@@ -51,6 +58,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DepartmentNameNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleDepartmentsNotFoundException(DepartmentNameNotFoundException ex) {
+        logger.error("Error occurred while creating user: StatusCode: {}, Timestamp: {}, Message: {}", HttpStatus.NOT_FOUND.value(),LocalDateTime.now(), ex.getMessage() );
         Map<String, Object> error = new HashMap<>();
         error.put("errorMessage", ex.getMessage());
         error.put("error", "Not Found");
@@ -62,6 +70,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DepartmentNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleDepartmentNotFound(com.distributedproject.userservice.exception.department.DepartmentNotFoundException ex) {
+        logger.error("Error occurred while creating user: StatusCode: {}, Timestamp: {}, Message: {}", HttpStatus.NOT_FOUND.value(),LocalDateTime.now(), ex.getMessage() );
         Map<String, Object> error = new HashMap<>();
         error.put("errorMessage", ex.getMessage());
         error.put("error", "Not Found");
@@ -73,6 +82,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RoleNameNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleRoleNotFoundException(RoleNameNotFoundException ex) {
+        logger.error("Error occurred while creating user: StatusCode: {}, Timestamp: {}, Message: {}", HttpStatus.NOT_FOUND.value(),LocalDateTime.now(), ex.getMessage() );
         Map<String, Object> error = new HashMap<>();
         error.put("errorMessage", ex.getMessage());
         error.put("error", "Not Found");
@@ -84,6 +94,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RoleNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleRoleNotFound(RoleNotFoundException ex) {
+        logger.error("Error occurred while creating user: StatusCode: {}, Timestamp: {}, Message: {}", HttpStatus.NOT_FOUND.value(),LocalDateTime.now(), ex.getMessage() );
         Map<String, Object> error = new HashMap<>();
         error.put("errorMessage", ex.getMessage());
         error.put("error", "Not Found");
@@ -96,6 +107,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        logger.error("Error occurred while creating user: StatusCode: {}, Timestamp: {}, Message: {}", HttpStatus.NOT_FOUND.value(),LocalDateTime.now(), ex.getMessage() );
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("timestamp", new Date());
         errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
@@ -113,6 +125,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, Object>> handleResponseStatusException(ResponseStatusException ex) {
+        logger.error("Error occurred while creating user: StatusCode: {}, Timestamp: {}, Message: {}", HttpStatus.NOT_FOUND.value(),LocalDateTime.now(), ex.getMessage() );
         Map<String, Object> error = new HashMap<>();
         error.put("errorMessage", ex.getMessage());
         error.put("error", "Not Found");
@@ -124,6 +137,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DepartmentNameAlreadyExistsException.class)
     public ResponseEntity<Map<String, Object>> handleDepartmentNameAlreadyExistsException(DepartmentNameAlreadyExistsException ex) {
+        logger.error("Error occurred while creating user: StatusCode: {}, Timestamp: {}, Message: {}", HttpStatus.NOT_FOUND.value(),LocalDateTime.now(), ex.getMessage() );
         Map<String, Object> error = new HashMap<>();
         error.put("errorMessage", ex.getMessage());
         error.put("error", "Already Exits");
@@ -135,6 +149,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNameAlreadyExistsException.class)
     public ResponseEntity<Map<String, Object>> handleUserNameAlreadyExistsException(UserNameAlreadyExistsException ex) {
+        logger.error("Error occurred while creating user: StatusCode: {}, Timestamp: {}, Message: {}", HttpStatus.NOT_FOUND.value(),LocalDateTime.now(), ex.getMessage() );
         Map<String, Object> error = new HashMap<>();
         error.put("errorMessage", ex.getMessage());
         error.put("error", "Already Exits");
@@ -146,6 +161,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserIdAlreadyExistsException.class)
     public ResponseEntity<Map<String, Object>> handleUserIdAlreadyExistsException(UserIdAlreadyExistsException ex) {
+        logger.error("Error occurred while creating user: StatusCode: {}, Timestamp: {}, Message: {}", HttpStatus.NOT_FOUND.value(),LocalDateTime.now(), ex.getMessage() );
+        logger.error("Error occurred while creating user: {}", ex.getMessage());
         Map<String, Object> error = new HashMap<>();
         error.put("errorMessage", ex.getMessage());
         error.put("error", "Already Exits");
@@ -157,6 +174,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RoleNameAlreadyExistsException.class)
     public ResponseEntity<Map<String, Object>> handleRoleNameAlreadyExistsException(RoleNameAlreadyExistsException ex) {
+        logger.error("Error occurred while creating user: StatusCode: {}, Timestamp: {}, Message: {}", HttpStatus.NOT_FOUND.value(),LocalDateTime.now(), ex.getMessage() );
         Map<String, Object> error = new HashMap<>();
         error.put("errorMessage", ex.getMessage());
         error.put("error", "Already Exits");

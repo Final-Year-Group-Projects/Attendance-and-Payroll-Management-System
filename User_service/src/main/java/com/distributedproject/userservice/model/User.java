@@ -2,8 +2,14 @@ package com.distributedproject.userservice.model;
 
 import com.distributedproject.userservice.validation.user.*;
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Entity
+@Data // Generates getters, setters, toString, equals, and hashCode
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "userdata")
 public class User {
 
