@@ -2,6 +2,7 @@ package com.example.PayrollService.controller;
 
 import com.example.PayrollService.dto.PayrollNotificationResponseDTO;
 import com.example.PayrollService.service.PayrollService;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ public class PayrollNotifyController {
 
     @PostMapping("/{employeeId}/notify")
     public ResponseEntity<PayrollNotificationResponseDTO> notifyEmployee(
-            @PathVariable String employeeId
+            @PathVariable @NotBlank String employeeId
     ) {
         PayrollNotificationResponseDTO response = payrollService.generatePayrollNotification(employeeId);
         return response.getStatus().equals("error")

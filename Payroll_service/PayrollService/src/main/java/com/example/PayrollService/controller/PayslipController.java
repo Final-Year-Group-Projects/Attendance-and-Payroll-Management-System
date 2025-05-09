@@ -8,6 +8,7 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 
+import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class PayslipController {
     private PayrollRepository payrollRepository;
 
     @GetMapping(value = "/{payrollId}/payslip", produces = MediaType.TEXT_HTML_VALUE)
-    public ResponseEntity<String> getPayslip(@PathVariable Long payrollId) {
+    public ResponseEntity<String> getPayslip(@PathVariable @Min(1) Long payrollId) {
         Optional<PayrollRecord> optional = payrollRepository.findById(payrollId);
 
         if (optional.isEmpty()) {
@@ -59,7 +60,7 @@ public class PayslipController {
     }
 
     @GetMapping(value = "/{payrollId}/payslip/pdf", produces = "application/pdf")
-    public ResponseEntity<byte[]> downloadPayslipPdf(@PathVariable Long payrollId) {
+    public ResponseEntity<byte[]> downloadPayslipPdf(@PathVariable @Min(1) Long payrollId) {
         Optional<PayrollRecord> optional = payrollRepository.findById(payrollId);
 
         if (optional.isEmpty()) {
