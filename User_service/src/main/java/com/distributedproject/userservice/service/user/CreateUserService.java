@@ -1,5 +1,7 @@
 package com.distributedproject.userservice.service.user;
 
+import com.distributedproject.userservice.exception.user.UserIdAlreadyExistsException;
+import com.distributedproject.userservice.exception.user.UserNameAlreadyExistsException;
 import com.distributedproject.userservice.model.User;
 import com.distributedproject.userservice.repository.DepartmentRepository;
 import com.distributedproject.userservice.repository.RoleRepository;
@@ -23,10 +25,10 @@ public class CreateUserService {
 
     public User createUser(User user) {
         if (userRepository.existsByUserFullNameIgnoreCase(user.getUserFullName())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User full name already taken.");
+            throw new UserNameAlreadyExistsException(user.getUserFullName());
         }
         if (userRepository.existsByUserIdIgnoreCase(user.getUserId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User ID already taken.");
+            throw new UserIdAlreadyExistsException(user.getUserId());
         }
 
         boolean roleExists = roleRepository.existsById(String.valueOf(user.getRoleId()));

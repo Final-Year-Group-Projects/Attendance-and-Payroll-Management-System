@@ -1,12 +1,13 @@
 package com.distributedproject.userservice.service.user;
 
+import com.distributedproject.userservice.exception.department.DepartmentNameAlreadyExistsException;
+import com.distributedproject.userservice.exception.user.UserNameAlreadyExistsException;
 import com.distributedproject.userservice.model.User;
 import com.distributedproject.userservice.repository.UserRepository;
 import com.distributedproject.userservice.exception.user.UserNotFoundException;  // Import custom exception
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -25,7 +26,7 @@ public class UpdateUserService {
 
             Optional<User> userByName = userRepository.findByUserFullNameIgnoreCase(userDetails.getUserFullName());
             if (userByName.isPresent() && !userByName.get().getUserId().equals(userId)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User name is already taken.");
+                throw new UserNameAlreadyExistsException(userDetails.getUserFullName());
             }
 
             User userToUpdate = existingUser.get();
