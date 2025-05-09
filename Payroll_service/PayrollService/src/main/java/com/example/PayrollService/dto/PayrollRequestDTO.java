@@ -21,4 +21,9 @@ public class PayrollRequestDTO {
     @NotNull(message = "Year is required")
     @Min(value = 2000, message = "Year must be 2000 or later")
     private Integer year;
+
+    private Integer workingDays = 0;
+    private Integer approvedLeaves = 0;
+    private Integer notApprovedLeaves = 0;
+    private String role;
 }

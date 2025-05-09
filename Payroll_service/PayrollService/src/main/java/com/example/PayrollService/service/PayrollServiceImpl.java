@@ -8,6 +8,7 @@ import com.example.PayrollService.dto.integration.AttendanceDTO;
 import com.example.PayrollService.dto.integration.UserDTO;
 import com.example.PayrollService.entity.PayrollRecord;
 import com.example.PayrollService.entity.ReimbursementRecord;
+import com.example.PayrollService.exception.BusinessValidationException;
 import com.example.PayrollService.exception.ResourceNotFoundException;
 import com.example.PayrollService.feign.AttendanceServiceClient;
 import com.example.PayrollService.feign.UserServiceClient;
@@ -49,19 +50,6 @@ public class PayrollServiceImpl implements PayrollService {
     @Autowired
     private ReimbursementRepository reimbursementRepository;
 
-    // Fallback data when external services are unavailable
-    private final Map<String, String> fallbackEmployeeRoles = Map.of(
-            "1", "ENGINEER",
-            "2", "MANAGER",
-            "3", "HR"
-    );
-
-    private final Map<String, AttendanceDTO> fallbackAttendanceData = Map.of(
-            "1", new AttendanceDTO("1",5,2024,18, 2, 0),
-            "2", new AttendanceDTO("2",5,2024,19, 1, 0),
-            "3", new AttendanceDTO("3",5,2024,17, 3, 0)
-    );
-
     @Override
     public PayrollResponseDTO createPayroll(PayrollRequestDTO dto) {
         // 1. Try to fetch user details (role) with fallback
@@ -71,20 +59,35 @@ public class PayrollServiceImpl implements PayrollService {
             user = userServiceClient.getUserDetails(dto.getEmployeeId());
             role = user.getRole();
         } catch (Exception e) {
-            System.err.println("UserService unavailable, using fallback data: " + e.getMessage());
-            role = fallbackEmployeeRoles.getOrDefault(dto.getEmployeeId(), "ENGINEER");
+            System.err.println("UserService unavailable");
+            if (dto.getRole() == null) {
+                throw new BusinessValidationException(
+                        "Role is required when UserService is unavailable");
+            }
+            role = dto.getRole(); // Use Postman-provided role
         }
 
         // 2. Try to fetch attendance details with fallback
         AttendanceDTO attendance;
         try {
             attendance = attendanceServiceClient.getAttendanceDetails(
-                    dto.getEmployeeId(), dto.getMonth(), dto.getYear()
-            );
+                    dto.getEmployeeId(), dto.getMonth(), dto.getYear());
         } catch (Exception e) {
-            System.err.println("AttendanceService unavailable, using fallback data: " + e.getMessage());
-            attendance = fallbackAttendanceData.getOrDefault(dto.getEmployeeId(),
-                    new AttendanceDTO("1",5,2024,18, 2, 0)); // Default values
+            System.err.println("AttendanceService unavailable");
+            if (dto.getWorkingDays() == null ||
+                    dto.getApprovedLeaves() == null ||
+                    dto.getNotApprovedLeaves() == null) {
+                throw new BusinessValidationException(
+                        "Attendance data is required when AttendanceService is unavailable");
+            }
+            attendance = new AttendanceDTO(
+                    dto.getEmployeeId(),
+                    dto.getMonth(),
+                    dto.getYear(),
+                    dto.getWorkingDays(),
+                    dto.getApprovedLeaves(),
+                    dto.getNotApprovedLeaves()
+            );
         }
 
         int workingDays = attendance.getWorkingDays();
@@ -108,9 +111,6 @@ public class PayrollServiceImpl implements PayrollService {
 
         // 2. Calculate payable days and no pay deduction
         int totalWorkingDays=20;  //total working days for month
-//        int workingDays = dto.getWorkingDays();  // days came to work for month
-//        int approvedLeaves = dto.getApprovedLeaves(); //approved leaves
-//        int notApprovedLeaves = dto.getNotApprovedLeaves(); //not approved leaves
 
         int payableDays = workingDays + approvedLeaves;
         double noPay = (basicSalary / totalWorkingDays) * notApprovedLeaves;
@@ -199,20 +199,36 @@ public class PayrollServiceImpl implements PayrollService {
             user = userServiceClient.getUserDetails(dto.getEmployeeId());
             role = user.getRole();
         } catch (Exception e) {
-            System.err.println("UserService unavailable, using fallback data: " + e.getMessage());
-            role = fallbackEmployeeRoles.getOrDefault(dto.getEmployeeId(), "ENGINEER");
+            System.err.println("UserService unavailable");
+            if (dto.getRole() == null) {
+                throw new BusinessValidationException(
+                        "Role is required when UserService is unavailable");
+            }
+            role = dto.getRole();
+
         }
 
         // 2. Try to fetch attendance details with fallback
         AttendanceDTO attendance;
         try {
             attendance = attendanceServiceClient.getAttendanceDetails(
-                    dto.getEmployeeId(), dto.getMonth(), dto.getYear()
-            );
+                    dto.getEmployeeId(), dto.getMonth(), dto.getYear());
         } catch (Exception e) {
-            System.err.println("AttendanceService unavailable, using fallback data: " + e.getMessage());
-            attendance = fallbackAttendanceData.getOrDefault(dto.getEmployeeId(),
-                    new AttendanceDTO("1",5,2024,18, 2, 0)); // Default values
+            System.err.println("AttendanceService unavailable");
+            if (dto.getWorkingDays() == null ||
+                    dto.getApprovedLeaves() == null ||
+                    dto.getNotApprovedLeaves() == null) {
+                throw new BusinessValidationException(
+                        "Attendance data is required when AttendanceService is unavailable");
+            }
+            attendance = new AttendanceDTO(
+                    dto.getEmployeeId(),
+                    dto.getMonth(),
+                    dto.getYear(),
+                    dto.getWorkingDays(),
+                    dto.getApprovedLeaves(),
+                    dto.getNotApprovedLeaves()
+            );
         }
 
         int workingDays = attendance.getWorkingDays();
@@ -237,9 +253,6 @@ public class PayrollServiceImpl implements PayrollService {
 
         // 2. Calculate payable days and no pay deduction
         int totalWorkingDays=20;  //total working days for month
-//        int workingDays = dto.getWorkingDays();  // days came to work for month
-//        int approvedLeaves = dto.getApprovedLeaves(); //approved leaves
-//        int notApprovedLeaves = dto.getNotApprovedLeaves(); //not approved leaves
 
         int payableDays = workingDays + approvedLeaves;
         double noPay = (basicSalary / totalWorkingDays) * notApprovedLeaves;
