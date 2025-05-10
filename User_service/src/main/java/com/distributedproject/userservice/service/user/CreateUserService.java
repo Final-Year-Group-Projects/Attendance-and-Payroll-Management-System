@@ -44,9 +44,7 @@ public class CreateUserService {
             errorMessage.append("Department ID ").append(user.getDepartmentId()).append(" does not exist.");
         }
 
-        if (errorMessage.length() > 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMessage.toString().trim());
-        }
+
         return userRepository.save(user);
     }
 }

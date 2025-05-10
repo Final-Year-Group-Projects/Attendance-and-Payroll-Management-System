@@ -104,35 +104,23 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        logger.error("Error occurred while creating user: StatusCode: {}, Timestamp: {}, Message: {}", HttpStatus.NOT_FOUND.value(),LocalDateTime.now(), ex.getMessage() );
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("timestamp", new Date());
-        errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
+    public ResponseEntity<Map<String, Object>> handleValidationException(MethodArgumentNotValidException ex) {
 
-        List<String> errors = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
+        Map<String, Object> response = new HashMap<>();
+
+        String errorMessage = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                .collect(Collectors.toList());
+                .findFirst()
+                .orElse("Validation error");
+        logger.error("Error occurred while creating user: StatusCode: {}, Timestamp: {}, Message: {}", 404,LocalDateTime.now(), errorMessage);
 
-        errorResponse.put("errors", errors);
+        response.put("errorMessage", "\"" + errorMessage + "\"");
+        response.put("error", "Invalid error");
+        response.put("statusCode", 404);
+        response.put("timestamp", LocalDateTime.now());
 
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<Map<String, Object>> handleResponseStatusException(ResponseStatusException ex) {
-        logger.error("Error occurred while creating user: StatusCode: {}, Timestamp: {}, Message: {}", HttpStatus.NOT_FOUND.value(),LocalDateTime.now(), ex.getMessage() );
-        Map<String, Object> error = new HashMap<>();
-        error.put("errorMessage", ex.getMessage());
-        error.put("error", "Not Found");
-        error.put("statusCode", HttpStatus.NOT_FOUND.value());
-        error.put("timestamp", LocalDateTime.now());
-
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(DepartmentNameAlreadyExistsException.class)
