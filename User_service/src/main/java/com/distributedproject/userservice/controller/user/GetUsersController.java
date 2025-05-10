@@ -27,7 +27,7 @@ public class GetUsersController {
         List<User> users = userService.getAllUsers();
 
         // Log the successful retrieval of users
-        logger.info("Retrieved {} users", users.size());
+        logger.info("Retrieved {} users successfully", users.size());
 
         // Return the list of users
         return users;

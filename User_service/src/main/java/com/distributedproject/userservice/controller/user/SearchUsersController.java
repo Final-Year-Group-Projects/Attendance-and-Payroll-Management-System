@@ -28,7 +28,7 @@ public class SearchUsersController {
         List<User> users = userService.searchUsersByName(name);
 
         // Log the result of the search
-        logger.info("Found {} users matching the name: {}", users.size(), name);
+        logger.info("Found {} users matching the name: {} successfully", users.size(), name);
 
         // Return the list of matching users
         return users;

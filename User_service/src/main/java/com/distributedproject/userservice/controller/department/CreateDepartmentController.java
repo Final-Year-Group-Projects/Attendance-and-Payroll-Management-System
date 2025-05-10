@@ -7,16 +7,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 public class CreateDepartmentController {
+
+    private static final Logger logger = LoggerFactory.getLogger(CreateDepartmentController.class);
 
     @Autowired
     private CreateDepartmentService departmentService;
 
     @PostMapping("/create/departments")
     public Department createDepartment(@Valid @RequestBody Department department) {
-        System.out.println("Received department: " + department);
-        return departmentService.createDepartment(department);
+        logger.info("Received department creation request for department: {}", department);
+
+        Department createdDepartment = departmentService.createDepartment(department);
+
+        logger.info("Department created successfully: {}", createdDepartment);
+
+        return createdDepartment;
     }
 }

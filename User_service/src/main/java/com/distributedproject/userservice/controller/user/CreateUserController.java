@@ -22,8 +22,11 @@ public class CreateUserController {
 
     @PostMapping("/create/users")
     public User createUser(@Valid @RequestBody User user) {
-        logger.info("Received user creation request: {}", user);
-        return userService.createUser(user);
-    }
+        logger.info("Received user creation request for user: {}", user);
 
+        User createdUser = userService.createUser(user);
+        logger.info("User created successfully: {}", createdUser);
+
+        return createdUser;
+    }
 }
