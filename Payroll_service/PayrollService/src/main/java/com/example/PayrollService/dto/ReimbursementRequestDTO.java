@@ -13,13 +13,10 @@ public class ReimbursementRequestDTO {
     private String employeeId;
 
     @NotBlank(message = "Type is required (e.g., TRAVEL, MEDICAL)")
-    @Pattern(regexp = "^(TRAVEL|MEDICAL|MEAL|OTHER)$",
-            message = "Type must be TRAVEL, MEDICAL, MEAL, or OTHER")
     private String type;
 
     @NotNull(message = "Amount is required")
     @DecimalMin(value = "0.01", message = "Amount must be positive")
-    @Max(value = 5000, message = "Amount cannot exceed 5000.00")
     private Double amount;
 
     @NotBlank(message = "Description is required")
