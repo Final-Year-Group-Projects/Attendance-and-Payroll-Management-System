@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface ReimbursementRepository extends JpaRepository<ReimbursementRecord, Long> {
     List<ReimbursementRecord> findByEmployeeId(String employeeId);
+    boolean existsByEmployeeId(String employeeId);
+
 }

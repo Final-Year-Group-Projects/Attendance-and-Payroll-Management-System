@@ -20,5 +20,6 @@ public interface PayrollRepository extends JpaRepository<PayrollRecord, Long> {
 
     void deleteByEmployeeId(String employeeId);
 
+    boolean existsByEmployeeId(String employeeId);
 
 }
