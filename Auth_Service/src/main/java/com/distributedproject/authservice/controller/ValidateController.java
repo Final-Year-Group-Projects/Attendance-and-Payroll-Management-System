@@ -2,6 +2,8 @@ package com.distributedproject.authservice.controller;
 
 import com.distributedproject.authservice.service.JwtService;
 import com.distributedproject.authservice.service.TokenBlacklistService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/auth")
 public class ValidateController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ValidateController.class);
 
     private final JwtService jwtService;
     private final TokenBlacklistService tokenBlacklistService;
@@ -25,24 +29,24 @@ public class ValidateController {
     @PostMapping("/validate")
     public ResponseEntity<?> validateToken(@RequestBody Map<String, String> request) {
         String token = request.get("token");
+        logger.info("Received token validation request");
 
-        // Check if token is blacklisted
         if (tokenBlacklistService.isTokenBlacklisted(token)) {
+            logger.warn("Token is blacklisted: {}", token);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is blacklisted");
         }
 
         try {
-            // Extract username and role from token
             String username = jwtService.extractUsername(token);
             String role = jwtService.extractRole(token);
+            logger.info("Token validated successfully. Username: {}, Role: {}", username, role);
 
-            // Return username and role as a response
             return ResponseEntity.ok(Map.of(
                     "username", username,
                     "role", role
             ));
         } catch (Exception e) {
-            // Return error if token is invalid
+            logger.error("Token validation failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         }
     }

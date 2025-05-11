@@ -115,7 +115,7 @@ public class GlobalExceptionHandler {
                 .orElse("Validation error");
         logger.error("Error occurred while creating user: StatusCode: {}, Timestamp: {}, Message: {}", 404,LocalDateTime.now(), errorMessage);
 
-        response.put("errorMessage", "\"" + errorMessage + "\"");
+        response.put("errorMessage", errorMessage);
         response.put("error", "Invalid error");
         response.put("statusCode", 404);
         response.put("timestamp", LocalDateTime.now());
