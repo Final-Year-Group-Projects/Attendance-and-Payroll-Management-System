@@ -305,7 +305,6 @@ public class AttendanceController {
         return ResponseEntity.ok(leaveBalance);
     }
 
-    // New endpoint to delete a leave request
     @Operation(summary = "Delete a leave request by its ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Leave request deleted successfully"),
@@ -315,6 +314,55 @@ public class AttendanceController {
     @DeleteMapping("/leaves/{leaveId}")
     public ResponseEntity<Void> deleteLeaveRequest(@PathVariable Long leaveId) {
         logger.info("Processing delete request for leaveId: {}", leaveId);
+
+        Leave leave = leaveRepository.findById(leaveId)
+                .orElseThrow(() -> {
+                    logger.warn("Leave request with ID {} not found", leaveId);
+                    return new IllegalArgumentException("Leave request not found for leaveId: " + leaveId);
+                });
+
+        UserServiceClient.EmployeeDTO employee = userServiceClient.getUserById(leave.getEmployeeId());
+        if (employee == null) {
+            logger.warn("Employee with ID {} not found for leaveId: {}", leave.getEmployeeId(), leaveId);
+            throw new IllegalArgumentException("Employee not found for the leave request");
+        }
+
+        attendanceService.deleteLeaveRequest(leaveId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Updated endpoint for leave approval/rejection using the new UserServiceClient
+    @Operation(summary = "Approve or reject a leave request by its ID (Admin-only)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Leave status updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input, leave not found, or leave not in PENDING status"),
+            @ApiResponse(responseCode = "403", description = "Unauthorized: Only Admins can approve/reject leaves"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @PutMapping("/leaves/{leaveId}/status")
+    public ResponseEntity<Leave> updateLeaveStatus(
+            @PathVariable Long leaveId,
+            @RequestParam("status") String status,
+            @RequestHeader(value = "employeeId", required = true) Long requestingEmployeeId) {
+        logger.info("Processing leave status update for leaveId: {} to status: {} by employeeId: {}",
+                leaveId, status, requestingEmployeeId);
+
+        if (requestingEmployeeId == null) {
+            logger.warn("Employee ID header is missing");
+            throw new IllegalArgumentException("Employee ID header is required");
+        }
+
+        // Validate the requesting employee exists and check their role
+        UserServiceClient.EmployeeDTO requestingEmployee = userServiceClient.getUserById(requestingEmployeeId);
+        if (requestingEmployee == null) {
+            logger.warn("Requesting employee with ID {} not found", requestingEmployeeId);
+            throw new IllegalArgumentException("Requesting employee not found");
+        }
+        if (!"Admin".equalsIgnoreCase(requestingEmployee.getRole())) {
+            logger.warn("Employee with ID {} does not have Admin role to approve/reject leaveId: {}",
+                    requestingEmployeeId, leaveId);
+            throw new IllegalStateException("Unauthorized: Only Admins can approve or reject leaves");
+        }
 
         // Validate that the leave exists and fetch its employee ID
         Leave leave = leaveRepository.findById(leaveId)
@@ -330,8 +378,9 @@ public class AttendanceController {
             throw new IllegalArgumentException("Employee not found for the leave request");
         }
 
-        // Call the service to delete the leave request
-        attendanceService.deleteLeaveRequest(leaveId);
-        return ResponseEntity.noContent().build();
+        // Update the leave status
+        attendanceService.updateLeaveStatus(leaveId, status);
+        Leave updatedLeave = leaveRepository.findById(leaveId).get(); // Fetch updated leave
+        return ResponseEntity.ok(updatedLeave);
     }
 }

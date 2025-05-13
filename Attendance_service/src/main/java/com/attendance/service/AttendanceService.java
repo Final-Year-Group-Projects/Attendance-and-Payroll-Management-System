@@ -24,7 +24,6 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final LeaveRepository leaveRepository;
 
-    // Leave limits per month
     private static final long MAX_ANNUAL_DAYS = 14;
     private static final long MAX_CASUAL_DAYS = 7;
     private static final long MAX_HALF_DAYS = 2;
@@ -53,7 +52,7 @@ public class AttendanceService {
         }
 
         Duration duration = Duration.between(checkIn, checkOut);
-        double hours = duration.toMinutes() / 60.0; // Convert to hours as a decimal
+        double hours = duration.toMinutes() / 60.0;
         logger.info("Calculated working hours for recordId {}: {}", recordId, hours);
         return hours;
     }
@@ -61,20 +60,17 @@ public class AttendanceService {
     public double calculateTotalWorkingHours(Long employeeId, LocalDate startDate, LocalDate endDate) {
         logger.info("Calculating total working hours for employeeId: {} from {} to {}", employeeId, startDate, endDate);
 
-        // Validate date range
         if (startDate.isAfter(endDate)) {
             logger.warn("Invalid date range: startDate {} is after endDate {}", startDate, endDate);
             throw new IllegalArgumentException("Start date must be before or equal to end date");
         }
 
-        // Retrieve attendance records within the date range
         List<Attendance> records = attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, startDate, endDate);
         if (records.isEmpty()) {
             logger.warn("No attendance records found for employeeId: {} between {} and {}", employeeId, startDate, endDate);
-            return 0.0; // Return 0 if no records are found
+            return 0.0;
         }
 
-        // Calculate total hours
         double totalHours = 0.0;
         for (Attendance record : records) {
             try {
@@ -83,7 +79,7 @@ public class AttendanceService {
 
                 if (checkIn == null || checkOut == null) {
                     logger.warn("Skipping recordId {}: Check-in or check-out time is missing", record.getId());
-                    continue; // Skip records with missing check-in or check-out times
+                    continue;
                 }
 
                 Duration duration = Duration.between(checkIn, checkOut);
@@ -92,7 +88,6 @@ public class AttendanceService {
                 logger.debug("RecordId {}: {} hours", record.getId(), hours);
             } catch (Exception e) {
                 logger.error("Error calculating hours for recordId {}: {}", record.getId(), e.getMessage());
-                // Continue with the next record instead of failing the entire operation
             }
         }
 
@@ -104,71 +99,62 @@ public class AttendanceService {
         logger.info("Saving leave request for employeeId: {} from {} to {} with leaveType: {}",
                 employeeId, startDate, endDate, leaveType);
 
-        // Validate that endDate is not before startDate
         if (endDate.isBefore(startDate)) {
             logger.warn("Invalid date range: endDate {} is before startDate {}", endDate, startDate);
             throw new IllegalArgumentException("End date cannot be before start date");
         }
 
-        // Validate leave type
         String normalizedLeaveType = leaveType.trim().toUpperCase();
         if (!normalizedLeaveType.equals("ANNUAL") && !normalizedLeaveType.equals("CASUAL") && !normalizedLeaveType.equals("HALF DAY")) {
             logger.warn("Invalid leave type: {}", leaveType);
             throw new IllegalArgumentException("Leave type must be 'Annual', 'Casual', or 'Half Day'");
         }
 
-        // Calculate number of leave days
         long daysBetween = ChronoUnit.DAYS.between(startDate, endDate) + 1;
 
-        // Check monthly limits
         LocalDate monthStart = startDate.withDayOfMonth(1);
         LocalDate monthEnd = monthStart.plusMonths(1).minusDays(1);
         List<Leave> existingLeaves = leaveRepository.findByEmployeeIdAndStartDateBetween(employeeId, monthStart, monthEnd);
 
         long annualDays = existingLeaves.stream()
-                .filter(l -> l.getLeaveType().equalsIgnoreCase("ANNUAL"))
+                .filter(l -> l.getLeaveType().equalsIgnoreCase("ANNUAL") && l.getStatus().equalsIgnoreCase("APPROVED"))
                 .mapToLong(l -> ChronoUnit.DAYS.between(l.getStartDate(), l.getEndDate()) + 1)
                 .sum();
         long casualDays = existingLeaves.stream()
-                .filter(l -> l.getLeaveType().equalsIgnoreCase("CASUAL"))
+                .filter(l -> l.getLeaveType().equalsIgnoreCase("CASUAL") && l.getStatus().equalsIgnoreCase("APPROVED"))
                 .mapToLong(l -> ChronoUnit.DAYS.between(l.getStartDate(), l.getEndDate()) + 1)
                 .sum();
         long halfDayCount = existingLeaves.stream()
-                .filter(l -> l.getLeaveType().equalsIgnoreCase("HALF DAY"))
+                .filter(l -> l.getLeaveType().equalsIgnoreCase("HALF DAY") && l.getStatus().equalsIgnoreCase("APPROVED"))
                 .count();
 
-        if (normalizedLeaveType.equals("ANNUAL") && annualDays + daysBetween > 14) {
+        if (normalizedLeaveType.equals("ANNUAL") && annualDays + daysBetween > MAX_ANNUAL_DAYS) {
             logger.warn("Annual leave limit exceeded for employeeId: {}", employeeId);
             throw new IllegalArgumentException("Maximum 14 annual leave days allowed per month");
         }
-        if (normalizedLeaveType.equals("CASUAL") && casualDays + daysBetween > 7) {
+        if (normalizedLeaveType.equals("CASUAL") && casualDays + daysBetween > MAX_CASUAL_DAYS) {
             logger.warn("Casual leave limit exceeded for employeeId: {}", employeeId);
             throw new IllegalArgumentException("Maximum 7 casual leave days allowed per month");
         }
-        if (normalizedLeaveType.equals("HALF DAY") && halfDayCount + 1 > 2) {
+        if (normalizedLeaveType.equals("HALF DAY") && halfDayCount + 1 > MAX_HALF_DAYS) {
             logger.warn("Half day limit exceeded for employeeId: {}", employeeId);
             throw new IllegalArgumentException("Maximum 2 half days allowed per month");
         }
 
-        // Create and save the leave request
         Leave leave = new Leave(employeeId, startDate, endDate, reason, "PENDING", normalizedLeaveType);
         Leave savedLeave = leaveRepository.save(leave);
         logger.info("Leave request saved successfully for employeeId: {}", employeeId);
         return savedLeave;
     }
 
-    // New method to get attendance count per month
     public long getAttendanceCountPerMonth(Long employeeId, LocalDate month) {
         logger.info("Calculating attendance count for employeeId: {} for month: {}", employeeId, month);
 
-        // Determine the start and end of the month
         LocalDate monthStart = month.withDayOfMonth(1);
         LocalDate monthEnd = monthStart.plusMonths(1).minusDays(1);
 
-        // Retrieve attendance records within the month
         List<Attendance> records = attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, monthStart, monthEnd);
 
-        // Count distinct days when both check-in and check-out times are present
         long attendedDays = records.stream()
                 .filter(record -> record.getCheckInTime() != null && record.getCheckOutTime() != null)
                 .map(Attendance::getDate)
@@ -179,7 +165,6 @@ public class AttendanceService {
         return attendedDays;
     }
 
-    // New method to get leave balance
     public LeaveBalanceResponse getLeaveBalance(Long employeeId, LocalDate month) {
         logger.info("Calculating leave balance for employeeId: {} for month: {}", employeeId, month);
 
@@ -189,15 +174,15 @@ public class AttendanceService {
         List<Leave> leaves = leaveRepository.findByEmployeeIdAndStartDateBetween(employeeId, monthStart, monthEnd);
 
         long usedAnnualDays = leaves.stream()
-                .filter(l -> l.getLeaveType().equalsIgnoreCase("ANNUAL"))
+                .filter(l -> l.getLeaveType().equalsIgnoreCase("ANNUAL") && l.getStatus().equalsIgnoreCase("APPROVED"))
                 .mapToLong(l -> ChronoUnit.DAYS.between(l.getStartDate(), l.getEndDate()) + 1)
                 .sum();
         long usedCasualDays = leaves.stream()
-                .filter(l -> l.getLeaveType().equalsIgnoreCase("CASUAL"))
+                .filter(l -> l.getLeaveType().equalsIgnoreCase("CASUAL") && l.getStatus().equalsIgnoreCase("APPROVED"))
                 .mapToLong(l -> ChronoUnit.DAYS.between(l.getStartDate(), l.getEndDate()) + 1)
                 .sum();
         long usedHalfDays = leaves.stream()
-                .filter(l -> l.getLeaveType().equalsIgnoreCase("HALF DAY"))
+                .filter(l -> l.getLeaveType().equalsIgnoreCase("HALF DAY") && l.getStatus().equalsIgnoreCase("APPROVED"))
                 .count();
 
         long remainingAnnualDays = MAX_ANNUAL_DAYS - usedAnnualDays;
@@ -210,7 +195,6 @@ public class AttendanceService {
         return new LeaveBalanceResponse(remainingAnnualDays, remainingCasualDays, remainingHalfDays);
     }
 
-    // New method to delete a leave request
     public void deleteLeaveRequest(Long leaveId) {
         logger.info("Attempting to delete leave request with leaveId: {}", leaveId);
 
@@ -227,5 +211,30 @@ public class AttendanceService {
 
         leaveRepository.delete(leave);
         logger.info("Leave request with leaveId: {} deleted successfully", leaveId);
+    }
+
+    public void updateLeaveStatus(Long leaveId, String newStatus) {
+        logger.info("Attempting to update leave status for leaveId: {} to {}", leaveId, newStatus);
+
+        Leave leave = leaveRepository.findById(leaveId)
+                .orElseThrow(() -> {
+                    logger.warn("Leave request with ID {} not found", leaveId);
+                    return new IllegalArgumentException("Leave request not found for leaveId: " + leaveId);
+                });
+
+        if (!leave.getStatus().equalsIgnoreCase("PENDING")) {
+            logger.warn("Cannot update leave status for leaveId: {} because its current status is {}", leaveId, leave.getStatus());
+            throw new IllegalStateException("Cannot update leave status: It must be in PENDING status");
+        }
+
+        String normalizedStatus = newStatus.trim().toUpperCase();
+        if (!normalizedStatus.equals("APPROVED") && !normalizedStatus.equals("REJECTED")) {
+            logger.warn("Invalid status provided: {}", newStatus);
+            throw new IllegalArgumentException("Status must be 'APPROVED' or 'REJECTED'");
+        }
+
+        leave.setStatus(normalizedStatus);
+        leaveRepository.save(leave);
+        logger.info("Leave status for leaveId: {} updated to {}", leaveId, normalizedStatus);
     }
 }

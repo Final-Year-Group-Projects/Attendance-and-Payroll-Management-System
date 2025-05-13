@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "USER-SERVICE")
+@FeignClient(name = "USER-SERVICE", fallback = UserServiceClientFallback.class)
 public interface UserServiceClient {
 
     @GetMapping("/users/{id}")
