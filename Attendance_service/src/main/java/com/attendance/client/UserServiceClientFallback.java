@@ -1,13 +1,19 @@
 package com.attendance.client;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserServiceClientFallback implements UserServiceClient {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceClientFallback.class);
+
     @Override
     public EmployeeDTO getUserById(Long id) {
+        logger.info("Fallback getUserById called with id: {}", id);
         if (id == null || id.equals(999L)) {
+            logger.info("Returning null for id: {}", id);
             return null; // Simulate non-existent employee
         }
         EmployeeDTO employee = new EmployeeDTO();
@@ -15,11 +21,14 @@ public class UserServiceClientFallback implements UserServiceClient {
         employee.setFirstName("Fallback");
         employee.setLastName("User");
         employee.setEmail("fallback@" + id + ".com");
-        if (id.equals(1L)) {
-            employee.setRole("Admin"); // Simulate Admin role for employeeId = 1
+        if (id == 1L) {
+            employee.setRole("Admin");
+            logger.info("Set role to Admin for id: {}", id);
         } else {
-            employee.setRole("Employee"); // Default role for others
+            employee.setRole("Employee");
+            logger.info("Set role to Employee for id: {}", id);
         }
+        logger.info("Returning EmployeeDTO with role: {} for id: {}", employee.getRole(), id);
         return employee;
     }
 

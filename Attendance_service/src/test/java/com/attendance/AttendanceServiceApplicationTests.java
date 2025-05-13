@@ -1,7 +1,7 @@
 package com.attendance;
 
 import com.attendance.controller.AttendanceController;
-import com.attendance.controller.AttendanceRequest;
+import com.attendance.dto.AttendanceRequest; // Corrected import (dto package)
 import com.attendance.entity.Attendance;
 import com.attendance.service.AttendanceService;
 import com.attendance.client.UserServiceClient;
@@ -52,14 +52,23 @@ class AttendanceServiceApplicationTests {
 		attendance.setCheckOutTime(LocalTime.of(17, 0));
 
 		when(attendanceService.saveAttendance(any(Attendance.class))).thenReturn(attendance);
+
+		// Mock UserServiceClient to return a valid employee for employeeId = 1
+		UserServiceClient.EmployeeDTO employee = new UserServiceClient.EmployeeDTO();
+		employee.setId(1L);
+		employee.setFirstName("Test");
+		employee.setLastName("User");
+		employee.setEmail("test@example.com");
+		employee.setRole("Employee");
+		when(userServiceClient.getUserById(1L)).thenReturn(employee);
 	}
 
 	@Test
 	void testRecordAttendance() throws Exception {
 		AttendanceRequest request = new AttendanceRequest();
 		request.setDate("2025-04-17");
-		request.setCheckInTime("09:00");
-		request.setCheckOutTime("17:00");
+		request.setCheckInTime("09:00:00"); //  HH:mm:ss format
+		request.setCheckOutTime("17:00:00"); //  HH:mm:ss format
 
 		mockMvc.perform(post("/attendance/1")
 						.contentType(MediaType.APPLICATION_JSON)

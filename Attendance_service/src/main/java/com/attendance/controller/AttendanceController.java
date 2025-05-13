@@ -358,6 +358,7 @@ public class AttendanceController {
             logger.warn("Requesting employee with ID {} not found", requestingEmployeeId);
             throw new IllegalArgumentException("Requesting employee not found");
         }
+        logger.info("Received role for employeeId {}: {}", requestingEmployeeId, requestingEmployee.getRole()); // Debug log
         if (!"Admin".equalsIgnoreCase(requestingEmployee.getRole())) {
             logger.warn("Employee with ID {} does not have Admin role to approve/reject leaveId: {}",
                     requestingEmployeeId, leaveId);
