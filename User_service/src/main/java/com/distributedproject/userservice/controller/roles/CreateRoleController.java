@@ -1,6 +1,7 @@
 package com.distributedproject.userservice.controller.roles;
 
 import com.distributedproject.userservice.model.Role;
+import com.distributedproject.userservice.model.User;
 import com.distributedproject.userservice.service.roles.CreateRoleService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +19,12 @@ public class CreateRoleController {
     private CreateRoleService roleService;
 
     @PostMapping("/create/roles")
-    public ResponseEntity<String> createRole(@Valid @RequestBody Role role) {
-        logger.info("Received role creation request: {}", role);
-        Role savedRole = roleService.createRole(role);
-        return ResponseEntity.status(201).body("Role created successfully: " + savedRole.getRoleName());
+    public Role createRole(@Valid @RequestBody Role role) {
+        logger.info("Received user creation request for user: {}", role);
+
+        Role createdRole = roleService.createRole(role);
+        logger.info("Role created successfully: {}", createdRole);
+
+        return createdRole;
     }
 }

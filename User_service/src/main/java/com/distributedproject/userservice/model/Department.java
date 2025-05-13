@@ -3,8 +3,18 @@ package com.distributedproject.userservice.model;
 import com.distributedproject.userservice.validation.department.ValidDepartmentHead;
 import com.distributedproject.userservice.validation.department.ValidDepartmentName;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
+@Data // Generates getters, setters, toString, equals, and hashCode
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "department")
 public class Department {
 
@@ -17,6 +27,14 @@ public class Department {
     
     @ValidDepartmentHead
     private String department_head;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
 
     // Getters and setters
@@ -37,6 +55,22 @@ public class Department {
 
     public void setDepartmentHead(String department_head) {
         this.department_head = department_head;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
 
