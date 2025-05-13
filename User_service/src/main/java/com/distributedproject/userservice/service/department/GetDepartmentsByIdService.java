@@ -14,6 +14,6 @@ public class GetDepartmentsByIdService {
     private DepartmentRepository departmentRepository;
 
     public Optional<Department> getUserById(Long departmentId) {
-        return departmentRepository.findById(String.valueOf(departmentId));
+        return departmentRepository.findById(departmentId);
     }
 }

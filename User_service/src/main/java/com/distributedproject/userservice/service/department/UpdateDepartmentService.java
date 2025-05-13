@@ -17,7 +17,7 @@ public class UpdateDepartmentService {
     private DepartmentRepository departmentRepository;
 
     public Department updateDepartment(Long departmentId, Department departmentDetails) {
-        Optional<Department> existingDepartment = departmentRepository.findById(String.valueOf(departmentId));
+        Optional<Department> existingDepartment = departmentRepository.findById(departmentId);
 
         if (existingDepartment.isPresent()) {
             // Check if new name already exists in another department

@@ -32,7 +32,7 @@ public class CreateUserService {
         }
 
         boolean roleExists = roleRepository.existsById(user.getRoleId());
-        boolean departmentExists = departmentRepository.existsById(String.valueOf(user.getDepartmentId()));
+        boolean departmentExists = departmentRepository.existsById(user.getDepartmentId());
 
         // Collect all missing references
         StringBuilder errorMessage = new StringBuilder();

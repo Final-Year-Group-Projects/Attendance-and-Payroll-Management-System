@@ -3,6 +3,7 @@ package com.distributedproject.userservice.exception;
 import com.distributedproject.userservice.exception.department.DepartmentNameAlreadyExistsException;
 import com.distributedproject.userservice.exception.department.DepartmentNameNotFoundException;
 import com.distributedproject.userservice.exception.department.DepartmentNotFoundException;
+import com.distributedproject.userservice.exception.department.UserDepartmentNotFoundException;
 import com.distributedproject.userservice.exception.role.RoleNameAlreadyExistsException;
 import com.distributedproject.userservice.exception.role.RoleNameNotFoundException;
 import com.distributedproject.userservice.exception.role.RoleNotFoundException;
@@ -172,6 +173,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserRoleNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleUserRoleNotFoundException(UserRoleNotFoundException ex) {
         logger.error("Error occurred while retrieving user role: StatusCode: {}, Timestamp: {}, Message: {}",
+                HttpStatus.NOT_FOUND.value(), LocalDateTime.now(), ex.getMessage());
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("errorMessage", ex.getMessage());
+        error.put("error", "Role Not Found");
+        error.put("statusCode", HttpStatus.NOT_FOUND.value());
+        error.put("timestamp", LocalDateTime.now());
+
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(UserDepartmentNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleUserDepartmentNotFoundException(UserDepartmentNotFoundException ex) {
+        logger.error("Error occurred while retrieving user department: StatusCode: {}, Timestamp: {}, Message: {}",
                 HttpStatus.NOT_FOUND.value(), LocalDateTime.now(), ex.getMessage());
 
         Map<String, Object> error = new HashMap<>();

@@ -12,8 +12,8 @@ public class DeleteDepartmentService {
     private DepartmentRepository departmentRepository;
 
     public void deleteDepartment(Long departmentId) {
-        if (departmentRepository.existsById(String.valueOf(departmentId))) {
-            departmentRepository.deleteById(String.valueOf(departmentId));
+        if (departmentRepository.existsById(departmentId)) {
+            departmentRepository.deleteById(departmentId);
         } else {
             throw new DepartmentNotFoundException(departmentId);
         }
