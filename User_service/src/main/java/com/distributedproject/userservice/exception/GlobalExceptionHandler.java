@@ -6,10 +6,7 @@ import com.distributedproject.userservice.exception.department.DepartmentNotFoun
 import com.distributedproject.userservice.exception.role.RoleNameAlreadyExistsException;
 import com.distributedproject.userservice.exception.role.RoleNameNotFoundException;
 import com.distributedproject.userservice.exception.role.RoleNotFoundException;
-import com.distributedproject.userservice.exception.user.UserIdAlreadyExistsException;
-import com.distributedproject.userservice.exception.user.UserNameAlreadyExistsException;
-import com.distributedproject.userservice.exception.user.UserNameNotFoundException;
-import com.distributedproject.userservice.exception.user.UserNotFoundException;
+import com.distributedproject.userservice.exception.user.*;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -172,7 +169,19 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(UserRoleNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleUserRoleNotFoundException(UserRoleNotFoundException ex) {
+        logger.error("Error occurred while retrieving user role: StatusCode: {}, Timestamp: {}, Message: {}",
+                HttpStatus.NOT_FOUND.value(), LocalDateTime.now(), ex.getMessage());
 
+        Map<String, Object> error = new HashMap<>();
+        error.put("errorMessage", ex.getMessage());
+        error.put("error", "Role Not Found");
+        error.put("statusCode", HttpStatus.NOT_FOUND.value());
+        error.put("timestamp", LocalDateTime.now());
+
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
 
 }
 

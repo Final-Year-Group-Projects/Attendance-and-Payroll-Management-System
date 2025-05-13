@@ -12,8 +12,8 @@ public class DeleteRoleService {
     private RoleRepository roleRepository;
 
     public void deleteRole(Long roleId) {
-        if (roleRepository.existsById(String.valueOf(roleId))) {
-            roleRepository.deleteById(String.valueOf(roleId));
+        if (roleRepository.existsById(roleId)) {
+            roleRepository.deleteById(roleId);
         } else {
             throw new RoleNotFoundException(roleId);
         }

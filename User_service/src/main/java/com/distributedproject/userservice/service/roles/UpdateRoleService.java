@@ -18,7 +18,7 @@ public class UpdateRoleService {
     private RoleRepository roleRepository;
 
     public Role updateRole(Long roleId, Role roleDetails) {
-        Optional<Role> existingRole = roleRepository.findById(String.valueOf(roleId));
+        Optional<Role> existingRole = roleRepository.findById(roleId);
 
         if (existingRole.isPresent()) {
             // Check if new name already exists in another role

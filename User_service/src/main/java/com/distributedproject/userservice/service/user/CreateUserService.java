@@ -31,7 +31,7 @@ public class CreateUserService {
             throw new UserIdAlreadyExistsException(user.getUserId());
         }
 
-        boolean roleExists = roleRepository.existsById(String.valueOf(user.getRoleId()));
+        boolean roleExists = roleRepository.existsById(user.getRoleId());
         boolean departmentExists = departmentRepository.existsById(String.valueOf(user.getDepartmentId()));
 
         // Collect all missing references
