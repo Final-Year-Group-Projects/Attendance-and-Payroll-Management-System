@@ -444,12 +444,16 @@ public class PayrollServiceImpl implements PayrollService {
     public PayrollNotificationResponseDTO generatePayrollNotification(String employeeId) {
         List<PayrollRecord> payrolls = payrollRepository.findByEmployeeId(employeeId);
 
+//        if (payrolls.isEmpty()) {
+//            return new PayrollNotificationResponseDTO(
+//                    "error",
+//                    "No payroll records found for employee ID: " + employeeId,
+//                    employeeId  // Convert to Long for DTO
+//            );
+//        }
+
         if (payrolls.isEmpty()) {
-            return new PayrollNotificationResponseDTO(
-                    "error",
-                    "No payroll records found for employee ID: " + employeeId,
-                    employeeId  // Convert to Long for DTO
-            );
+            throw new ResourceNotFoundException("No payroll records found for employee ID: " + employeeId);
         }
 
         PayrollRecord latest = payrolls.get(payrolls.size() - 1);

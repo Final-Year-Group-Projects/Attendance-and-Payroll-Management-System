@@ -1,6 +1,7 @@
 package com.example.PayrollService.controller;
 
 import com.example.PayrollService.entity.PayrollRecord;
+import com.example.PayrollService.exception.ResourceNotFoundException;
 import com.example.PayrollService.repository.PayrollRepository;
 import com.lowagie.text.Document;
 import com.lowagie.text.Font;
@@ -26,7 +27,9 @@ public class PayslipController {
 
     @GetMapping(value = "/{payrollId}/payslip", produces = MediaType.TEXT_HTML_VALUE)
     public ResponseEntity<String> getPayslip(@PathVariable @Min(1) Long payrollId) {
-        Optional<PayrollRecord> optional = payrollRepository.findById(payrollId);
+        Optional<PayrollRecord> optional = Optional.ofNullable(payrollRepository.findById(payrollId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payslip not found for ID " + payrollId)));
+
 
         if (optional.isEmpty()) {
             return ResponseEntity.status(404).body("<h2>Payslip not found for ID " + payrollId + "</h2>");
@@ -61,7 +64,8 @@ public class PayslipController {
 
     @GetMapping(value = "/{payrollId}/payslip/pdf", produces = "application/pdf")
     public ResponseEntity<byte[]> downloadPayslipPdf(@PathVariable @Min(1) Long payrollId) {
-        Optional<PayrollRecord> optional = payrollRepository.findById(payrollId);
+        Optional<PayrollRecord> optional = Optional.ofNullable(payrollRepository.findById(payrollId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payslip not found for ID " + payrollId)));
 
         if (optional.isEmpty()) {
             return ResponseEntity.status(404).build();
