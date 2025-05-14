@@ -1,5 +1,6 @@
 package com.distributedproject.userservice.service.roles;
 
+import com.distributedproject.userservice.exception.role.RoleNameAlreadyExistsException;
 import com.distributedproject.userservice.model.Role;
 import com.distributedproject.userservice.repository.RoleRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,12 +50,12 @@ class CreateRoleServiceTest {
         when(roleRepository.existsByRoleNameIgnoreCase("Admin")).thenReturn(true);
 
         // Act & Assert
-        ResponseStatusException exception = assertThrows(
-                ResponseStatusException.class,
+        RoleNameAlreadyExistsException exception = assertThrows(
+                RoleNameAlreadyExistsException.class,
                 () -> createRoleService.createRole(role)
         );
 
-        assertEquals("400 BAD_REQUEST \"Role name already taken.\"", exception.getMessage());
+        assertEquals("Role name is already taken.", exception.getMessage());
         verify(roleRepository, never()).save(any(Role.class));
     }
 }

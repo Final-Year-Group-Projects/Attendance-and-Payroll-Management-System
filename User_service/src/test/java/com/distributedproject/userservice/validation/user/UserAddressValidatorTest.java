@@ -2,29 +2,40 @@ package com.distributedproject.userservice.validation.user;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UserAddressValidatorTest {
+class UserAddressValidatorTest {
 
-    private UserAddressValidator validator;
+    private UserAddressValidator userAddressValidator;
 
     @BeforeEach
-    public void setUp() {
-        validator = new UserAddressValidator();
+    void setUp() {
+        userAddressValidator = new UserAddressValidator();
     }
 
     @Test
-    public void testValidAddress() {
-        assertTrue(validator.isValid("123 Main St", null));
+    void testValidAddress() {
+        assertTrue(userAddressValidator.isValid("123 Main St", null));
     }
 
     @Test
-    public void testEmptyAddress() {
-        assertFalse(validator.isValid("   ", null));
+    void testEmptyAddress() {
+        assertFalse(userAddressValidator.isValid("", null));
     }
 
     @Test
-    public void testNullAddress() {
-        assertTrue(validator.isValid(null, null));
+    void testNullAddress() {
+        assertTrue(userAddressValidator.isValid(null, null));
+    }
+
+    @Test
+    void testAddressWithWhitespace() {
+        assertFalse(userAddressValidator.isValid("   ", null));
+    }
+
+    @Test
+    void testValidAddressWithWhitespace() {
+        assertTrue(userAddressValidator.isValid(" 123 Main St ", null));
     }
 }

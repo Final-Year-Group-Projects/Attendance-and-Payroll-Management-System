@@ -1,61 +1,72 @@
 package com.distributedproject.userservice.validation.user;
 
-import com.distributedproject.userservice.model.User;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
+import jakarta.validation.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
-
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ValidUserAddressTest {
+import java.util.Set;
+
+class ValidUserAddressTest {
 
     private Validator validator;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
+        // Create a ValidatorFactory and get the Validator
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
     }
 
-    private User buildUserWithAddress(String address) {
-        User user = new User();
-        user.setUserId("U123");
-        user.setUserFullName("John Doe");
-        user.setUserType("Admin");
-        user.setUserTelephone("1234567890");
-        user.setDepartmentId(1L);
-        user.setRoleId(1L);
-        user.setUserAddress(address);
-        return user;
+    @Test
+    void testValidAddress() {
+        User user = new User("John Doe", "123 Main St");
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertTrue(violations.isEmpty(), "No validation errors should be found");
     }
 
     @Test
-    public void testValidAddress() {
-        User user = buildUserWithAddress("123 Main Street");
+    void testInvalidEmptyAddress() {
+        User user = new User("John Doe", "");
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertTrue(violations.isEmpty(), "Expected no validation errors for valid address");
+        assertFalse(violations.isEmpty(), "Validation error should be found for empty address");
+        assertEquals("User address cannot be empty", violations.iterator().next().getMessage());
     }
 
     @Test
-    public void testBlankAddress() {
-        User user = buildUserWithAddress("   ");
+    void testInvalidWhitespaceAddress() {
+        User user = new User("John Doe", "   ");
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty(), "Expected validation error for blank address");
-
-        boolean hasAddressError = violations.stream()
-                .anyMatch(v -> v.getPropertyPath().toString().equals("userAddress"));
-        assertTrue(hasAddressError, "Expected error on 'userAddress' field");
+        assertFalse(violations.isEmpty(), "Validation error should be found for whitespace-only address");
+        assertEquals("User address cannot be empty", violations.iterator().next().getMessage());
     }
 
     @Test
-    public void testNullAddress() {
-        User user = buildUserWithAddress(null);
+    void testNullAddress() {
+        User user = new User("John Doe", null);
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertTrue(violations.isEmpty(), "Expected no validation errors for null address");
+        assertTrue(violations.isEmpty(), "No validation errors should be found for null address");
+    }
+
+    // User class for validation testing
+    static class User {
+        private String name;
+
+        @ValidUserAddress
+        private String address;
+
+        public User(String name, String address) {
+            this.name = name;
+            this.address = address;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getAddress() {
+            return address;
+        }
     }
 }

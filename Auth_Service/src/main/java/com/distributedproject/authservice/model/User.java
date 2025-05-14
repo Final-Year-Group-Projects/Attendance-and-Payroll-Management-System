@@ -18,7 +18,6 @@ public class User {
     @ValidRole
     private String role;
 
-
     public Long getId(){return id;}
 
     public void setId(Long id) {

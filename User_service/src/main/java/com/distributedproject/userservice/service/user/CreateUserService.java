@@ -2,14 +2,14 @@ package com.distributedproject.userservice.service.user;
 
 import com.distributedproject.userservice.exception.user.UserIdAlreadyExistsException;
 import com.distributedproject.userservice.exception.user.UserNameAlreadyExistsException;
+import com.distributedproject.userservice.exception.role.RoleNotFoundException;
+import com.distributedproject.userservice.exception.department.DepartmentNotFoundException;
 import com.distributedproject.userservice.model.User;
 import com.distributedproject.userservice.repository.DepartmentRepository;
 import com.distributedproject.userservice.repository.RoleRepository;
 import com.distributedproject.userservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 
 @Service
 public class CreateUserService {
@@ -24,27 +24,29 @@ public class CreateUserService {
     private DepartmentRepository departmentRepository;
 
     public User createUser(User user) {
+        // Check if the user name already exists
         if (userRepository.existsByUserFullNameIgnoreCase(user.getUserFullName())) {
             throw new UserNameAlreadyExistsException(user.getUserFullName());
         }
+
+        // Check if the user ID already exists
         if (userRepository.existsByUserIdIgnoreCase(user.getUserId())) {
             throw new UserIdAlreadyExistsException(user.getUserId());
         }
 
+        // Check if the role exists
         boolean roleExists = roleRepository.existsById(user.getRoleId());
-        boolean departmentExists = departmentRepository.existsById(user.getDepartmentId());
-
-        // Collect all missing references
-        StringBuilder errorMessage = new StringBuilder();
-
         if (!roleExists) {
-            errorMessage.append("Role ID ").append(user.getRoleId()).append(" does not exist. ");
+            throw new RoleNotFoundException(user.getRoleId());
         }
+
+        // Check if the department exists
+        boolean departmentExists = departmentRepository.existsById(user.getDepartmentId());
         if (!departmentExists) {
-            errorMessage.append("Department ID ").append(user.getDepartmentId()).append(" does not exist.");
+            throw new DepartmentNotFoundException(user.getDepartmentId());
         }
 
-
+        // Save the user to the repository
         return userRepository.save(user);
     }
 }

@@ -1,15 +1,14 @@
 package com.distributedproject.userservice.service.user;
 
+import com.distributedproject.userservice.exception.user.UserNameAlreadyExistsException;
+import com.distributedproject.userservice.exception.user.UserNotFoundException;
 import com.distributedproject.userservice.model.User;
 import com.distributedproject.userservice.repository.UserRepository;
-import com.distributedproject.userservice.exception.user.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -32,7 +31,7 @@ class UpdateUserServiceTest {
         MockitoAnnotations.openMocks(this);
 
         existingUser = new User();
-        existingUser.setUserId("E101");  // Changed from 1L to "E101"
+        existingUser.setUserId("E101");
         existingUser.setUserFullName("Alice Smith");
         existingUser.setUserType("Admin");
         existingUser.setUserAddress("123 Main St");
@@ -51,7 +50,7 @@ class UpdateUserServiceTest {
         when(userRepository.findByUserFullNameIgnoreCase("Alice Johnson")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenReturn(existingUser);
 
-        User updatedUser = updateUserService.updateUser("E101", userDetails);  // Changed input to "E101"
+        User updatedUser = updateUserService.updateUser("E101", userDetails);
 
         assertNotNull(updatedUser);
         assertEquals("Alice Johnson", updatedUser.getUserFullName());
@@ -65,23 +64,24 @@ class UpdateUserServiceTest {
     }
 
     @Test
-    void updateUser_shouldThrowResponseStatusExceptionWhenUserNameIsTaken() {
+    void updateUser_shouldThrowUserNameAlreadyExistsExceptionWhenUserNameIsTaken() {
         when(userRepository.findByUserId("E101")).thenReturn(Optional.of(existingUser));
         User existingUserWithSameName = new User();
         existingUserWithSameName.setUserId("E102");
         existingUserWithSameName.setUserFullName("Alice Johnson");
-        when(userRepository.findByUserFullNameIgnoreCase("Alice Johnson")).thenReturn(Optional.of(existingUserWithSameName));
+        when(userRepository.findByUserFullNameIgnoreCase("Alice Johnson"))
+                .thenReturn(Optional.of(existingUserWithSameName));
 
-        ResponseStatusException exception = assertThrows(
-                ResponseStatusException.class,
+        UserNameAlreadyExistsException exception = assertThrows(
+                UserNameAlreadyExistsException.class,
                 () -> updateUserService.updateUser("E101", userDetails)
         );
 
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertEquals("User name is already taken.", exception.getReason());
+        assertEquals("User name is already taken.", exception.getMessage());
 
         verify(userRepository, times(1)).findByUserId("E101");
         verify(userRepository, times(1)).findByUserFullNameIgnoreCase("Alice Johnson");
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
@@ -96,5 +96,6 @@ class UpdateUserServiceTest {
         assertEquals("User with ID E101 not found", exception.getMessage());
 
         verify(userRepository, times(1)).findByUserId("E101");
+        verify(userRepository, never()).save(any(User.class));
     }
 }
