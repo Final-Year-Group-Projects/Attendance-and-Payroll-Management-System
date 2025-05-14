@@ -23,14 +23,20 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -69,22 +75,24 @@ class AttendanceServiceApplicationTests {
 		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
 		converter.setObjectMapper(objectMapper);
 
+		// Add custom exception handler for IllegalArgumentException
 		mockMvc = MockMvcBuilders.standaloneSetup(attendanceController)
 				.setMessageConverters(converter)
+				.setControllerAdvice(new GlobalExceptionHandler())
 				.build();
+	}
+
+	// Custom exception handler for testing
+	@RestControllerAdvice
+	static class GlobalExceptionHandler {
+		@ExceptionHandler(IllegalArgumentException.class)
+		public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
+			return ResponseEntity.badRequest().body(ex.getMessage());
+		}
 	}
 
 	@Test
 	void testRecordAttendance() throws Exception {
-		// Mock UserServiceClient for employee
-		UserServiceClient.EmployeeDTO employee = new UserServiceClient.EmployeeDTO();
-		employee.setId(1L);
-		employee.setFirstName("Test");
-		employee.setLastName("User");
-		employee.setEmail("test@example.com");
-		employee.setRole("Employee");
-		when(userServiceClient.getUserById(1L)).thenReturn(employee);
-
 		// Mock for POST /attendance/1
 		Attendance attendance = new Attendance();
 		attendance.setEmployeeId(1L);
@@ -110,15 +118,6 @@ class AttendanceServiceApplicationTests {
 
 	@Test
 	void testRequestLeave() throws Exception {
-		// Mock UserServiceClient for employee
-		UserServiceClient.EmployeeDTO employee = new UserServiceClient.EmployeeDTO();
-		employee.setId(1L);
-		employee.setFirstName("Test");
-		employee.setLastName("User");
-		employee.setEmail("test@example.com");
-		employee.setRole("Employee");
-		when(userServiceClient.getUserById(1L)).thenReturn(employee);
-
 		// Mock for POST /attendance/leaves/request
 		Leave leave = new Leave();
 		leave.setId(5L);
@@ -152,24 +151,6 @@ class AttendanceServiceApplicationTests {
 
 	@Test
 	void testApproveLeave() throws Exception {
-		// Mock UserServiceClient for employee
-		UserServiceClient.EmployeeDTO employee = new UserServiceClient.EmployeeDTO();
-		employee.setId(1L);
-		employee.setFirstName("Test");
-		employee.setLastName("User");
-		employee.setEmail("test@example.com");
-		employee.setRole("Employee");
-		when(userServiceClient.getUserById(1L)).thenReturn(employee);
-
-		// Mock UserServiceClient for admin
-		UserServiceClient.EmployeeDTO admin = new UserServiceClient.EmployeeDTO();
-		admin.setId(2L);
-		admin.setFirstName("Admin");
-		admin.setLastName("User");
-		admin.setEmail("admin@example.com");
-		admin.setRole("Admin");
-		when(userServiceClient.getUserById(2L)).thenReturn(admin);
-
 		// Mock for PUT /attendance/leaves/5/status
 		Leave leave = new Leave();
 		leave.setId(5L);
@@ -194,7 +175,7 @@ class AttendanceServiceApplicationTests {
 
 		mockMvc.perform(put("/attendance/leaves/5/status")
 						.param("status", "APPROVED")
-						.header("employeeId", "2")) // Admin ID
+						.header("employeeId", "2"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status").value("APPROVED"))
 				.andExpect(jsonPath("$.id").value(5))
@@ -203,5 +184,81 @@ class AttendanceServiceApplicationTests {
 				.andExpect(jsonPath("$.endDate").value("2025-05-15"))
 				.andExpect(jsonPath("$.reason").value("Test leave"))
 				.andExpect(jsonPath("$.leaveType").value("CASUAL"));
+	}
+
+	@Test
+	void testGetLeaveRequestsWithNoDateRange() throws Exception {
+		// Mock LeaveRepository for all leaves
+		Leave leave = new Leave();
+		leave.setId(1L);
+		leave.setEmployeeId(1L);
+		leave.setStartDate(LocalDate.of(2025, 5, 15));
+		leave.setEndDate(LocalDate.of(2025, 5, 15));
+		leave.setReason("Vacation");
+		leave.setStatus("APPROVED");
+		leave.setLeaveType("ANNUAL");
+		List<Leave> leaveList = Collections.singletonList(leave);
+		when(leaveRepository.findByEmployeeId(1L)).thenReturn(leaveList);
+
+		// Perform GET request
+		mockMvc.perform(get("/attendance/leaves/employee/1")
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].id").value(1))
+				.andExpect(jsonPath("$[0].employeeId").value(1))
+				.andExpect(jsonPath("$[0].startDate").value("2025-05-15"))
+				.andExpect(jsonPath("$[0].endDate").value("2025-05-15"))
+				.andExpect(jsonPath("$[0].reason").value("Vacation"))
+				.andExpect(jsonPath("$[0].status").value("APPROVED"))
+				.andExpect(jsonPath("$[0].leaveType").value("ANNUAL"));
+	}
+
+	@Test
+	void testGetLeaveRequestsWithDateRange() throws Exception {
+		// Mock LeaveRepository for date range
+		Leave leave = new Leave();
+		leave.setId(1L);
+		leave.setEmployeeId(1L);
+		leave.setStartDate(LocalDate.of(2025, 5, 15));
+		leave.setEndDate(LocalDate.of(2025, 5, 15));
+		leave.setReason("Vacation");
+		leave.setStatus("APPROVED");
+		leave.setLeaveType("ANNUAL");
+		List<Leave> leaveList = Collections.singletonList(leave);
+		when(leaveRepository.findByEmployeeIdAndStartDateBetween(1L, LocalDate.of(2025, 5, 1), LocalDate.of(2025, 5, 31)))
+				.thenReturn(leaveList);
+
+		// Perform GET request with date range
+		mockMvc.perform(get("/attendance/leaves/employee/1")
+						.contentType(MediaType.APPLICATION_JSON)
+						.param("startDate", "2025-05-01")
+						.param("endDate", "2025-05-31"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].id").value(1))
+				.andExpect(jsonPath("$[0].employeeId").value(1))
+				.andExpect(jsonPath("$[0].startDate").value("2025-05-15"))
+				.andExpect(jsonPath("$[0].endDate").value("2025-05-15"))
+				.andExpect(jsonPath("$[0].reason").value("Vacation"))
+				.andExpect(jsonPath("$[0].status").value("APPROVED"))
+				.andExpect(jsonPath("$[0].leaveType").value("ANNUAL"));
+	}
+
+	@Test
+	void testGetLeaveRequestsNoContent() throws Exception {
+		// Mock LeaveRepository with empty list
+		when(leaveRepository.findByEmployeeId(1L)).thenReturn(Collections.emptyList());
+
+		// Perform GET request
+		mockMvc.perform(get("/attendance/leaves/employee/1")
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNoContent());
+	}
+
+	@Test
+	void testGetLeaveRequestsEmployeeNotFound() throws Exception {
+		// Perform GET request with invalid employeeId
+		mockMvc.perform(get("/attendance/leaves/employee/999")
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
 	}
 }

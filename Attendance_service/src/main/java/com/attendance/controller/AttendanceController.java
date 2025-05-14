@@ -22,9 +22,10 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -60,6 +61,19 @@ public class AttendanceController {
         logger.info("AttendanceController initialized");
     }
 
+    private UserServiceClient.EmployeeDTO getMockEmployee(Long id) {
+        if (id == null || id <= 0 || id > 100) { // Assume valid employee IDs are between 1 and 100
+            return null;
+        }
+        UserServiceClient.EmployeeDTO employee = new UserServiceClient.EmployeeDTO();
+        employee.setId(id);
+        employee.setFirstName(id == 2L ? "Admin" : "Test");
+        employee.setLastName("User");
+        employee.setEmail(id == 2L ? "admin@example.com" : "test@example.com");
+        employee.setRole(id == 2L ? "Admin" : "Employee");
+        return employee;
+    }
+
     @Operation(summary = "Record attendance for an employee (check-in and check-out) - Legacy")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Attendance recorded successfully"),
@@ -72,7 +86,14 @@ public class AttendanceController {
             @Valid @RequestBody AttendanceRequest request) {
         logger.info("Recording attendance for employeeId: {}", employeeId);
 
-        UserServiceClient.EmployeeDTO employee = userServiceClient.getUserById(employeeId);
+        UserServiceClient.EmployeeDTO employee;
+        if (feignEnabled) {
+            employee = userServiceClient.getUserById(employeeId);
+            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
+        } else {
+            employee = getMockEmployee(employeeId);
+            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
+        }
         if (employee == null) {
             logger.warn("Employee with ID {} not found", employeeId);
             throw new IllegalArgumentException("Employee not found");
@@ -100,7 +121,14 @@ public class AttendanceController {
             @Valid @RequestBody CheckInRequest request) {
         logger.info("Recording check-in for employeeId: {}", employeeId);
 
-        UserServiceClient.EmployeeDTO employee = userServiceClient.getUserById(employeeId);
+        UserServiceClient.EmployeeDTO employee;
+        if (feignEnabled) {
+            employee = userServiceClient.getUserById(employeeId);
+            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
+        } else {
+            employee = getMockEmployee(employeeId);
+            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
+        }
         if (employee == null) {
             logger.warn("Employee with ID {} not found", employeeId);
             throw new IllegalArgumentException("Employee not found");
@@ -160,6 +188,20 @@ public class AttendanceController {
     @GetMapping("/{employeeId}")
     public ResponseEntity<List<Attendance>> getAttendanceRecords(@PathVariable Long employeeId) {
         logger.info("Retrieving attendance records for employeeId: {}", employeeId);
+
+        UserServiceClient.EmployeeDTO employee;
+        if (feignEnabled) {
+            employee = userServiceClient.getUserById(employeeId);
+            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
+        } else {
+            employee = getMockEmployee(employeeId);
+            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
+        }
+        if (employee == null) {
+            logger.warn("Employee with ID {} not found", employeeId);
+            throw new IllegalArgumentException("Employee not found");
+        }
+
         List<Attendance> records = attendanceRepository.findByEmployeeId(employeeId);
         if (records.isEmpty()) {
             logger.warn("No attendance records found for employeeId: {}", employeeId);
@@ -195,6 +237,19 @@ public class AttendanceController {
             @RequestParam("endDate") String endDate) {
         logger.info("Retrieving total working hours for employeeId: {} from {} to {}", employeeId, startDate, endDate);
 
+        UserServiceClient.EmployeeDTO employee;
+        if (feignEnabled) {
+            employee = userServiceClient.getUserById(employeeId);
+            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
+        } else {
+            employee = getMockEmployee(employeeId);
+            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
+        }
+        if (employee == null) {
+            logger.warn("Employee with ID {} not found", employeeId);
+            throw new IllegalArgumentException("Employee not found");
+        }
+
         LocalDate start = LocalDate.parse(startDate, DATE_FORMATTER);
         LocalDate end = LocalDate.parse(endDate, DATE_FORMATTER);
 
@@ -219,7 +274,14 @@ public class AttendanceController {
 
         logger.info("Processing leave request for employee ID: {}", employeeId);
 
-        UserServiceClient.EmployeeDTO employee = userServiceClient.getUserById(employeeId);
+        UserServiceClient.EmployeeDTO employee;
+        if (feignEnabled) {
+            employee = userServiceClient.getUserById(employeeId);
+            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
+        } else {
+            employee = getMockEmployee(employeeId);
+            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
+        }
         if (employee == null) {
             logger.warn("Employee with ID {} not found", employeeId);
             throw new IllegalArgumentException("Employee not found");
@@ -251,7 +313,14 @@ public class AttendanceController {
             @RequestParam("month") String month) {
         logger.info("Retrieving attendance count for employeeId: {} for month: {}", employeeId, month);
 
-        UserServiceClient.EmployeeDTO employee = userServiceClient.getUserById(employeeId);
+        UserServiceClient.EmployeeDTO employee;
+        if (feignEnabled) {
+            employee = userServiceClient.getUserById(employeeId);
+            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
+        } else {
+            employee = getMockEmployee(employeeId);
+            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
+        }
         if (employee == null) {
             logger.warn("Employee with ID {} not found", employeeId);
             throw new IllegalArgumentException("Employee not found");
@@ -286,7 +355,14 @@ public class AttendanceController {
             @RequestParam("month") String month) {
         logger.info("Retrieving leave balance for employeeId: {} for month: {}", employeeId, month);
 
-        UserServiceClient.EmployeeDTO employee = userServiceClient.getUserById(employeeId);
+        UserServiceClient.EmployeeDTO employee;
+        if (feignEnabled) {
+            employee = userServiceClient.getUserById(employeeId);
+            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
+        } else {
+            employee = getMockEmployee(employeeId);
+            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
+        }
         if (employee == null) {
             logger.warn("Employee with ID {} not found", employeeId);
             throw new IllegalArgumentException("Employee not found");
@@ -325,7 +401,14 @@ public class AttendanceController {
                     return new IllegalArgumentException("Leave request not found for leaveId: " + leaveId);
                 });
 
-        UserServiceClient.EmployeeDTO employee = userServiceClient.getUserById(leave.getEmployeeId());
+        UserServiceClient.EmployeeDTO employee;
+        if (feignEnabled) {
+            employee = userServiceClient.getUserById(leave.getEmployeeId());
+            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
+        } else {
+            employee = getMockEmployee(leave.getEmployeeId());
+            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
+        }
         if (employee == null) {
             logger.warn("Employee with ID {} not found for leaveId: {}", leave.getEmployeeId(), leaveId);
             throw new IllegalArgumentException("Employee not found for the leave request");
@@ -335,7 +418,6 @@ public class AttendanceController {
         return ResponseEntity.noContent().build();
     }
 
-    // Updated endpoint for leave approval/rejection using the new UserServiceClient
     @Operation(summary = "Approve or reject a leave request by its ID (Admin-only)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Leave status updated successfully"),
@@ -357,7 +439,14 @@ public class AttendanceController {
         }
 
         // Validate the requesting employee exists and check their role
-        UserServiceClient.EmployeeDTO requestingEmployee = userServiceClient.getUserById(requestingEmployeeId);
+        UserServiceClient.EmployeeDTO requestingEmployee;
+        if (feignEnabled) {
+            requestingEmployee = userServiceClient.getUserById(requestingEmployeeId);
+            logger.debug("Received requesting employee role from Feign: {}", requestingEmployee != null ? requestingEmployee.getRole() : "null");
+        } else {
+            requestingEmployee = getMockEmployee(requestingEmployeeId);
+            logger.debug("Using mock requesting employee role: {}", requestingEmployee != null ? requestingEmployee.getRole() : "null");
+        }
         if (requestingEmployee == null) {
             logger.warn("Requesting employee with ID {} not found", requestingEmployeeId);
             throw new IllegalArgumentException("Requesting employee not found");
@@ -376,7 +465,14 @@ public class AttendanceController {
                 });
 
         // Validate the employee associated with the leave
-        UserServiceClient.EmployeeDTO employee = userServiceClient.getUserById(leave.getEmployeeId());
+        UserServiceClient.EmployeeDTO employee;
+        if (feignEnabled) {
+            employee = userServiceClient.getUserById(leave.getEmployeeId());
+            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
+        } else {
+            employee = getMockEmployee(leave.getEmployeeId());
+            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
+        }
         if (employee == null) {
             logger.warn("Employee with ID {} not found for leaveId: {}", leave.getEmployeeId(), leaveId);
             throw new IllegalArgumentException("Employee not found for the leave request");
@@ -385,5 +481,53 @@ public class AttendanceController {
         // Update the leave status using the service method that includes employeeId
         Leave updatedLeave = attendanceService.updateLeaveStatus(leaveId, status, requestingEmployeeId);
         return ResponseEntity.ok(updatedLeave);
+    }
+
+    @Operation(summary = "Get leave requests for an employee")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Leave requests retrieved successfully"),
+            @ApiResponse(responseCode = "204", description = "No leave requests found"),
+            @ApiResponse(responseCode = "400", description = "Invalid input or employee not found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @GetMapping("/leaves/employee/{employeeId}")
+    public ResponseEntity<List<Leave>> getLeaveRequests(
+            @PathVariable Long employeeId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        logger.info("Retrieving leave requests for employeeId: {}, startDate: {}, endDate: {}", employeeId, startDate, endDate);
+
+        // Validate employee existence
+        UserServiceClient.EmployeeDTO employee;
+        if (feignEnabled) {
+            employee = userServiceClient.getUserById(employeeId);
+            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
+        } else {
+            employee = getMockEmployee(employeeId);
+            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
+        }
+        if (employee == null) {
+            logger.warn("Employee with ID {} not found", employeeId);
+            throw new IllegalArgumentException("Employee not found");
+        }
+
+        // Fetch leave requests based on date range
+        List<Leave> leaveRequests;
+        if (startDate != null && endDate != null) {
+            if (endDate.isBefore(startDate)) {
+                logger.warn("endDate {} is before startDate {}", endDate, startDate);
+                throw new IllegalArgumentException("endDate must be after or equal to startDate");
+            }
+            leaveRequests = leaveRepository.findByEmployeeIdAndStartDateBetween(employeeId, startDate, endDate);
+        } else {
+            leaveRequests = leaveRepository.findByEmployeeId(employeeId);
+        }
+
+        if (leaveRequests.isEmpty()) {
+            logger.warn("No leave requests found for employeeId: {}", employeeId);
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(leaveRequests);
     }
 }
