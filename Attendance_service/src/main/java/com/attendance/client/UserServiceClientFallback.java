@@ -12,16 +12,16 @@ public class UserServiceClientFallback implements UserServiceClient {
     @Override
     public EmployeeDTO getUserById(Long id) {
         logger.info("Fallback getUserById called with id: {}", id);
-        if (id == null || id.equals(999L)) {
+        if (id == null || id == 999L) {
             logger.info("Returning null for id: {}", id);
-            return null; // Simulate non-existent employee
+            return null;
         }
         EmployeeDTO employee = new EmployeeDTO();
         employee.setId(id);
         employee.setFirstName("Fallback");
         employee.setLastName("User");
         employee.setEmail("fallback@" + id + ".com");
-        if (id == 1L) {
+        if (id == 2L) { // Change to id=2 for admin, id=1 for employee
             employee.setRole("Admin");
             logger.info("Set role to Admin for id: {}", id);
         } else {
@@ -42,7 +42,7 @@ public class UserServiceClientFallback implements UserServiceClient {
             user.setUsername("employee");
             user.setRole("Employee");
         } else {
-            return null; // Simulate invalid credentials
+            return null;
         }
         return user;
     }

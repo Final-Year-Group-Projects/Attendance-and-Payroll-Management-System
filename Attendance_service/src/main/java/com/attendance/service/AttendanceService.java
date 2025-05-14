@@ -213,8 +213,8 @@ public class AttendanceService {
         logger.info("Leave request with leaveId: {} deleted successfully", leaveId);
     }
 
-    public void updateLeaveStatus(Long leaveId, String newStatus) {
-        logger.info("Attempting to update leave status for leaveId: {} to {}", leaveId, newStatus);
+    public Leave updateLeaveStatus(Long leaveId, String newStatus, Long employeeId) {
+        logger.info("Attempting to update leave status for leaveId: {} to {} by employeeId: {}", leaveId, newStatus, employeeId);
 
         Leave leave = leaveRepository.findById(leaveId)
                 .orElseThrow(() -> {
@@ -227,6 +227,11 @@ public class AttendanceService {
             throw new IllegalStateException("Cannot update leave status: It must be in PENDING status");
         }
 
+        if (!leave.getEmployeeId().equals(employeeId)) {
+            logger.warn("EmployeeId {} is not authorized to update leaveId: {}", employeeId, leaveId);
+            throw new IllegalStateException("Unauthorized: Only the requesting employee can update the leave");
+        }
+
         String normalizedStatus = newStatus.trim().toUpperCase();
         if (!normalizedStatus.equals("APPROVED") && !normalizedStatus.equals("REJECTED")) {
             logger.warn("Invalid status provided: {}", newStatus);
@@ -234,7 +239,8 @@ public class AttendanceService {
         }
 
         leave.setStatus(normalizedStatus);
-        leaveRepository.save(leave);
-        logger.info("Leave status for leaveId: {} updated to {}", leaveId, normalizedStatus);
+        Leave updatedLeave = leaveRepository.save(leave);
+        logger.info("Leave status for leaveId: {} updated to {} by employeeId: {}", leaveId, normalizedStatus, employeeId);
+        return updatedLeave;
     }
 }

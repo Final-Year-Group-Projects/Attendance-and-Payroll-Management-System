@@ -1,19 +1,18 @@
 package com.attendance.client;
 
+import com.attendance.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "USER-SERVICE", fallback = UserServiceClientFallback.class)
+@FeignClient(name = "USER-SERVICE", fallback = UserServiceClientFallback.class, configuration = FeignClientConfiguration.class)
 public interface UserServiceClient {
-
     @GetMapping("/users/{id}")
     EmployeeDTO getUserById(@PathVariable("id") Long id);
 
     @PostMapping("/auth/validate")
-    UserDTO validateUser(@RequestBody AuthRequest authRequest);
+    UserDTO validateUser(AuthRequest authRequest);
 
     class EmployeeDTO {
         private Long id;

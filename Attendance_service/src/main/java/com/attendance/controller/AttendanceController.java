@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -42,6 +43,9 @@ public class AttendanceController {
     private final AttendanceRepository attendanceRepository;
     private final LeaveRepository leaveRepository;
     private final UserServiceClient userServiceClient;
+
+    @Value("${app.feign.enabled:false}")
+    private boolean feignEnabled;
 
     @Autowired
     public AttendanceController(
@@ -358,7 +362,6 @@ public class AttendanceController {
             logger.warn("Requesting employee with ID {} not found", requestingEmployeeId);
             throw new IllegalArgumentException("Requesting employee not found");
         }
-        logger.info("Received role for employeeId {}: {}", requestingEmployeeId, requestingEmployee.getRole()); // Debug log
         if (!"Admin".equalsIgnoreCase(requestingEmployee.getRole())) {
             logger.warn("Employee with ID {} does not have Admin role to approve/reject leaveId: {}",
                     requestingEmployeeId, leaveId);
@@ -379,9 +382,8 @@ public class AttendanceController {
             throw new IllegalArgumentException("Employee not found for the leave request");
         }
 
-        // Update the leave status
-        attendanceService.updateLeaveStatus(leaveId, status);
-        Leave updatedLeave = leaveRepository.findById(leaveId).get(); // Fetch updated leave
+        // Update the leave status using the service method that includes employeeId
+        Leave updatedLeave = attendanceService.updateLeaveStatus(leaveId, status, requestingEmployeeId);
         return ResponseEntity.ok(updatedLeave);
     }
 }
