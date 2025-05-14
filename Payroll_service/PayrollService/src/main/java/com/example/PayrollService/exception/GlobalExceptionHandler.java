@@ -71,4 +71,49 @@ public class GlobalExceptionHandler {
         response.setEmployeeId(null);
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public Map<String, Object> handleNotFound(ResourceNotFoundException ex) {
+        logger.warn("Resource not found: {}", ex.getMessage());
+        return buildError("RESOURCE_NOT_FOUND", ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public Map<String, Object> handleUnreadable(HttpMessageNotReadableException ex) {
+        logger.warn("Malformed JSON: {}", ex.getMessage());
+        return buildError("INVALID_JSON_FORMAT", "Malformed or unreadable request body", HttpStatus.BAD_REQUEST);
+    }
+
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(FeignException.class)
+    public Map<String, Object> handleFeignException(FeignException ex) {
+        logger.error("External service call failed: {}", ex.getMessage(), ex);
+        return buildError("EXTERNAL_SERVICE_FAILURE", "Failed to communicate with external service", HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(DataAccessException.class)
+    public Map<String, Object> handleDataAccess(DataAccessException ex) {
+        logger.error("Database error: {}", ex.getMessage(), ex);
+        return buildError("DATABASE_ERROR", "Unexpected database error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(Exception.class)
+    public Map<String, Object> handleGenericException(Exception ex) {
+        logger.error("Unhandled exception: {}", ex.getMessage(), ex);
+        return buildError("INTERNAL_ERROR", "An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private Map<String, Object> buildError(String code, String message, HttpStatus status) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", status.value());
+        error.put("error", code);
+        error.put("message", message);
+        return error;
+    }
+
 }
