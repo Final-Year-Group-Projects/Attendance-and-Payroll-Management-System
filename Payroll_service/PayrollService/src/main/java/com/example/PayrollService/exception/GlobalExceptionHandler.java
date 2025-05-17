@@ -54,24 +54,6 @@ public class GlobalExceptionHandler {
         return error;
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<PayrollNotificationResponseDTO> handleResourceNotFound(ResourceNotFoundException ex) {
-        PayrollNotificationResponseDTO response = new PayrollNotificationResponseDTO();
-        response.setStatus("error");
-        response.setMessage(ex.getMessage());
-        response.setEmployeeId(null); // or provide a default/empty value
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<PayrollNotificationResponseDTO> handleGeneralException(Exception ex) {
-        PayrollNotificationResponseDTO response = new PayrollNotificationResponseDTO();
-        response.setStatus("error");
-        response.setMessage("Internal server error: " + ex.getMessage());
-        response.setEmployeeId(null);
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(ResourceNotFoundException.class)
     public Map<String, Object> handleNotFound(ResourceNotFoundException ex) {
