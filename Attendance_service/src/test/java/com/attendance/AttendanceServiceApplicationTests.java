@@ -19,11 +19,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -31,16 +31,18 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
@@ -86,8 +88,10 @@ class AttendanceServiceApplicationTests {
 	@RestControllerAdvice
 	static class GlobalExceptionHandler {
 		@ExceptionHandler(IllegalArgumentException.class)
-		public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
-			return ResponseEntity.badRequest().body(ex.getMessage());
+		public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {
+			Map<String, String> response = new HashMap<>();
+			response.put("message", ex.getMessage());
+			return ResponseEntity.badRequest().body(response);
 		}
 	}
 
@@ -122,16 +126,16 @@ class AttendanceServiceApplicationTests {
 		Leave leave = new Leave();
 		leave.setId(5L);
 		leave.setEmployeeId(1L);
-		leave.setStartDate(LocalDate.of(2025, 5, 15));
-		leave.setEndDate(LocalDate.of(2025, 5, 15));
+		leave.setStartDate(LocalDate.of(2025, 5, 19)); // Future date
+		leave.setEndDate(LocalDate.of(2025, 5, 19));   // Future date
 		leave.setReason("Test leave");
 		leave.setStatus("PENDING");
 		leave.setLeaveType("CASUAL");
-		when(attendanceService.saveLeaveRequest(eq(1L), eq(LocalDate.of(2025, 5, 15)), eq(LocalDate.of(2025, 5, 15)), eq("Test leave"), eq("CASUAL"))).thenReturn(leave);
+		when(attendanceService.saveLeaveRequest(eq(1L), eq(LocalDate.of(2025, 5, 19)), eq(LocalDate.of(2025, 5, 19)), eq("Test leave"), eq("CASUAL"))).thenReturn(leave);
 
 		LeaveRequest request = new LeaveRequest();
-		request.setStartDate(LocalDate.of(2025, 5, 15));
-		request.setEndDate(LocalDate.of(2025, 5, 15));
+		request.setStartDate(LocalDate.of(2025, 5, 19));
+		request.setEndDate(LocalDate.of(2025, 5, 19));
 		request.setReason("Test leave");
 		request.setLeaveType("CASUAL");
 
@@ -142,8 +146,8 @@ class AttendanceServiceApplicationTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(5))
 				.andExpect(jsonPath("$.employeeId").value(1))
-				.andExpect(jsonPath("$.startDate").value("2025-05-15"))
-				.andExpect(jsonPath("$.endDate").value("2025-05-15"))
+				.andExpect(jsonPath("$.startDate").value("2025-05-19"))
+				.andExpect(jsonPath("$.endDate").value("2025-05-19"))
 				.andExpect(jsonPath("$.reason").value("Test leave"))
 				.andExpect(jsonPath("$.status").value("PENDING"))
 				.andExpect(jsonPath("$.leaveType").value("CASUAL"));
@@ -155,8 +159,8 @@ class AttendanceServiceApplicationTests {
 		Leave leave = new Leave();
 		leave.setId(5L);
 		leave.setEmployeeId(1L);
-		leave.setStartDate(LocalDate.of(2025, 5, 15));
-		leave.setEndDate(LocalDate.of(2025, 5, 15));
+		leave.setStartDate(LocalDate.of(2025, 5, 19));
+		leave.setEndDate(LocalDate.of(2025, 5, 19));
 		leave.setReason("Test leave");
 		leave.setStatus("PENDING");
 		leave.setLeaveType("CASUAL");
@@ -164,8 +168,8 @@ class AttendanceServiceApplicationTests {
 		Leave updatedLeave = new Leave();
 		updatedLeave.setId(5L);
 		updatedLeave.setEmployeeId(1L);
-		updatedLeave.setStartDate(LocalDate.of(2025, 5, 15));
-		updatedLeave.setEndDate(LocalDate.of(2025, 5, 15));
+		updatedLeave.setStartDate(LocalDate.of(2025, 5, 19));
+		updatedLeave.setEndDate(LocalDate.of(2025, 5, 19));
 		updatedLeave.setReason("Test leave");
 		updatedLeave.setStatus("APPROVED");
 		updatedLeave.setLeaveType("CASUAL");
@@ -180,8 +184,8 @@ class AttendanceServiceApplicationTests {
 				.andExpect(jsonPath("$.status").value("APPROVED"))
 				.andExpect(jsonPath("$.id").value(5))
 				.andExpect(jsonPath("$.employeeId").value(1))
-				.andExpect(jsonPath("$.startDate").value("2025-05-15"))
-				.andExpect(jsonPath("$.endDate").value("2025-05-15"))
+				.andExpect(jsonPath("$.startDate").value("2025-05-19"))
+				.andExpect(jsonPath("$.endDate").value("2025-05-19"))
 				.andExpect(jsonPath("$.reason").value("Test leave"))
 				.andExpect(jsonPath("$.leaveType").value("CASUAL"));
 	}
@@ -256,9 +260,13 @@ class AttendanceServiceApplicationTests {
 
 	@Test
 	void testGetLeaveRequestsEmployeeNotFound() throws Exception {
-		// Perform GET request with invalid employeeId
+		// Simulate exception for invalid employee ID
+		lenient().when(leaveRepository.findByEmployeeId(999L))
+				.thenThrow(new IllegalArgumentException("Employee not found"));
+
 		mockMvc.perform(get("/attendance/leaves/employee/999")
 						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("Employee not found"));
 	}
 }
