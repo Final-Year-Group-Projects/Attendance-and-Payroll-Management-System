@@ -18,7 +18,7 @@ public class GetUsersController {
     @Autowired
     private GetAllUsersService userService;
 
-    @GetMapping("/getAll/users")
+    @GetMapping("/user/getAll/users")
     public List<User> getUsers() {
         // Log the incoming request to get all users
         logger.info("Received request to get all users");

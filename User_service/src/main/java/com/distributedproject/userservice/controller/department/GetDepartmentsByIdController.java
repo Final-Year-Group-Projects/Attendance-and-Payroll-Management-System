@@ -17,7 +17,7 @@ public class GetDepartmentsByIdController {
     @Autowired
     private GetDepartmentsByIdService departmentService;
 
-    @GetMapping("user/get/departments/{departmentId}")
+    @GetMapping("/user/get/departments/{departmentId}")
     public ResponseEntity<Department> getDepartmentById(@PathVariable Long departmentId) {
         // Log the received request with the department ID
         logger.info("Received request to fetch department with ID: {}", departmentId);

@@ -17,7 +17,7 @@ public class GetUserByIdController {
     @Autowired
     private GetUserByIdService userService;
 
-    @GetMapping("/get/users/{userId}")
+    @GetMapping("/user/get/users/{userId}")
     public ResponseEntity<User> getUserById(@PathVariable String userId) {
         // Log the request to get the user by ID
         logger.info("Received request to get user with ID: {}", userId);

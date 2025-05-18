@@ -20,7 +20,7 @@ public class CreateUserController {
     @Autowired
     private CreateUserService userService;
 
-    @PostMapping("/create/users")
+    @PostMapping("/user/create/users")
     public User createUser(@Valid @RequestBody User user) {
         logger.info("Received user creation request for user: {}", user);
 

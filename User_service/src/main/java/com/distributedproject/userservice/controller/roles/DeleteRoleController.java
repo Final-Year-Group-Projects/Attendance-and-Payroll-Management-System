@@ -15,7 +15,7 @@ public class DeleteRoleController {
     @Autowired
     private DeleteRoleService roleService;
 
-    @DeleteMapping("user/delete/roles/{roleId}")
+    @DeleteMapping("/user/delete/roles/{roleId}")
     public ResponseEntity<String> deleteRole(@PathVariable Long roleId) {
         logger.info("Received request to delete role with ID: {}", roleId);
         roleService.deleteRole(roleId);

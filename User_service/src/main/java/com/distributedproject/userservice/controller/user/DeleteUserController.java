@@ -15,7 +15,7 @@ public class DeleteUserController {
     @Autowired
     private DeleteUserService userService;
 
-    @DeleteMapping("/delete/users/{userId}")
+    @DeleteMapping("/user/delete/users/{userId}")
     public ResponseEntity<String> deleteUser(@PathVariable String userId) {
         // Log the deletion request with the userId
         logger.info("Received request to delete user with ID: {}", userId);
