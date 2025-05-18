@@ -16,7 +16,7 @@ public class GetUserRoleByIdController {
     @Autowired
     private GetUserRoleByIdService userRoleService;
 
-    @GetMapping("/get/userrole/{userId}")
+    @GetMapping("/user/get/userrole/{userId}")
     public ResponseEntity<String> getUserRoleById(@PathVariable String userId) {
         // Log the request to get the user role by ID
         logger.info("Received request to get role for user with ID: {}", userId);

@@ -19,7 +19,7 @@ public class SearchDepartmentsController {
     @Autowired
     private SearchDepartmentByNameService departmentService;
 
-    @GetMapping("/get/departments/search")
+    @GetMapping("/user/get/departments/search")
     public List<Department> searchDepartments(@RequestParam String name) {
         // Log the received request with the department name being searched
         logger.info("Received request to search departments by name: {}", name);

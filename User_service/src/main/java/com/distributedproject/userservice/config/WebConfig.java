@@ -18,14 +18,14 @@ public class WebConfig {
 
         // Register all protected endpoint patterns here
         registrationBean.addUrlPatterns(
-                "/get/users/*",
-                "/getAll/users/*",
-                "/get/users/search",
-                "/update/users/*",
-                "/delete/users/*",
-                "/create/users/*",
-                "/departments/*",
-                "/roles/*"
+                "/user/get/users/*",
+                "/user/getAll/users/*",
+                "/user/get/users/search",
+                "/user/update/users/*",
+                "/user/delete/users/*",
+                "/user/create/users/*",
+                "/user/departments/*",
+                "/user/roles/*"
         );
 
         return registrationBean;

@@ -22,7 +22,7 @@ public class UpdateDepartmentController {
     @Autowired
     private UpdateDepartmentService updateDepartmentService;
 
-    @PutMapping("/update/departments/{departmentId}")
+    @PutMapping("/user/update/departments/{departmentId}")
     public ResponseEntity<Department> updateDepartment(@PathVariable Long departmentId, @Valid @RequestBody Department departmentDetails) {
         // Log the received request
         logger.info("Received request to update department with ID: {}", departmentId);

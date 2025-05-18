@@ -44,7 +44,7 @@ public class TokenValidationFilter extends OncePerRequestFilter {
 
         try {
             ResponseEntity<Map> validationResponse = restTemplate
-                    .postForEntity("http://localhost:8080/auth/validate", entity, Map.class); // auth-service URL
+                    .postForEntity("http://localhost:8083/auth/validate", entity, Map.class); // auth-service URL
 
             if (validationResponse.getStatusCode() != HttpStatus.OK) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -67,11 +67,11 @@ public class TokenValidationFilter extends OncePerRequestFilter {
 
                 if ("Employee".equals(role)) {
                     boolean isGetAllowed =
-                            path.matches("^/get/users/.*") || path.equals("/get/users/search");
+                            path.matches("^/user/get/users/.*") || path.equals("/get/users/search");
 
                     boolean isUpdateOwnInfo = false;
 
-                    if (path.matches("^/update/users/\\d+$")) {
+                    if (path.matches("^/user/update/users/\\d+$")) {
                         // Extract userId from path
                         String[] pathParts = path.split("/");
                         Long pathUserId = Long.parseLong(pathParts[pathParts.length - 1]);

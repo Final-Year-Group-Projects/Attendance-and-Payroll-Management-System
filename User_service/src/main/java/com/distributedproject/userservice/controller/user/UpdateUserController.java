@@ -22,7 +22,7 @@ public class UpdateUserController {
     @Autowired
     private UpdateUserService updateUserService;  // Autowire the correct service class
 
-    @PutMapping("/update/users/{userId}")
+    @PutMapping("/user/update/users/{userId}")
     public ResponseEntity<User> updateUser(@PathVariable String userId, @Valid @RequestBody User userDetails) {
         // Log the incoming request
         logger.info("Received request to update user with userId: {}", userId);
