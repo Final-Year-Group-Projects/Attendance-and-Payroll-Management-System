@@ -1,6 +1,6 @@
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 
 # root .env file ignore
 .env
