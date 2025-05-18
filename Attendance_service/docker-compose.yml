@@ -7,7 +7,6 @@ services:
       - "8081:8081"
     depends_on:
       - postgres
-      - eureka
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://${SPRING_DATASOURCE_HOST}:${SPRING_DATASOURCE_PORT}/${SPRING_DATASOURCE_DBNAME}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
@@ -28,24 +27,6 @@ services:
       - POSTGRES_DB=${SPRING_DATASOURCE_DBNAME}
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    networks:
-      - app-network
-
-  eureka:
-    image: steeltoeoss/eureka-server:latest
-    ports:
-      - "8761:8761"
-    networks:
-      - app-network
-
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-    depends_on:
-      - attendance-service
     networks:
       - app-network
 
