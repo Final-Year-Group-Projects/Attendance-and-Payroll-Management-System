@@ -18,7 +18,7 @@ public class CreateDepartmentController {
     @Autowired
     private CreateDepartmentService departmentService;
 
-    @PostMapping("/create/departments")
+    @PostMapping("user/create/departments")
     public Department createDepartment(@Valid @RequestBody Department department) {
         logger.info("Received department creation request for department: {}", department);
 

@@ -18,7 +18,7 @@ public class GetDepartmentsController {
     @Autowired
     private GetAllDepartmentsService departmentService;
 
-    @GetMapping("/get/departments")
+    @GetMapping("user/get/departments")
     public List<Department> getDepartments() {
         // Log the received request
         logger.info("Received request to fetch all departments.");

@@ -18,7 +18,7 @@ public class CreateRoleController {
     @Autowired
     private CreateRoleService roleService;
 
-    @PostMapping("/create/roles")
+    @PostMapping("user/create/roles")
     public Role createRole(@Valid @RequestBody Role role) {
         logger.info("Received user creation request for user: {}", role);
 

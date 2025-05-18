@@ -15,7 +15,7 @@ public class DeleteDepartmentController {
     @Autowired
     private DeleteDepartmentService departmentService;
 
-    @DeleteMapping("/delete/departments/{departmentId}")
+    @DeleteMapping("user/delete/departments/{departmentId}")
     public ResponseEntity<String> deleteDepartment(@PathVariable Long departmentId) {
         logger.info("Received request to delete department with ID: {}", departmentId);
 

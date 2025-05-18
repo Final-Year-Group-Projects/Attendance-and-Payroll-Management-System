@@ -17,7 +17,7 @@ public class GetRolesByIdController {
     @Autowired
     private GetRolesByIdService roleService;
 
-    @GetMapping("/get/roles/{roleId}")
+    @GetMapping("user/get/roles/{roleId}")
     public ResponseEntity<Role> getRolesById(@PathVariable Long roleId) {
         logger.info("Received request to get role with ID: {}", roleId);
         Role role = roleService.getRolesById(roleId)

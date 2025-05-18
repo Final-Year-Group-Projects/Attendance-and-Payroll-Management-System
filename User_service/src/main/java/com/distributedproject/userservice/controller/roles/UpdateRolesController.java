@@ -19,7 +19,7 @@ public class UpdateRolesController {
     @Autowired
     private UpdateRoleService updateRoleService;  // Autowire the correct service class
 
-    @PutMapping("/update/roles/{roleId}")
+    @PutMapping("user/update/roles/{roleId}")
     public ResponseEntity<Role> updateRole(@PathVariable Long roleId, @Valid @RequestBody Role roleDetails) {
         logger.info("Received request to update role with ID: {}", roleId);
 
