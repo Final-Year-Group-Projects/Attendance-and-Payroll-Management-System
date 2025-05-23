@@ -53,10 +53,13 @@ class PayrollServiceUnitTest {
         int month = 5;
         int year = 2025;
 
+        // Mock user service to return null (simulate service unavailable)
         when(userServiceClient.getUserDetails(employeeId))
-                .thenReturn(new UserDTO(employeeId, "ENGINEER"));
+                .thenReturn(null);
+
         when(attendanceServiceClient.getAttendanceDetails(employeeId, month, year))
                 .thenReturn(new AttendanceDTO(employeeId, month, year, 20, 2, 1));
+
         when(reimbursementRepository.findByEmployeeId(employeeId)).thenReturn(Collections.emptyList());
         when(payrollRepository.save(any())).thenAnswer(invocation -> {
             PayrollRecord record = invocation.getArgument(0);
@@ -68,6 +71,7 @@ class PayrollServiceUnitTest {
         dto.setEmployeeId(employeeId);
         dto.setMonth(month);
         dto.setYear(year);
+        dto.setRole("ENGINEER"); // Set role in DTO for fallback scenario
 
         PayrollResponseDTO response = payrollServiceImpl.createPayroll(dto);
 
@@ -82,8 +86,9 @@ class PayrollServiceUnitTest {
         int month = LocalDate.now().getMonthValue();
         int year = LocalDate.now().getYear();
 
-        UserDTO user = new UserDTO(employeeId, "ENGINEER");
-        when(userServiceClient.getUserDetails(employeeId)).thenReturn(user);
+        // Mock user service to return null (simulate service unavailable)
+        when(userServiceClient.getUserDetails(employeeId))
+                .thenReturn(null);
 
         AttendanceDTO attendance = new AttendanceDTO(employeeId, month, year, 20, 2, 1);
         when(attendanceServiceClient.getAttendanceDetails(employeeId, month, year))
@@ -93,6 +98,7 @@ class PayrollServiceUnitTest {
         request.setEmployeeId(employeeId);
         request.setMonth(month);
         request.setYear(year);
+        request.setRole("ENGINEER"); // Set role in DTO for fallback scenario
 
         ReimbursementRecord reimbursement = new ReimbursementRecord();
         reimbursement.setEmployeeId(employeeId);
