@@ -17,7 +17,7 @@ public class GetRolesController {
     @Autowired
     private GetAllRolesService rolesService;
 
-    @GetMapping("/user/get/roles")
+    @GetMapping("/user/getAll/roles")
     public List<Role> getRoles() {
         logger.info("Received request to fetch all roles.");
         List<Role> roles = rolesService.getAllRoles();

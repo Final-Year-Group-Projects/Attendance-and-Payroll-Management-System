@@ -22,10 +22,10 @@ public class WebConfig {
                 "/user/getAll/users/*",
                 "/user/get/users/search",
                 "/user/update/users/*",
-                "/user/delete/users/*",
-                "/user/create/users/*",
-                "/user/departments/*",
-                "/user/roles/*"
+                "/user/update/roles/*",
+                "/user/update/departments/*",
+                "/user/delete/*",
+                "/user/create/*"
         );
 
         return registrationBean;
