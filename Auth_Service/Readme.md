@@ -21,3 +21,15 @@ This will return the **access token**
 ```
 curl -X POST http://localhost:8083/auth/validate -H "Content-Type: application/json" -d "{\"token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJpYXQiOjE3NDgwNTU4NDYsImV4cCI6MTc0ODA1OTQ0Nn0.T23AanTwgLG6rV1fC-SOvlS88ANYpEgkKuti0mefTGw\"}"
 ```
+
+## How to Run
+
+#### stops and deletes all containers defined and create new one
+```
+docker-compose down -v - 
+```
+
+```
+docker-compose up --build
+```
+Then run above curls

@@ -44,7 +44,7 @@ public class TokenValidationFilter extends OncePerRequestFilter {
 
         try {
             ResponseEntity<Map> validationResponse = restTemplate
-                    .postForEntity("http://localhost:8083/auth/validate", entity, Map.class); // auth-service URL
+                    .postForEntity("http://auth-service:8080/auth/validate", entity, Map.class);
 
             if (validationResponse.getStatusCode() != HttpStatus.OK) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

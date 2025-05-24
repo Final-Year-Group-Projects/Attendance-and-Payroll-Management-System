@@ -8,7 +8,8 @@ The **User Service** handles all operations related to user management such as c
 ## API Endpoints
 #### Get all users, departments and roles details
 ```
-curl -X GET http://localhost:8080/getAll/users
+curl -X GET http://localhost:8084/user/getAll/users -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJpYXQiOjE3NDgwNjE1NjQsImV4cCI6MTc0ODA2NTE2NH0.iY3-xFWdxpHhmA-4_CL7SajqEId1IlDuKfFkGMmTqVI"
+
 ```
 ```
 curl -X GET http://localhost:8080/getAll/departments
@@ -30,7 +31,7 @@ curl -X GET http://localhost:8080/get/roles/1
 
 #### Create new user, new department and new role
 ```
-curl -X POST http://localhost:8080/create/users -H "Content-Type: application/json" -d "{\"userName\": \"Alice Johnson\", \"userType\": \"admin\", \"userAddress\": \"123 Main Street\", \"userTelephone\": \"123-456-7890\"}"
+curl -X POST http://localhost:8084/user/create/users -H "Content-Type: application/json" -H "Authorization: Bearer <access token here>" -d "{\"userId\":\"E100\",\"userFullName\":\"Judy Kaushalya\",\"userType\":\"Admin\",\"userAddress\":\"123 Main St, Springfield\",\"userTelephone\":\"1234567890\",\"departmentId\":1,\"roleId\":1}"
 ```
 ```
 curl -X POST http://localhost:8080/create/departments -H "Content-Type: application/json" -d "{\"departmentName\": \"Finance\", \"departmentHead\": \"Judy Kaushalya\"}"
