@@ -8,16 +8,28 @@ The **Auth Service** is responsible for managing authentication operations such 
 ## API Endpoints
 #### Register New User (SignUp)
 ```
-curl -X GET http://localhost:8080/auth/register -H "Content-Type: application/json" \-d '{"username": "john_doe", "password": "securePassword123", "Role": "Admin"}'
+curl -X POST http://localhost:8083/auth/register -H "Content-Type: application/json" -d "{\"username\": \"judy\", \"password\": \"123456\", \"role\": \"Admin\"}"
 ```
 
 #### Login User (SignIn)
 ```
-curl -X GET http://localhost:8080/auth/login -H "Content-Type: application/json" \-d '{"username": "john_doe", "password": "securePassword123"}'
+curl -X POST http://localhost:8083/auth/login -H "Content-Type: application/json" -d "{\"username\": \"judy\", \"password\": \"123456\"}"
 ```
 This will return the **access token**
 
 #### Validate Token
 ```
-curl -X GET http://localhost:8080/auth/validate -H "Content-Type: application/json" \-d '{"token": "<enter-token-here>""}'
+curl -X POST http://localhost:8083/auth/validate -H "Content-Type: application/json" -d "{\"token\": \"<access-token-here>\"}"
 ```
+
+## How to Run
+
+#### stops and deletes all containers defined and create new one
+```
+docker-compose down -v
+```
+
+```
+docker-compose up --build
+```
+Then run above curls

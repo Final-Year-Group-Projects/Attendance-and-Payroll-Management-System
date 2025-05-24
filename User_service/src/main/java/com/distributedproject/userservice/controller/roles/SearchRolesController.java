@@ -17,7 +17,7 @@ public class SearchRolesController {
     @Autowired
     private SearchRoleByNameService roleService;
 
-    @GetMapping("/user/get/roles/search")
+    @GetMapping("/user/search/roles")
     public List<Role> searchRoles(@RequestParam String name) {
         logger.info("Received request to search for roles with name: {}", name);
         List<Role> roles = roleService.searchRolesByName(name);

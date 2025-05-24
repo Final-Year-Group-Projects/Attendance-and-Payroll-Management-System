@@ -1,6 +1,3 @@
--- 1. Create the user_db database
-CREATE DATABASE user_db;
-
 -- 2. Create department table
 CREATE TABLE department (
     department_id SERIAL PRIMARY KEY,
@@ -40,13 +37,3 @@ CREATE TABLE userdata (
         REFERENCES role(role_id)
         ON DELETE SET NULL
 );
-
--- Insert sample data into userdata
---INSERT INTO userdata (user_name, user_type, user_address, user_telephone)
---VALUES ('Judy', 'User', '123 User St', '123-456-7890')
---ON CONFLICT (user_id) DO NOTHING;
---
----- Query all data
---SELECT * FROM userdata;
---
---DROP Table department

@@ -19,7 +19,7 @@ public class SearchUsersController {
     @Autowired
     private SearchUserByNameService userService;
 
-    @GetMapping("/user/get/users/search")
+    @GetMapping("/user/search/user")
     public List<User> searchUsers(@RequestParam String name) {
         // Log the incoming request with the search term (user name)
         logger.info("Received request to search users with name: {}", name);
