@@ -26,7 +26,7 @@ curl -X POST http://localhost:8083/auth/validate -H "Content-Type: application/j
 
 #### stops and deletes all containers defined and create new one
 ```
-docker-compose down -v - 
+docker-compose down -v
 ```
 
 ```
