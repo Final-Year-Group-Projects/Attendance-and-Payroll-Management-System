@@ -1,16 +1,14 @@
+version: '3.9'
 
 services:
   eureka:
     image: steeltoeoss/eureka-server:latest
     ports:
-      - "8761:8761"
+      - "8761:8761"  # Optional: keep open for dashboard
     environment:
       - EUREKA_SERVER_ADDRESS=http://eureka:8761/eureka/
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - eureka.client.registerWithEureka=false
+      - eureka.client.fetchRegistry=false
     networks:
       - app-network
 
@@ -18,22 +16,66 @@ services:
     build:
       context: ./Attendance_service
       dockerfile: Dockerfile
-    ports:
-      - "8081:8081"
+    expose:
+      - "8081"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://${SPRING_DATASOURCE_HOST}:${SPRING_DATASOURCE_PORT}/${SPRING_DATASOURCE_DBNAME}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://attendance-db:5432/attendance_db
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
       - SPRING_APPLICATION_NAME=attendance_service
       - SERVER_PORT=8081
     depends_on:
-      - attendance-db
+      attendance-db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  auth-service:
+    build:
+      context: ./Auth_Service
+      dockerfile: Dockerfile.authserver
+    ports:
+      - "8083:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/auth_db
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
+      - SPRING_APPLICATION_NAME=auth_service
+      - SERVER_PORT=8080
+    depends_on:
+      auth-db:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 90s
+      timeout: 30s
+      retries: 5
+    networks:
+      - app-network
+
+  user-service:
+    build:
+      context: ./User_service
+      dockerfile: Dockerfile.userserver
+    expose:
+      - "8084"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://user-db:5432/user_db
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
+      - SPRING_APPLICATION_NAME=user_service
+      - SERVER_PORT=8084
+    depends_on:
+      user-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 90s
+      timeout: 30s
+      retries: 5
     networks:
       - app-network
 
@@ -44,9 +86,47 @@ services:
     environment:
       - POSTGRES_USER=${SPRING_DATASOURCE_USERNAME}
       - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
-      - POSTGRES_DB=${SPRING_DATASOURCE_DBNAME}
+      - POSTGRES_DB=attendance_db
     volumes:
       - attendance-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  auth-db:
+    image: postgres:15
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_USER=${SPRING_DATASOURCE_USERNAME}
+      - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - POSTGRES_DB=auth_db
+    volumes:
+      - auth-data:/var/lib/postgresql/data
+      - ./Auth_Service/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  user-db:
+    image: postgres:15
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=${SPRING_DATASOURCE_USERNAME}
+      - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - POSTGRES_DB=user_db
+    volumes:
+      - user-data:/var/lib/postgresql/data
+      - ./User_service/init:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres"]
       interval: 10s
@@ -58,16 +138,19 @@ services:
   api-gateway:
     image: nginx:latest
     ports:
-      - "80:80"
+      - "8080:80"
     volumes:
       - ./api-gateway/nginx.conf:/etc/nginx/nginx.conf
     depends_on:
+      - auth-service
+      - attendance-service
+      - user-service
       - eureka
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: [ "CMD", "nginx", "-t" ]
+      interval: 90s
+      timeout: 30s
+      retries: 5
     networks:
       - app-network
 
@@ -77,3 +160,5 @@ networks:
 
 volumes:
   attendance-data:
+  auth-data:
+  user-data:
