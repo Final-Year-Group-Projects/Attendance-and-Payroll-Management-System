@@ -10,8 +10,11 @@ import com.example.PayrollService.feign.UserServiceClient;
 import com.example.PayrollService.repository.PayrollRepository;
 import com.example.PayrollService.repository.ReimbursementRepository;
 import com.example.PayrollService.service.PayrollServiceImpl;
+import feign.FeignException;
 import feign.Request;
+import feign.Response;
 import feign.RetryableException;
+import feign.Request.HttpMethod;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -73,15 +76,26 @@ class FeignClientIntegrationTest {
     @Test
     void testFeignClient_userServiceThrowsException_shouldCatchAndHandle() {
         UserServiceClient mockClient = mock(UserServiceClient.class);
-        when(mockClient.getUserDetails("E404")).thenThrow(new RetryableException(
-                404,
-                "User not found",
-                Request.HttpMethod.GET,
-                null,
-                Request.create(Request.HttpMethod.GET, "/user/E404", Collections.emptyMap(), null, StandardCharsets.UTF_8, null)
-        ));
 
-        assertThrows(RetryableException.class, () -> mockClient.getUserDetails("E404"));
+        // Create a FeignException with 404 status and the GET request details
+        FeignException feign404Exception = FeignException.errorStatus(
+                "getUserDetails",
+                Response.builder()
+                        .status(404)
+                        .request(Request.create(
+                                Request.HttpMethod.GET,
+                                "/user/E404",
+                                Collections.emptyMap(),
+                                null,
+                                StandardCharsets.UTF_8))
+                        .build()
+        );
+
+        // Mock the client to throw the FeignException when calling getUserDetails("E404")
+        when(mockClient.getUserDetails("E404")).thenThrow(feign404Exception);
+
+        // Assert that the FeignException is thrown when calling the method
+        assertThrows(FeignException.class, () -> mockClient.getUserDetails("E404"));
     }
 
     @Test
@@ -101,13 +115,13 @@ class FeignClientIntegrationTest {
         int month = 5;
         int year = 2025;
 
+        // Mock user service to return null (simulate service unavailable)
         when(userServiceClient.getUserDetails(employeeId))
-                .thenReturn(new UserDTO(employeeId, "ENGINEER"));
+                .thenReturn(null);
+
+        // Mock attendance service
         when(attendanceServiceClient.getAttendanceDetails(employeeId, month, year))
                 .thenReturn(new AttendanceDTO(employeeId, month, year, 20, 2, 1));
-
-        PayrollRepository payrollRepository = mock(PayrollRepository.class);
-        ReimbursementRepository reimbursementRepository = mock(ReimbursementRepository.class);
 
         when(reimbursementRepository.findByEmployeeId(employeeId)).thenReturn(Collections.emptyList());
         when(payrollRepository.save(any(PayrollRecord.class))).thenAnswer(inv -> {
@@ -116,18 +130,11 @@ class FeignClientIntegrationTest {
             return record;
         });
 
-        PayrollServiceImpl payrollService = new PayrollServiceImpl(
-                userServiceClient,
-                attendanceServiceClient,
-                payrollRepository,
-                reimbursementRepository
-
-        );
-
         PayrollRequestDTO request = new PayrollRequestDTO();
         request.setEmployeeId(employeeId);
         request.setMonth(month);
         request.setYear(year);
+        request.setRole("ENGINEER"); // Set role in DTO for fallback scenario
 
         PayrollResponseDTO response = payrollService.createPayroll(request);
 
