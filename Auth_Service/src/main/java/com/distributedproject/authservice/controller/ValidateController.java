@@ -30,40 +30,32 @@ public class ValidateController {
     public ResponseEntity<?> validateToken(@RequestHeader(value = "Authorization", required = false) String authHeader) {
         logger.info("Received token validation request");
 
-        // Check if authHeader is null or empty
         if (authHeader == null || authHeader.trim().isEmpty()) {
             logger.error("Missing or empty Authorization header");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or empty Authorization header");
         }
 
-        // Check if it starts with "Bearer "
         if (!authHeader.startsWith("Bearer ")) {
             logger.error("Invalid Authorization header format: {}", authHeader);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Authorization header format");
         }
 
-        // Extract token
-        String token = authHeader.substring(7).trim(); // Remove "Bearer " and extra spaces
+        String token = authHeader.substring(7).trim();
         if (token.isEmpty()) {
             logger.error("Token is empty after extraction");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is empty");
         }
 
-        // Check blacklist
         if (tokenBlacklistService.isTokenBlacklisted(token)) {
             logger.warn("Token is blacklisted: {}", token);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is blacklisted");
         }
 
-        // Validate token
         try {
             String username = jwtService.extractUsername(token);
             String role = jwtService.extractRole(token);
             logger.info("Token validated successfully for username: {}", username);
-            return ResponseEntity.ok(Map.of(
-                    "username", username,
-                    "role", role
-            ));
+            return ResponseEntity.ok(Map.of("username", username, "role", role));
         } catch (Exception e) {
             logger.error("Token validation failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token: " + e.getMessage());
