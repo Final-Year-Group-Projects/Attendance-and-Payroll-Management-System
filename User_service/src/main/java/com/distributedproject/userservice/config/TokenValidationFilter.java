@@ -39,16 +39,18 @@ public class TokenValidationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token); // Set token in Authorization header
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Map<String, String>> entity = new HttpEntity<>(Map.of("token", token), headers);
+        HttpEntity<Void> entity = new HttpEntity<>(headers); // No body needed
 
         try {
             ResponseEntity<Map> validationResponse = restTemplate
-                    .postForEntity("http://auth-service:8080/auth/validate", entity, Map.class);
+                    .exchange("http://auth-service:8080/auth/validate", HttpMethod.POST, entity, Map.class);
 
             if (validationResponse.getStatusCode() != HttpStatus.OK) {
+                HttpStatus status = (HttpStatus) validationResponse.getStatusCode(); // Cast to HttpStatus
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Token validation failed");
+                response.getWriter().write("Token validation failed: " + status.getReasonPhrase());
                 return;
             }
 
@@ -72,11 +74,9 @@ public class TokenValidationFilter extends OncePerRequestFilter {
                     boolean isUpdateOwnInfo = false;
 
                     if (path.matches("^/user/update/users/\\d+$")) {
-                        // Extract userId from path
                         String[] pathParts = path.split("/");
                         Long pathUserId = Long.parseLong(pathParts[pathParts.length - 1]);
 
-                        // Fetch actual user ID using username
                         Optional<User> optionalUser = userRepository.findByUserFullNameIgnoreCase(username);
                         if (optionalUser.isPresent()) {
                             String actualUserId = optionalUser.get().getUserId();
@@ -93,7 +93,6 @@ public class TokenValidationFilter extends OncePerRequestFilter {
                     return;
                 }
             }
-
 
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
