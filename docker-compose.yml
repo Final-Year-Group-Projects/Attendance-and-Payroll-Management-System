@@ -14,7 +14,7 @@ services:
   attendance-service:
     build:
       context: ./Attendance_service
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.attendanceserver
     expose:
       - 8081
     environment:

@@ -2,7 +2,7 @@ services:
   attendance-service:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.attendanceserver
     ports:
       - "8081:8081"
     depends_on:
