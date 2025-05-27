@@ -1,3 +1,19 @@
+# -------- Stage 1: Build the JAR using Maven --------
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
+
+WORKDIR /app
+
+# Copy Maven descriptor and download dependencies
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# Copy all source files
+COPY src ./src
+
+# Package the application
+RUN mvn clean package -DskipTests
+
+# -------- Stage 2: Run the JAR using lightweight Java image --------
 # Use an official OpenJDK 17 image as the base
 FROM openjdk:17-jdk-slim
 
@@ -5,9 +21,7 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Copy the built JAR file into the container
-# Make sure this path matches your actual JAR name
-COPY target/PayrollService-0.0.1-SNAPSHOT.jar app.jar
-
+COPY --from=builder /app/target/*SNAPSHOT.jar app.jar
 # Expose the port your app runs on
 EXPOSE 8082
 

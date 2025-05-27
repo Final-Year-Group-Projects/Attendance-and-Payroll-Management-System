@@ -4,6 +4,7 @@ import com.example.PayrollService.controller.*;
 import com.example.PayrollService.dto.*;
 import com.example.PayrollService.entity.PayrollRecord;
 import com.example.PayrollService.entity.ReimbursementRecord;
+import com.example.PayrollService.exception.ResourceNotFoundException;
 import com.example.PayrollService.repository.PayrollRepository;
 import com.example.PayrollService.repository.ReimbursementRepository;
 import com.example.PayrollService.service.PayrollService;
@@ -171,13 +172,25 @@ class PayrollControllerTest {
 
     @Test
     void getPayslip_NonExistingId_ReturnsNotFoundWithHtmlMessage() {
-        when(payrollRepository.findById(1L)).thenReturn(Optional.empty());
+        when(payrollRepository.findById(1L))
+                .thenReturn(Optional.empty());
 
-        ResponseEntity<String> response = payslipController.getPayslip(1L);
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        // Expect the controller to throw ResourceNotFoundException
+        assertThrows(ResourceNotFoundException.class, () -> {
+            payslipController.getPayslip(1L);
+        });
     }
 
+    @Test
+    void downloadPayslipPdf_NonExistingId_ReturnsNotFound() {
+        when(payrollRepository.findById(1L))
+                .thenReturn(Optional.empty());
+
+        // Expect the controller to throw ResourceNotFoundException
+        assertThrows(ResourceNotFoundException.class, () -> {
+            payslipController.downloadPayslipPdf(1L);
+        });
+    }
     @Test
     void downloadPayslipPdf_ExistingId_ReturnsPdfContent() {
         PayrollRecord record = createTestPayrollRecord();
@@ -187,15 +200,6 @@ class PayrollControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.getBody().length > 0);
-    }
-
-    @Test
-    void downloadPayslipPdf_NonExistingId_ReturnsNotFound() {
-        when(payrollRepository.findById(1L)).thenReturn(Optional.empty());
-
-        ResponseEntity<byte[]> response = payslipController.downloadPayslipPdf(1L);
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
