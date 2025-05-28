@@ -27,6 +27,11 @@ services:
     depends_on:
       attendance-db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 90s
+      timeout: 30s
+      retries: 5
     networks:
       - app-network
 
@@ -34,8 +39,8 @@ services:
     build:
       context: ./Auth_Service
       dockerfile: Dockerfile.authserver
-    ports:
-      - "8080:8080"
+    expose:
+      - 8080
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/auth_db
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
@@ -47,7 +52,7 @@ services:
       auth-db:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 90s
       timeout: 30s
       retries: 5
@@ -75,6 +80,31 @@ services:
       interval: 90s
       timeout: 30s
       retries: 5
+    networks:
+      - app-network
+
+  payroll-service:
+    build:
+      context: ./Payroll_service
+      dockerfile: Dockerfile
+    expose:
+      - 8082
+    depends_on:
+      payroll-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 90s
+      timeout: 30s
+      retries: 5
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://payroll-db:5432/payroll_db
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
+      - SPRING_APPLICATION_NAME=payroll_service
+      - SERVER_PORT=8082
+    restart: always
     networks:
       - app-network
 
@@ -134,6 +164,25 @@ services:
     networks:
       - app-network
 
+  payroll-db:
+    image: postgres:15
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_USER=${SPRING_DATASOURCE_USERNAME}
+      - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - POSTGRES_DB=payroll_db
+      - POSTGRES_INITDB_ARGS=--auth=scram-sha-256 --username=${SPRING_DATASOURCE_USERNAME}
+    volumes:
+      - payroll-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
   api-gateway:
     image: nginx:latest
     ports:
@@ -144,9 +193,10 @@ services:
       - auth-service
       - attendance-service
       - user-service
+      - payroll-service  # Added payroll-service
       - eureka
     healthcheck:
-      test: [ "CMD", "nginx", "-t" ]
+      test: ["CMD", "nginx", "-t"]
       interval: 90s
       timeout: 30s
       retries: 5
@@ -161,3 +211,4 @@ volumes:
   attendance-data:
   auth-data:
   user-data:
+  payroll-data:
