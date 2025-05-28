@@ -7,9 +7,9 @@ services:
     container_name: auth-postgres
     restart: always
     environment:
-      POSTGRES_DB: ${AUTH_DB}
-      POSTGRES_USER: ${AUTH_USER}
-      POSTGRES_PASSWORD: ${AUTH_PASSWORD}
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: ${USER}
+      POSTGRES_PASSWORD: ${PASSWORD}
     ports:
       - "8086:5432"
     volumes:
@@ -28,9 +28,9 @@ services:
     ports:
       - "8083:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://auth_db_postgres:5432/${AUTH_DB}
-      SPRING_DATASOURCE_USERNAME: ${AUTH_USER}
-      SPRING_DATASOURCE_PASSWORD: ${AUTH_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth_db_postgres:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: ${USER}
+      SPRING_DATASOURCE_PASSWORD: ${PASSWORD}
     networks:
       - shared-network
 
@@ -40,9 +40,9 @@ services:
     container_name: user-postgres
     restart: always
     environment:
-      POSTGRES_DB: ${USER_DB}
-      POSTGRES_USER: ${USER_USER}
-      POSTGRES_PASSWORD: ${USER_PASSWORD}
+      POSTGRES_DB: user_db
+      POSTGRES_USER: ${USER}
+      POSTGRES_PASSWORD: ${PASSWORD}
     ports:
       - "8087:5432"
     volumes:
@@ -61,9 +61,9 @@ services:
     ports:
       - "8084:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://user_db_postgres:5432/${USER_DB}
-      SPRING_DATASOURCE_USERNAME: ${USER_USER}
-      SPRING_DATASOURCE_PASSWORD: ${USER_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user_db_postgres:5432/user_db
+      SPRING_DATASOURCE_USERNAME: ${USER}
+      SPRING_DATASOURCE_PASSWORD: ${PASSWORD}
     networks:
       - shared-network
 
