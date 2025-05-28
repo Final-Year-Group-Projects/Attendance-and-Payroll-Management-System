@@ -1,13 +1,19 @@
+version: '3.8'
 
 services:
   eureka:
     image: steeltoeoss/eureka-server:latest
     ports:
-      - "8761:8761"  # Optional: keep open for dashboard
+      - "8761:8761"
     environment:
       - EUREKA_SERVER_ADDRESS=http://eureka:8761/eureka/
       - eureka.client.registerWithEureka=false
       - eureka.client.fetchRegistry=false
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:8761"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     networks:
       - app-network
 
@@ -24,14 +30,20 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
       - SPRING_APPLICATION_NAME=attendance_service
       - SERVER_PORT=8081
+      - EUREKA_CLIENT_REGISTERWITHEUREKA=true
+      - EUREKA_CLIENT_FETCHREGISTRY=true
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
     depends_on:
+      eureka:
+        condition: service_started
       attendance-db:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
-      interval: 90s
-      timeout: 30s
+      interval: 120s
+      timeout: 60s
       retries: 5
+      start_period: 60s
     networks:
       - app-network
 
@@ -48,14 +60,20 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
       - SPRING_APPLICATION_NAME=auth_service
       - SERVER_PORT=8080
+      - EUREKA_CLIENT_REGISTERWITHEUREKA=true
+      - EUREKA_CLIENT_FETCHREGISTRY=true
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
     depends_on:
+      eureka:
+        condition: service_started
       auth-db:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 90s
-      timeout: 30s
+      interval: 120s
+      timeout: 60s
       retries: 5
+      start_period: 60s
     networks:
       - app-network
 
@@ -72,14 +90,20 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
       - SPRING_APPLICATION_NAME=user_service
       - SERVER_PORT=8084
+      - EUREKA_CLIENT_REGISTERWITHEUREKA=true
+      - EUREKA_CLIENT_FETCHREGISTRY=true
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
     depends_on:
+      eureka:
+        condition: service_started
       user-db:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
-      interval: 90s
-      timeout: 30s
+      interval: 120s
+      timeout: 60s
       retries: 5
+      start_period: 60s
     networks:
       - app-network
 
@@ -89,14 +113,6 @@ services:
       dockerfile: Dockerfile
     expose:
       - 8082
-    depends_on:
-      payroll-db:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
-      interval: 90s
-      timeout: 30s
-      retries: 5
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://payroll-db:5432/payroll_db
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
@@ -104,6 +120,20 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
       - SPRING_APPLICATION_NAME=payroll_service
       - SERVER_PORT=8082
+      - EUREKA_CLIENT_REGISTERWITHEUREKA=true
+      - EUREKA_CLIENT_FETCHREGISTRY=true
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
+    depends_on:
+      eureka:
+        condition: service_started
+      payroll-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 120s
+      timeout: 60s
+      retries: 5
+      start_period: 60s
     restart: always
     networks:
       - app-network
@@ -193,7 +223,7 @@ services:
       - auth-service
       - attendance-service
       - user-service
-      - payroll-service  # Added payroll-service
+      - payroll-service
       - eureka
     healthcheck:
       test: ["CMD", "nginx", "-t"]

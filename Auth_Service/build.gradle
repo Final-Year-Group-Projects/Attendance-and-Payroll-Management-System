@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.4.4'
+	id 'org.springframework.boot' version '3.3.5' // Downgraded from 3.4.4
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'org.hibernate.orm' version '6.6.11.Final'
 	id 'org.graalvm.buildtools.native' version '0.10.6'
@@ -25,17 +25,25 @@ repositories {
 	mavenCentral()
 }
 
+dependencyManagement {
+	imports {
+		mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2023.0.4'
+	}
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
-	testImplementation 'org.springframework.boot:spring-boot-test:3.4.0'
+	testImplementation 'org.springframework.boot:spring-boot-test:3.3.5' // Adjusted version
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
@@ -47,6 +55,14 @@ hibernate {
 	enhancement {
 		enableAssociationManagement = true
 	}
+}
+
+tasks.named('processAot') {
+	enabled = false
+}
+
+tasks.named('processTestAot') {
+	enabled = false
 }
 
 tasks.named('test') {
