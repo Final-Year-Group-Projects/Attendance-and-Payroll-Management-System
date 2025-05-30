@@ -191,9 +191,126 @@ USER_SERVICE_URL=http://localhost:8084
   Use a tool like Postman or cURL to test the API endpoints (e.g., POST /attendance/1).
   Example request:
 
-`curl -X POST http://localhost:8081/attendance/1 \
+
+Note : Make sure to add Bearer token as Authorization header for all requests.
+User Access Endpoints
+
+POST /attendance/{employeeId}Record both check-in and check-out for an employee:
+
+curl -X POST "http://localhost:8081/attendance/1" \
 -H "Content-Type: application/json" \
--d '{"date": "2025-05-15", "checkInTime": "09:00:00", "checkOutTime": "17:00:00"}'`
+-d '{"date": "2025-05-15", "checkInTime": "09:00:00", "checkOutTime": "17:00:00"}'
 
 
+Notes:
+Replace 1 with the actual employeeId.
+Expected: 200 OK with the saved attendance record, 400 Bad Request if the input is invalid.
 
+
+POST /attendance/check-in/{employeeId}Record a check-in for an employee:
+
+curl -X POST "http://localhost:8081/attendance/check-in/1" \
+-H "Content-Type: application/json" \
+-d '{"date": "2025-05-15", "checkInTime": "09:00:00"}'
+
+Notes:
+Replace 1 with the actual employeeId.
+Expected: 200 OK with the saved attendance record, 400 Bad Request if the input is invalid.
+
+
+PUT /attendance/check-out/{recordId}Record a check-out for an existing attendance record:
+
+curl -X PUT "http://localhost:8081/attendance/check-out/1" \
+-H "Content-Type: application/json" \
+-d '{"checkOutTime": "17:00:00"}'
+
+
+Notes:
+Replace 1 with the actual recordId of an attendance record.
+Expected: 200 OK with the updated attendance record, 400 Bad Request if checkOutTime is invalid, 404 Not Found if recordId is invalid.
+
+GET /attendance/{employeeId}Retrieve all attendance records for an employee:
+
+curl -X GET "http://localhost:8081/attendance/1"
+
+Notes:
+Replace 1 with the actual employeeId.
+Expected: 200 OK with a list of attendance records, 404 Not Found if no records exist.
+
+GET /attendance/hours/{recordId}Calculate working hours for a specific attendance record:
+
+curl -X GET "http://localhost:8081/attendance/hours/1"
+
+Notes:
+Replace 1 with the actual recordId.
+Expected: 200 OK with the working hours, 400 Bad Request if the record is incomplete, 404 Not Found if recordId is invalid.
+
+GET /attendance/employee/{employeeId}/hoursCalculate total working hours for an employee over a date range:
+
+curl -X GET "http://localhost:8081/attendance/employee/1/hours?startDate=2025-05-01&endDate=2025-05-31"
+
+Notes:
+Replace 1 with the actual employeeId.
+Adjust the startDate and endDate as needed.
+
+Expected: 200 OK with total working hours, 400 Bad Request if the date range is invalid.
+POST /attendance/leaves/requestApply for a leave request:
+
+curl -X POST "http://localhost:8081/attendance/leaves/request" \
+-H "employeeId: 1" \
+-H "Content-Type: application/json" \
+-d '{"startDate": "2025-05-20", "endDate": "2025-05-22", "reason": "Vacation", "leaveType": "ANNUAL"}'
+
+
+Notes:
+Replace 1 with the actual employeeId.
+Expected: 200 OK with the saved leave request, 400 Bad Request if the input is invalid.
+
+GET /attendance/employee/{employeeId}/attendance-countGet the number of attended days for an employee in a specific month:
+
+curl -X GET "http://localhost:8081/attendance/employee/1/attendance-count?month=2025-05"
+
+Notes:
+Replace 1 with the actual employeeId.
+Adjust the month parameter as needed.
+Expected: 200 OK with the attendance count, 400 Bad Request if the month format is invalid.
+
+
+GET /attendance/employee/{employeeId}/leave-balanceCheck the leave balance for an employee in a specific month:
+
+curl -X GET "http://localhost:8081/attendance/employee/1/leave-balance?month=2025-05"
+
+Notes:
+Replace 1 with the actual employeeId.
+Adjust the month parameter as needed.
+Expected: 200 OK with the leave balance, 400 Bad Request if the month format is invalid.
+
+DELETE /attendance/leaves/{leaveId}Delete a pending leave request:
+
+curl -X DELETE "http://localhost:8081/attendance/leaves/1"
+
+Notes:
+Replace 1 with the actual leaveId.
+Expected: 204 No Content on success, 400 Bad Request if the leave is not pending or invalid.
+
+GET /attendance/leaves/employee/{employeeId}Fetch all leave requests for a specific employee:
+
+curl -X GET "http://localhost:8081/attendance/leaves/employee/1?startDate=2025-05-01&endDate=2025-05-31"
+
+Notes:
+Replace 1 with the actual employeeId.
+The startDate and endDate parameters are optional; remove them to fetch all leave requests.
+Expected: 200 OK with a list of leave requests, 204 No Content if none found, 400 Bad Request if the employee is not found or the date range is invalid.
+
+Admin Access Endpoints
+
+PUT /attendance/leaves/{leaveId}/statusUpdate the status of a leave request (admin only):
+
+curl -X PUT "http://localhost:8081/attendance/leaves/1/status?status=APPROVED" \
+-H "employeeId: 2" \
+-H "Content-Type: application/json"
+
+Notes:
+Replace 1 with the actual leaveId.
+Replace 2 with the employeeId of an admin user.
+Expected: 200 OK with updated leave details, 403 Forbidden if not an admin, or 404 Not Found if leaveId is invalid.
