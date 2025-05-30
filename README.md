@@ -1,279 +1,122 @@
-# Attendance Service
+Attendance and Payroll Management System
 
-The Attendance Service is a Spring Boot-based application designed to manage employee attendance and leave requests. 
-It provides a set of RESTful APIs for both admin and user (employee/admin) access, 
-utilizing PostgreSQL as the database, NGINX as the API gateway, Eureka for service discovery, and Docker for deployment.
+This project is a distributed system for managing attendance and payroll, built using Spring Boot services, PostgreSQL databases, a Eureka server for service discovery, and an NGINX API gateway. It uses Docker Compose to manage all services.
 
-## Features
-- Record and manage employee check-ins and check-outs.
-- Calculate working hours for individual attendance records and total hours for employees.
-- Submit, approve, reject, and delete leave requests with status tracking.
-- Retrieve attendance counts and leave balances for specific months.
-- Fetch all attendance and leave records for employees.
+Prerequisites
 
-## Technologies
-- **Language**: Java
-- **Framework**: Spring Boot
-- **Database**: PostgreSQL
-- **API Gateway**: NGINX
-- **Service Discovery**: Eureka
-- **Deployment**: Docker
+Before you begin, ensure you have the following installed on your machine:
+Docker: Install Docker Desktop (includes Docker Compose) for your operating system:
+Windows/Mac: Download from Docker Desktop
+Linux: Follow the Docker installation guide
+Git: To clone the repository. Install from Git Downloads.
+A terminal (e.g., Command Prompt, PowerShell, or Bash).
+PostgreSQL Client (optional): Install psql or a GUI like pgAdmin if you plan to access the databases internally (e.g., sudo apt install postgresql-client on Ubuntu).
 
-## API Endpoints
+Setup Instructions
 
-### Admin Access Endpoints
-These endpoints are restricted to admin users only.
+Follow these steps to set up and run the project:
 
-- **PUT `/attendance/leaves/{leaveId}/status`**
-    - **Description**: Update the status (e.g., APPROVED, REJECTED) of a leave request.
-    - **Request Parameters**:
-        - `leaveId` (path variable): ID of the leave request.
-        - `status` (query param): New status (e.g., "APPROVED").
-        - `employeeId` (header): ID of the admin performing the action.
-    - **Response**:
-        - `200 OK` with updated leave details.
-        - `400 Bad Request` for invalid input.
-        - `403 Forbidden` if not an admin.
-        - `404 Not Found` if leave ID is invalid.
+1. Clone the Repository
 
-### User Access Endpoints
-These endpoints are accessible to both employees and admins.
+Clone this repository to your local machine:
 
-- **POST `/attendance/{employeeId}`**
-    - **Description**: Record both check-in and check-out for an employee.
-    - **Request Body**: `AttendanceRequest` (date, checkInTime, checkOutTime).
-    - **Response**:
-        - `200 OK` with saved attendance record.
-        - `400 Bad Request` for invalid input.
+git clone <repository-url>
+cd <repository-directory>
 
-- **POST `/attendance/check-in/{employeeId}`**
-    - **Description**: Record check-in for an employee.
-    - **Request Body**: `CheckInRequest` (date, checkInTime).
-    - **Response**:
-        - `200 OK` with saved attendance record.
-        - `400 Bad Request` for invalid input.
+Replace <repository-url> with the URL of your Git repository, and <repository-directory> with the directory name of your project.
 
-- **PUT `/attendance/check-out/{recordId}`**
-    - **Description**: Record check-out for an existing attendance record.
-    - **Request Body**: `CheckOutRequest` (checkOutTime).
-    - **Response**:
-        - `200 OK` with updated attendance record.
-        - `400 Bad Request` if check-out time is invalid.
-        - `404 Not Found` if record ID is invalid.
+2. Create the .env File
 
-- **GET `/attendance/{employeeId}`**
-    - **Description**: Retrieve all attendance records for an employee.
-    - **Response**:
-        - `200 OK` with list of attendance records.
-        - `404 Not Found` if no records exist.
+The project uses environment variables to configure database credentials and database names. Create a file named .env in the root directory of the project (where docker-compose.yml is located).
 
-- **GET `/attendance/hours/{recordId}`**
-    - **Description**: Calculate working hours for a specific attendance record.
-    - **Response**:
-        - `200 OK` with working hours.
-        - `400 Bad Request` if record is incomplete.
-        - `404 Not Found` if record ID is invalid.
+Copy the following template into your .env file and fill in the values:
 
-- **GET `/attendance/employee/{employeeId}/hours`**
-    - **Description**: Calculate total working hours for an employee over a date range.
-    - **Request Parameters**:
-        - `startDate` (query param): Start date of the range.
-        - `endDate` (query param): End date of the range.
-    - **Response**:
-        - `200 OK` with total working hours.
-        - `400 Bad Request` for invalid date range.
+SPRING_DATASOURCE_USERNAME=
+SPRING_DATASOURCE_PASSWORD=
+ATTENDANCE_DB_NAME=
+AUTH_DB_NAME=
+USER_DB_NAME=
+PAYROLL_DB_NAME=
 
-- **POST `/attendance/leaves/request`**
-    - **Description**: Apply for a leave request.
-    - **Request Body**: `LeaveRequest` (startDate, endDate, reason, leaveType).
-    - **Request Header**: `employeeId` (required).
-    - **Response**:
-        - `200 OK` with saved leave request.
-        - `400 Bad Request` for invalid input.
 
-- **GET `/attendance/employee/{employeeId}/attendance-count`**
-    - **Description**: Get the number of attended days for an employee in a specific month.
-    - **Request Parameter**: `month` (query param, format: "yyyy-MM").
-    - **Response**:
-        - `200 OK` with attendance count.
-        - `400 Bad Request` for invalid month format.
 
-- **GET `/attendance/employee/{employeeId}/leave-balance`**
-    - **Description**: Check the leave balance for an employee in a specific month.
-    - **Request Parameter**: `month` (query param, format: "yyyy-MM").
-    - **Response**:
-        - `200 OK` with leave balance.
-        - `400 Bad Request` for invalid month format.
+SPRING_DATASOURCE_USERNAME: The username for the PostgreSQL databases (e.g., postgres).
+SPRING_DATASOURCE_PASSWORD: The password for the PostgreSQL databases (choose a strong password).
+ATTENDANCE_DB_NAME: The name of the attendance database (e.g., attendance_db).
+AUTH_DB_NAME: The name of the authentication database (e.g., auth_db).
+USER_DB_NAME: The name of the user database (e.g., user_db).
+PAYROLL_DB_NAME: The name of the payroll database (e.g., payroll_db).
 
-- **DELETE `/attendance/leaves/{leaveId}`**
-    - **Description**: Delete a pending leave request.
-    - **Response**:
-        - `204 No Content` on success.
-        - `400 Bad Request` if leave is not pending or invalid.
+Important: Do not commit the .env file to Git. It should be listed in your .gitignore file to keep sensitive data secure.
 
-- **GET `/attendance/leaves/employee/{employeeId}`**
-    - **Description**: Fetch all leave requests for a specific employee.
-    - **Request Parameters**:
-        - `startDate` (optional, query param): Start date of the range.
-        - `endDate` (optional, query param): End date of the range.
-    - **Response**:
-        - `200 OK` with list of leave requests.
-        - `204 No Content` if no leave requests found.
-        - `400 Bad Request` if employee not found or invalid date range.
+3. Build and Run the Services
 
-## Prerequisites
-- **Java 17** or higher.
-- **Maven 3.6+**.
-- **PostgreSQL 15+**.
-- **Docker** and **Docker Compose** for containerized deployment.
-- **NGINX** for API gateway.
-- **Eureka Server** for service discovery.
+Use Docker Compose to build and start all services (Eureka server, application services, databases, and API gateway).
 
-## How to Run the Service
+Run the following command in the project directory:
 
-### Local Setup
-Follow these steps to run the Attendance Service locally on your machine.
+docker-compose up -d --build
 
-1. **Clone the Repository**
-   ```bash
-   git clone <repository-url>
-   cd Attendance_service
 
-2. **Set Up PostgreSQL**
-- Install PostgreSQL if not already installed.
-- Create a database named attendance_db using below command:
+-d: Runs the containers in the background (detached mode).
+--build: Builds the Docker images for the services if they don’t already exist.
 
-   `CREATE DATABASE attendance_db;`
+This will start:
+Eureka server (eureka) on port 8761.
+Application services (attendance-service, auth-service, user-service, payroll-service) internally on ports 8081, 8080, 8084, and 8082.
+PostgreSQL databases (attendance-db, auth-db, user-db, payroll-db) internally (not exposed to the host).
+API gateway (api-gateway) on port 80.
 
-- Update the database configuration in src/main/resources/application.properties or application-dev.properties:
-  
- `spring.datasource.url=jdbc:postgresql://localhost:5432/attendance_db
-  spring.datasource.username=your_username
-  spring.datasource.password=your_password
-  spring.jpa.hibernate.ddl-auto=update
-  spring.jpa.show-sql=true `
+4. Verify the Services Are Running
 
-3. **Configure Eureka (Optional for Local Setup)**
-   - If running locally without Eureka, ensure application.properties has:
-   `eureka.client.enabled=false`
-   If using Eureka, ensure an Eureka Server is running and update:
+Check the status of the containers to ensure they’re running:
 
-    `eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka/`
+docker-compose ps
 
-4. **Build the Project**
-   - Compile and package the application using Maven:
-    `mvn clean install`
 
-5. **Run the Application**
-   - Start the application with the dev profile:
-    `mvn spring-boot:run -Dspring.profiles.active=dev`
+All services should show a state of Up (e.g., Up (healthy) for services with health checks).
+If any service is not running, check the logs for errors:
+
+docker-compose logs <service-name>
+
+Example: docker-compose logs attendance-service
+
+5. Access the Services
+Eureka Dashboard: Open http://localhost:8761 in your browser to see the service registry. You should see attendance_service, auth_service, user_service, and payroll_service listed.
+API Gateway: Access the application through the NGINX gateway at http://localhost. The gateway routes requests to the appropriate services based on the nginx.conf configuration.
+Databases: The database services are not exposed to the host (ports like 5432 are removed for security). To access them:
+
+
    
-- The service will be available at http://localhost:8080.
+Enter the container shell for the desired database:
 
-- Test the Endpoints
-Use a tool like Postman or cURL to test the API endpoints (e.g., POST /attendance/1).
-Example request:
+docker exec -it <db-container-name> sh
 
-`curl -X POST http://localhost:8080/attendance/1 \
--H "Content-Type: application/json" \
--d '{"date": "2025-05-15", "checkInTime": "09:00:00", "checkOutTime": "17:00:00"}'`
+Example: docker exec -it attendance-db sh
 
-6. **Docker Deployment**
 
-   - Follow these steps to deploy the Attendance Service using Docker, along with NGINX and Eureka.
 
-       - Build the Docker Image
-         - Ensure you have a Dockerfile in the project root. Example Dockerfile:
-           dockerfile
-           `FROM openjdk:17-jdk-slim
-           WORKDIR /app
-           COPY target/Attendance_service-0.0.1-SNAPSHOT.jar app.jar
-           ENTRYPOINT ["java", "-jar", "app.jar"]`
+Inside the container, run psql with the appropriate user and database:
 
-         - Build the Docker image:
+psql -U $POSTGRES_USER -d $POSTGRES_DB
 
-            `docker build -t attendance-service:latest .`
-         - 
-7. **Set Up Docker Compose**
-   - Create a docker-compose.yml file to orchestrate the services (PostgreSQL, Eureka, NGINX, and Attendance Service):
-    ```version: '3.8'
-    services:
-    postgres:
-    image: postgres:15
-    environment:
-    POSTGRES_DB: attendance_db
-    POSTGRES_USER: your_username
-    POSTGRES_PASSWORD: your_password
-    ports:
-         - "5432:5432"
-         volumes:
-         - postgres_data:/var/lib/postgresql/data
-    
-    eureka:
-    image: springcloud/eureka
-    ports:
-    - "8761:8761"
-    environment:
-      - EUREKA_SERVER_ADDRESS=http://eureka:8761/eureka/
-    
-    attendance-service:
-    image: attendance-service:latest
-    depends_on:
-    - postgres
-      - eureka
-      environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/attendance_db
-      - SPRING_DATASOURCE_USERNAME=your_username
-      - SPRING_DATASOURCE_PASSWORD=your_password
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
-      ports:
-      - "8080:8080"
-    
-    nginx:
-    image: nginx:latest
-    ports:
-    - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      depends_on:
-      - attendance-service
-    
-    volumes:
-    postgres_data:```
-      
+Replace $POSTGRES_USER and $POSTGRES_DB with the values from your .env file (e.g., psql -U postgres -d attendance_db).
 
-- Create an nginx.conf file for the API gateway:
-      `events {}
-      http {
-        upstream attendance_service {
-        server attendance-service:8080;
-      }
-      server {
-        listen 80;
-        location / {
-            proxy_pass http://attendance_service;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            }
-        }
-      }`
 
-8. **Run Docker Compose**
-   - Start all services:
+Alternatively, install a PostgreSQL client on your host and connect via the Docker network by running a container with psql:
 
-    `docker-compose up -d`
+docker run -it --rm --network app-network postgres:15 psql -h attendance-db -U $SPRING_DATASOURCE_USERNAME -d $ATTENDANCE_DB_NAME
 
-    - Verify the services are running:
-   
-     `docker-compose ps`
+Adjust the host (attendance-db, auth-db, etc.) and database name based on the service.
 
-    - Access the Service
-   
-    The Attendance Service will be available through NGINX at http://localhost/attendance/....
-    Test the endpoints using a tool like Postman or cURL.
-    Stop the Services
+6. Stop the Services
 
-    - To stop and remove the containers:
+To stop all services, run:
 
-     `docker-compose down`
+docker-compose down
+
+
+This stops and removes the containers but preserves the database data (stored in Docker volumes: attendance-data, auth-data, user-data, payroll-data).
+To also remove the volumes (and lose all database data), add the -v flag:
+
+docker-compose down -v

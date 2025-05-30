@@ -5,7 +5,6 @@ WORKDIR /app
 
 # Copy Maven descriptor and download dependencies
 COPY pom.xml .
-RUN mvn dependency:go-offline
 
 # Copy all source files
 COPY src ./src

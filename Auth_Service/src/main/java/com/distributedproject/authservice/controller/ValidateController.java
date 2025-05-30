@@ -26,10 +26,25 @@ public class ValidateController {
         this.tokenBlacklistService = tokenBlacklistService;
     }
 
-    @PostMapping("/validate")
-    public ResponseEntity<?> validateToken(@RequestBody Map<String, String> request) {
-        String token = request.get("token");
+    @RequestMapping(value = "/validate", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResponseEntity<?> validateToken(@RequestHeader(value = "Authorization", required = false) String authHeader) {
         logger.info("Received token validation request");
+
+        if (authHeader == null || authHeader.trim().isEmpty()) {
+            logger.error("Missing or empty Authorization header");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or empty Authorization header");
+        }
+
+        if (!authHeader.startsWith("Bearer ")) {
+            logger.error("Invalid Authorization header format: {}", authHeader);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Authorization header format");
+        }
+
+        String token = authHeader.substring(7).trim();
+        if (token.isEmpty()) {
+            logger.error("Token is empty after extraction");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is empty");
+        }
 
         if (tokenBlacklistService.isTokenBlacklisted(token)) {
             logger.warn("Token is blacklisted: {}", token);
@@ -39,15 +54,11 @@ public class ValidateController {
         try {
             String username = jwtService.extractUsername(token);
             String role = jwtService.extractRole(token);
-            logger.info("Token validated successfully. Username: {}, Role: {}", username, role);
-
-            return ResponseEntity.ok(Map.of(
-                    "username", username,
-                    "role", role
-            ));
+            logger.info("Token validated successfully for username: {}", username);
+            return ResponseEntity.ok(Map.of("username", username, "role", role));
         } catch (Exception e) {
             logger.error("Token validation failed: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token: " + e.getMessage());
         }
     }
 }
