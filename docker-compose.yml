@@ -24,7 +24,7 @@ services:
     expose:
       - 8081
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://attendance-db:5432/attendance_db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://attendance-db:5432/${ATTENDANCE_DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
@@ -54,7 +54,7 @@ services:
     expose:
       - 8080
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/auth_db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/${AUTH_DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
@@ -84,7 +84,7 @@ services:
     expose:
       - 8084
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://user-db:5432/user_db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://user-db:5432/${USER_DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
@@ -114,7 +114,7 @@ services:
     expose:
       - 8082
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://payroll-db:5432/payroll_db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://payroll-db:5432/${PAYROLL_DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
@@ -140,12 +140,10 @@ services:
 
   attendance-db:
     image: postgres:15
-    ports:
-      - "5432:5432"
     environment:
       - POSTGRES_USER=${SPRING_DATASOURCE_USERNAME}
       - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
-      - POSTGRES_DB=attendance_db
+      - POSTGRES_DB=${ATTENDANCE_DB_NAME}
     volumes:
       - attendance-data:/var/lib/postgresql/data
     healthcheck:
@@ -158,12 +156,10 @@ services:
 
   auth-db:
     image: postgres:15
-    ports:
-      - "5434:5432"
     environment:
       - POSTGRES_USER=${SPRING_DATASOURCE_USERNAME}
       - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
-      - POSTGRES_DB=auth_db
+      - POSTGRES_DB=${AUTH_DB_NAME}
     volumes:
       - auth-data:/var/lib/postgresql/data
       - ./Auth_Service/init:/docker-entrypoint-initdb.d
@@ -177,12 +173,10 @@ services:
 
   user-db:
     image: postgres:15
-    ports:
-      - "5433:5432"
     environment:
       - POSTGRES_USER=${SPRING_DATASOURCE_USERNAME}
       - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
-      - POSTGRES_DB=user_db
+      - POSTGRES_DB=${USER_DB_NAME}
     volumes:
       - user-data:/var/lib/postgresql/data
       - ./User_service/init:/docker-entrypoint-initdb.d
@@ -196,12 +190,10 @@ services:
 
   payroll-db:
     image: postgres:15
-    ports:
-      - "5435:5432"
     environment:
       - POSTGRES_USER=${SPRING_DATASOURCE_USERNAME}
       - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
-      - POSTGRES_DB=payroll_db
+      - POSTGRES_DB=${PAYROLL_DB_NAME}
       - POSTGRES_INITDB_ARGS=--auth=scram-sha-256 --username=${SPRING_DATASOURCE_USERNAME}
     volumes:
       - payroll-data:/var/lib/postgresql/data
