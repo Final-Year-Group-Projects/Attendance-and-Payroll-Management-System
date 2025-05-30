@@ -19,7 +19,7 @@ services:
   payroll-service:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.payrollserver
     ports:
       - "8082:8082"
     depends_on:

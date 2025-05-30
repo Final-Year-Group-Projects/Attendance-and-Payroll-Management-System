@@ -110,7 +110,7 @@ services:
   payroll-service:
     build:
       context: ./Payroll_service
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.payrollserver
     expose:
       - 8082
     environment:
@@ -194,7 +194,6 @@ services:
       - POSTGRES_USER=${SPRING_DATASOURCE_USERNAME}
       - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
       - POSTGRES_DB=${PAYROLL_DB_NAME}
-      - POSTGRES_INITDB_ARGS=--auth=scram-sha-256 --username=${SPRING_DATASOURCE_USERNAME}
     volumes:
       - payroll-data:/var/lib/postgresql/data
     healthcheck:
