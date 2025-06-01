@@ -10,16 +10,4 @@ public class ValidationException extends RuntimeException {
     public ValidationException(String message) {
         super(message);
     }
-
-//    public ValidationException(String message, Throwable cause) {
-//        super(message, cause);
-//    }
-//
-//    public ValidationException(String format, Object... args) {
-//        super(String.format(format, args));
-//    }
-//
-//    public ValidationException(Throwable cause, String format, Object... args) {
-//        super(String.format(format, args), cause);
-//    }
 }

@@ -34,7 +34,7 @@ public class ReimbursementController {
     @PutMapping("/{reimbursementId}/status")
     public ReimbursementResponseDTO updateStatus(
             @PathVariable @Min(1) Long reimbursementId,
-            @RequestParam @Pattern(regexp = "PENDING|APPROVED|REJECTED") String status) {
+            @RequestParam String status) {
             return reimbursementService.updateStatus(reimbursementId, status);
     }
 
