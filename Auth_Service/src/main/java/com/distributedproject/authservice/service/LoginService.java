@@ -24,15 +24,15 @@ public class LoginService {
     private JwtService jwtService;
 
     public Map<String, String> login(LoginRequest loginRequest) {
-        User user = userRepository.findByUsername(loginRequest.getUsername())
-                .orElseThrow(() -> new InvalidCredentialsException("Invalid username"));
+        User user = userRepository.findByUsername(loginRequest.getUserId())
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid userid"));
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new InvalidCredentialsException("Invalid password");
         }
 
         UserDetails userDetails = new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
+                user.getUserId(),
                 user.getPassword(),
                 List.of(new SimpleGrantedAuthority(user.getRole()))
         );

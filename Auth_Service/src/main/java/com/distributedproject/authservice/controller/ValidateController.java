@@ -19,11 +19,13 @@ public class ValidateController {
 
     private final JwtService jwtService;
     private final TokenBlacklistService tokenBlacklistService;
+    private final UserRepository userRepository;
 
     @Autowired
     public ValidateController(JwtService jwtService, TokenBlacklistService tokenBlacklistService) {
         this.jwtService = jwtService;
         this.tokenBlacklistService = tokenBlacklistService;
+        this.userRepository = userRepository;
     }
 
     @RequestMapping(value = "/validate", method = {RequestMethod.GET, RequestMethod.POST})
@@ -54,8 +56,11 @@ public class ValidateController {
         try {
             String username = jwtService.extractUsername(token);
             String role = jwtService.extractRole(token);
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found for username: " + username));
+
             logger.info("Token validated successfully for username: {}", username);
-            return ResponseEntity.ok(Map.of("username", username, "role", role));
+            return ResponseEntity.ok(Map.of("username", username, "role", role, "userId", user.getUserId));
         } catch (Exception e) {
             logger.error("Token validation failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token: " + e.getMessage());

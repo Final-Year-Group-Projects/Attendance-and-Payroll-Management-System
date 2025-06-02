@@ -28,6 +28,9 @@ public class RegisterController {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new UsernameAlreadyExistsException("Username '" + user.getUsername() + "' already exists.");
         }
+        if (userRepository.findByUsername(user.getUserId()).isPresent()) {
+            throw new UserIdAlreadyExistsException("User ID '" + user.getUserId() + "' already exists.");
+        }
 
         User savedUser = registerService.register(user);
 
