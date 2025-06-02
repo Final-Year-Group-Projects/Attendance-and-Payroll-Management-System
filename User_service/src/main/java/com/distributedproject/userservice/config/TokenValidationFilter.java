@@ -69,7 +69,7 @@ public class TokenValidationFilter extends OncePerRequestFilter {
 
                 if ("Employee".equals(role)) {
                     boolean isGetAllowed =
-                            path.matches("^/user/get/users/.*") || path.equals("/user/search");
+                            path.matches("^/user/get/users/.*") || path.matches("^/user/search/.*") || path.matches("^/user/get/userrole/.*") || path.matches("^/user/getAll/users/.*");
 
                     boolean isUpdateOwnInfo = false;
 
