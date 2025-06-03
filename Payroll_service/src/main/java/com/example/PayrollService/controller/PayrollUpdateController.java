@@ -30,7 +30,7 @@ public class PayrollUpdateController {
     @PutMapping("/{payrollId}/status")
     public ResponseEntity<PayrollResponseDTO> updateStatus(
             @PathVariable @Min(1) Long payrollId,
-            @RequestParam @Pattern(regexp = "GENERATED|PAID|CANCELLED") String status) {  // Align with VALID_PAYROLL_STATUSES
+            @RequestParam String status) {
         PayrollResponseDTO updatedPayroll = payrollService.updatePayrollStatus(payrollId, status);
         return ResponseEntity.ok(updatedPayroll);
     }

@@ -1,28 +1,21 @@
-package com.distributedproject.userservice.config;
+package com.example.PayrollService.config;
 
-import com.distributedproject.userservice.model.User;
-import com.distributedproject.userservice.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.http.*;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Optional;
 
 @Component
 public class TokenValidationFilter extends OncePerRequestFilter {
 
     private final RestTemplate restTemplate = new RestTemplate();
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -39,55 +32,46 @@ public class TokenValidationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + token); // Set token in Authorization header
+        headers.set("Authorization", "Bearer " + token);
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Void> entity = new HttpEntity<>(headers); // No body needed
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         try {
             ResponseEntity<Map> validationResponse = restTemplate
                     .exchange("http://api-gateway/auth/validate", HttpMethod.POST, entity, Map.class);
 
             if (validationResponse.getStatusCode() != HttpStatus.OK) {
-                HttpStatus status = (HttpStatus) validationResponse.getStatusCode(); // Cast to HttpStatus
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Token validation failed: " + status.getReasonPhrase());
+                response.getWriter().write("Token validation failed");
                 return;
             }
 
             Map<String, Object> responseBody = validationResponse.getBody();
-            String username = (String) responseBody.get("username");
             String role = (String) responseBody.get("role");
-
-            request.setAttribute("username", username);
+            String username = (String) responseBody.get("username");
             request.setAttribute("role", role);
+            request.setAttribute("username", username);
 
             String path = request.getRequestURI();
+            String method = request.getMethod();
 
-            // Admin can access everything
-            if (!"Admin".equals(role) && !"Super_Admin".equals(role)) {
-                boolean isEmployeeAllowed = false;
+            String normalizedRole = role != null ? role.trim().toLowerCase() : "";
+            if (!"admin".equals(normalizedRole) && !"super_admin".equals(normalizedRole)) {
+                boolean isAllowed = false;
 
-                if ("Employee".equals(role)) {
-                    boolean isGetAllowed =
-                            path.matches("^/user/get/users/.*") || path.equals("/user/search");
-
-                    boolean isUpdateOwnInfo = false;
-
-                    if (path.matches("^/user/update/users/\\d+$")) {
-                        String[] pathParts = path.split("/");
-                        Long pathUserId = Long.parseLong(pathParts[pathParts.length - 1]);
-
-                        Optional<User> optionalUser = userRepository.findByUserFullNameIgnoreCase(username);
-                        if (optionalUser.isPresent()) {
-                            String actualUserId = optionalUser.get().getUserId();
-                            isUpdateOwnInfo = actualUserId.equals(pathUserId);
-                        }
-                    }
-
-                    isEmployeeAllowed = isGetAllowed || isUpdateOwnInfo;
+                if ("employee".equals(normalizedRole)) {
+                    // Define employee-accessible endpoints
+                    isAllowed = (
+                            (path.matches("^/payrolls/employee/[a-zA-Z0-9]+$") && "GET".equals(method)) ||
+                                    (path.matches("^/payrolls/[a-zA-Z0-9]+/payslip$") && "GET".equals(method)) ||
+                                    (path.matches("^/payrolls/[a-zA-Z0-9]+/payslip/pdf$") && "GET".equals(method)) ||
+                                    (path.matches("^/payrolls/[a-zA-Z0-9]+/notify$") && "POST".equals(method)) ||
+                                    (path.equals("/payrolls/reimbursements") && "POST".equals(method)) ||
+                                    (path.matches("^/payrolls/reimbursements/employee/[a-zA-Z0-9]+$") && "GET".equals(method))
+                    );
                 }
 
-                if (!isEmployeeAllowed) {
+                if (!isAllowed) {
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     response.getWriter().write("Access denied: insufficient permissions");
                     return;
@@ -96,7 +80,7 @@ public class TokenValidationFilter extends OncePerRequestFilter {
 
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Token validation error: " + e.getMessage());
+            response.getWriter().write("Token validation failed due to an internal error. Please try again later." );
             return;
         }
 
