@@ -20,6 +20,10 @@ public class RegisterService {
             throw new RuntimeException("Username is already taken!");
         }
 
+        if (userRepository.findByUserId(user.getUserId()).isPresent()) {
+            throw new RuntimeException("User ID is already taken!");
+        }
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }

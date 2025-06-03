@@ -1,4 +1,4 @@
-package com.distributedproject.authservice.validation.user;
+package com.distributedproject.authservice.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

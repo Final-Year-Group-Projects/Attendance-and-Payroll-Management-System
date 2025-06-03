@@ -74,4 +74,21 @@ public class GlobalExceptionHandler {
         // Return the error response with a 409 status
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
+
+    @ExceptionHandler(UserIdAlreadyExistsException.class)
+    public ResponseEntity<Map<String, Object>> handleUserIdAlreadyExists(UserIdAlreadyExistsException ex) {
+        // Log error details
+        logger.error("Error occurred while creating user: StatusCode: {}, Timestamp: {}, Message: {}",
+                HttpStatus.CONFLICT.value(), LocalDateTime.now(), ex.getMessage());
+
+        // Prepare the error response
+        Map<String, Object> error = new HashMap<>();
+        error.put("errorMessage", ex.getMessage());
+        error.put("error", "Already Exists");
+        error.put("statusCode", HttpStatus.CONFLICT.value());
+        error.put("timestamp", LocalDateTime.now());
+
+        // Return the error response with a 409 status
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
 }

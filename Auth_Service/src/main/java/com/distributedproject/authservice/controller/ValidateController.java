@@ -1,69 +1,42 @@
-package com.distributedproject.authservice.controller;
+package com.distributedproject.authservice.dto;
 
-import com.distributedproject.authservice.service.JwtService;
-import com.distributedproject.authservice.service.TokenBlacklistService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+public class LoginRequest {
+    private String userId;
+    private String username;
+    private String password;
 
-import java.util.Map;
+    // ✅ Default constructor (required for Jackson)
+    public LoginRequest(String testUser, String password) {}
 
-@RestController
-@RequestMapping("/auth")
-public class ValidateController {
-
-    private static final Logger logger = LoggerFactory.getLogger(ValidateController.class);
-
-    private final JwtService jwtService;
-    private final TokenBlacklistService tokenBlacklistService;
-    private final UserRepository userRepository;
-
-    @Autowired
-    public ValidateController(JwtService jwtService, TokenBlacklistService tokenBlacklistService) {
-        this.jwtService = jwtService;
-        this.tokenBlacklistService = tokenBlacklistService;
-        this.userRepository = userRepository;
+    // Optional: Parameterized constructor if needed
+    public LoginRequest(String userId, String username, String password) {
+        this.userId = userId;
+        this.username = username;
+        this.password = password;
     }
 
-    @RequestMapping(value = "/validate", method = {RequestMethod.GET, RequestMethod.POST})
-    public ResponseEntity<?> validateToken(@RequestHeader(value = "Authorization", required = false) String authHeader) {
-        logger.info("Received token validation request");
+    // ✅ Getters and Setters
+    public String getUserId() {
+        return userId;
+    }
 
-        if (authHeader == null || authHeader.trim().isEmpty()) {
-            logger.error("Missing or empty Authorization header");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or empty Authorization header");
-        }
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
-        if (!authHeader.startsWith("Bearer ")) {
-            logger.error("Invalid Authorization header format: {}", authHeader);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Authorization header format");
-        }
+    public String getUsername() {
+        return username;
+    }
 
-        String token = authHeader.substring(7).trim();
-        if (token.isEmpty()) {
-            logger.error("Token is empty after extraction");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is empty");
-        }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-        if (tokenBlacklistService.isTokenBlacklisted(token)) {
-            logger.warn("Token is blacklisted: {}", token);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is blacklisted");
-        }
+    public String getPassword() {
+        return password;
+    }
 
-        try {
-            String username = jwtService.extractUsername(token);
-            String role = jwtService.extractRole(token);
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found for username: " + username));
-
-            logger.info("Token validated successfully for username: {}", username);
-            return ResponseEntity.ok(Map.of("username", username, "role", role, "userId", user.getUserId));
-        } catch (Exception e) {
-            logger.error("Token validation failed: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token: " + e.getMessage());
-        }
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

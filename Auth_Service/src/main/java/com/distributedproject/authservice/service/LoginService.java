@@ -18,27 +18,28 @@ public class LoginService {
 
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
+
     @Autowired
     private JwtService jwtService;
 
     public Map<String, String> login(LoginRequest loginRequest) {
-        User user = userRepository.findByUsername(loginRequest.getUserId())
-                .orElseThrow(() -> new InvalidCredentialsException("Invalid userid"));
+        User user = userRepository.findByUsernameAndUserId(loginRequest.getUsername(), loginRequest.getUserId())
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid username or user ID"));
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new InvalidCredentialsException("Invalid password");
         }
 
         UserDetails userDetails = new org.springframework.security.core.userdetails.User(
-                user.getUserId(),
+                user.getUsername(),
                 user.getPassword(),
                 List.of(new SimpleGrantedAuthority(user.getRole()))
         );
 
-        String token = jwtService.generateToken(userDetails);
-
+        String token = jwtService.generateToken(userDetails, user.getUserId().toString());
         return Map.of("accessToken", token);
     }
 }

@@ -1,7 +1,8 @@
-package com.distributedproject.authservice.validation.user;
+package com.distributedproject.authservice.validation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
+
 import java.lang.annotation.*;
 
 @Documented

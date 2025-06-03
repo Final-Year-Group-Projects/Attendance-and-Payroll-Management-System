@@ -1,5 +1,6 @@
 package com.distributedproject.authservice.controller;
 
+import com.distributedproject.authservice.exception.UserIdAlreadyExistsException;
 import com.distributedproject.authservice.exception.UsernameAlreadyExistsException;
 import com.distributedproject.authservice.model.User;
 import com.distributedproject.authservice.repository.UserRepository;
@@ -28,7 +29,7 @@ public class RegisterController {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new UsernameAlreadyExistsException("Username '" + user.getUsername() + "' already exists.");
         }
-        if (userRepository.findByUsername(user.getUserId()).isPresent()) {
+        if (userRepository.findByUserId(user.getUserId()).isPresent()) {
             throw new UserIdAlreadyExistsException("User ID '" + user.getUserId() + "' already exists.");
         }
 
@@ -37,4 +38,5 @@ public class RegisterController {
         logger.info("User registered successfully: {}", savedUser.getUsername());
         return savedUser;
     }
+
 }
