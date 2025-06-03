@@ -45,7 +45,7 @@ public class TokenValidationFilter extends OncePerRequestFilter {
 
         try {
             ResponseEntity<Map> validationResponse = restTemplate
-                    .exchange("http://auth-service:8080/auth/validate", HttpMethod.POST, entity, Map.class);
+                    .exchange("http://api-gateway/auth/validate", HttpMethod.POST, entity, Map.class);
 
             if (validationResponse.getStatusCode() != HttpStatus.OK) {
                 HttpStatus status = (HttpStatus) validationResponse.getStatusCode(); // Cast to HttpStatus

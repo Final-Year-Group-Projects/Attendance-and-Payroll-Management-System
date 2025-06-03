@@ -38,7 +38,7 @@ public class TokenValidationFilter extends OncePerRequestFilter {
 
         try {
             ResponseEntity<Map> validationResponse = restTemplate
-                    .exchange("http://auth-service:8080/auth/validate", HttpMethod.POST, entity, Map.class);
+                    .exchange("http://api-gateway/auth/validate", HttpMethod.POST, entity, Map.class);
 
             if (validationResponse.getStatusCode() != HttpStatus.OK) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -80,7 +80,7 @@ public class TokenValidationFilter extends OncePerRequestFilter {
 
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Token validation error: " + e.getMessage());
+            response.getWriter().write("Token validation failed due to an internal error. Please try again later." );
             return;
         }
 
