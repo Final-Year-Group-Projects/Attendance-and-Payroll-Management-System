@@ -7,10 +7,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.http.*;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Map;
@@ -39,13 +39,13 @@ public class TokenValidationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + token); // Set token in Authorization header
+        headers.set("Authorization", "Bearer " + token);
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Void> entity = new HttpEntity<>(headers); // No body needed
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         try {
             ResponseEntity<Map> validationResponse = restTemplate
-                    .exchange("http://localhost/auth/validate", HttpMethod.POST, entity, Map.class);
+                    .exchange("http://api-gateway/auth/validate", HttpMethod.POST, entity, Map.class);
 
             if (validationResponse.getStatusCode() != HttpStatus.OK) {
                 HttpStatus status = (HttpStatus) validationResponse.getStatusCode(); // Cast to HttpStatus
@@ -55,39 +55,37 @@ public class TokenValidationFilter extends OncePerRequestFilter {
             }
 
             Map<String, Object> responseBody = validationResponse.getBody();
-            String username = (String) responseBody.get("username");
+
+            String tokenUserId = (String) responseBody.get("userId");  // Extract userId from token
             String role = (String) responseBody.get("role");
 
-            request.setAttribute("username", username);
+            // Store info in request attributes for downstream use if needed
+            request.setAttribute("userId", tokenUserId);
             request.setAttribute("role", role);
 
             String path = request.getRequestURI();
 
-            // Admin can access everything
+            // Admin and Super_Admin can access everything
             if (!"Admin".equals(role) && !"Super_Admin".equals(role)) {
-                boolean isEmployeeAllowed = false;
+                boolean isAllowed = false;
 
                 if ("Employee".equals(role)) {
-                    boolean isGetAllowed =
-                            path.matches("^/user/get/users/.*") || path.matches("^/user/search/.*") || path.matches("^/user/get/userrole/.*") || path.matches("^/user/getAll/users/.*");
+                    // Allow GET endpoints
+                    boolean isGetAllowed = path.matches("^/user/get/users/.*") || path.equals("/user/search");
 
+                    // Allow UPDATE only if token userId matches path userId
                     boolean isUpdateOwnInfo = false;
-
-                    if (path.matches("^/user/update/users/\\d+$")) {
+                    if (path.matches("^/user/update/users/.+")) {
                         String[] pathParts = path.split("/");
-                        Long pathUserId = Long.parseLong(pathParts[pathParts.length - 1]);
+                        String pathUserId = pathParts[pathParts.length - 1];  // treat as String
 
-                        Optional<User> optionalUser = userRepository.findByUserFullNameIgnoreCase(username);
-                        if (optionalUser.isPresent()) {
-                            String actualUserId = optionalUser.get().getUserId();
-                            isUpdateOwnInfo = actualUserId.equals(pathUserId);
-                        }
+                        isUpdateOwnInfo = tokenUserId.equals(pathUserId);
                     }
 
-                    isEmployeeAllowed = isGetAllowed || isUpdateOwnInfo;
+                    isAllowed = isGetAllowed || isUpdateOwnInfo;
                 }
 
-                if (!isEmployeeAllowed) {
+                if (!isAllowed) {
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     response.getWriter().write("Access denied: insufficient permissions");
                     return;

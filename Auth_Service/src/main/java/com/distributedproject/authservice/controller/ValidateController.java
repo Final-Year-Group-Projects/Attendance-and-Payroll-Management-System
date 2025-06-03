@@ -1,42 +1,70 @@
-package com.distributedproject.authservice.dto;
+package com.distributedproject.authservice.controller;
 
-public class LoginRequest {
-    private String userId;
-    private String username;
-    private String password;
+import com.distributedproject.authservice.service.JwtService;
+import com.distributedproject.authservice.service.TokenBlacklistService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-    // ✅ Default constructor (required for Jackson)
-    public LoginRequest(String testUser, String password) {}
+import java.util.Map;
 
-    // Optional: Parameterized constructor if needed
-    public LoginRequest(String userId, String username, String password) {
-        this.userId = userId;
-        this.username = username;
-        this.password = password;
+@RestController
+@RequestMapping("/auth")
+public class ValidateController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ValidateController.class);
+
+    private final JwtService jwtService;
+    private final TokenBlacklistService tokenBlacklistService;
+
+    @Autowired
+    public ValidateController(JwtService jwtService, TokenBlacklistService tokenBlacklistService) {
+        this.jwtService = jwtService;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
-    // ✅ Getters and Setters
-    public String getUserId() {
-        return userId;
-    }
+    @RequestMapping(value = "/validate", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResponseEntity<?> validateToken(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        logger.info("Received token validation request");
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
+        if (authHeader == null || authHeader.trim().isEmpty()) {
+            logger.error("Missing or empty Authorization header");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or empty Authorization header");
+        }
 
-    public String getUsername() {
-        return username;
-    }
+        if (!authHeader.startsWith("Bearer ")) {
+            logger.error("Invalid Authorization header format: {}", authHeader);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Authorization header format");
+        }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+        String token = authHeader.substring(7).trim();
+        if (token.isEmpty()) {
+            logger.error("Token is empty after extraction");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is empty");
+        }
 
-    public String getPassword() {
-        return password;
-    }
+        if (tokenBlacklistService.isTokenBlacklisted(token)) {
+            logger.warn("Token is blacklisted: {}", token);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is blacklisted");
+        }
 
-    public void setPassword(String password) {
-        this.password = password;
+        try {
+            String username = jwtService.extractUsername(token);
+            String role = jwtService.extractRole(token);
+            String userId = jwtService.extractUserId(token); // new line
+
+            logger.info("Token validated successfully for username: {}", username);
+            return ResponseEntity.ok(Map.of(
+                    "username", username,
+                    "role", role,
+                    "userId", userId // include in response
+            ));
+        } catch (Exception e) {
+            logger.error("Token validation failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token: " + e.getMessage());
+        }
     }
 }
