@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "attendance-service", url = "${attendance.service.url}",     configuration = FeignConfig.class
+@FeignClient(name = "attendance-service", url = "${gateway.url}", configuration = FeignConfig.class
 )
 public interface AttendanceServiceClient {
-    @GetMapping("/api/attendance/{employeeId}/details")
+    @GetMapping("/attendance/{employeeId}/details")
     AttendanceDTO getAttendanceDetails(
             @PathVariable("employeeId") String employeeId,
             @RequestParam("month") Integer month,
