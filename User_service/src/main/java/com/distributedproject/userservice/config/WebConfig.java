@@ -20,7 +20,7 @@ public class WebConfig {
         registrationBean.addUrlPatterns(
                 "/user/get/users/*",
                 "/user/getAll/users/*",
-                "/user/get/users/search",
+                "/user/search/user",
                 "/user/update/users/*",
                 "/user/update/roles/*",
                 "/user/update/departments/*",
