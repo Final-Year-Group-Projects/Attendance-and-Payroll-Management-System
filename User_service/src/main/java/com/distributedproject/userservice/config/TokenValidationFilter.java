@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -71,7 +73,7 @@ public class TokenValidationFilter extends OncePerRequestFilter {
 
                 if ("Employee".equals(role)) {
                     // Allow GET endpoints
-                    boolean isGetAllowed = path.matches("^/user/get/users/.*") || path.equals("/user/search");
+                    boolean isGetAllowed = path.matches("^/user/get/users/.*") || path.matches("^/user/search/.*") || path.matches("^/user/get/userrole/.*") || path.matches("^/user/getAll/users");
 
                     // Allow UPDATE only if token userId matches path userId
                     boolean isUpdateOwnInfo = false;
@@ -92,9 +94,18 @@ public class TokenValidationFilter extends OncePerRequestFilter {
                 }
             }
 
-        } catch (Exception e) {
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            // If the response has a body, return that
+            String errorMessage = ex.getResponseBodyAsString();
+            if (errorMessage == null || errorMessage.isEmpty()) {
+                errorMessage = "Token validation failed with status: " + ex.getStatusCode();
+            }
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Token validation error: " + e.getMessage());
+            response.getWriter().write(errorMessage);
+            return;
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("Unexpected error during token validation: " + e.getMessage());
             return;
         }
 
