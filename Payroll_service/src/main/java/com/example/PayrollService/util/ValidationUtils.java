@@ -12,7 +12,7 @@ public class ValidationUtils {
     ) {
         if (!validOptions.contains(value.toUpperCase())) {
             throw new ValidationException(
-                    String.format("Invalid %s: %s. ", fieldName, value)
+                      String.format("Invalid %s: %s. Valid Status are %s", fieldName, value, validOptions)
             );
         }
     }

@@ -116,6 +116,14 @@ public class PayrollServiceImpl implements PayrollService {
         }
     }
 
+    private void validateStatusTransition(String currentStatus, String newStatus) {
+        if (currentStatus.equals("PAID") && (newStatus.equalsIgnoreCase("GENERATED") || newStatus.equalsIgnoreCase("CANCELLED"))) {
+            throw new ValidationException("Cannot revert PAID request to "+ newStatus.toUpperCase());
+        }
+        if (currentStatus.equals("CANCELLED") && (newStatus.equalsIgnoreCase("GENERATED") || newStatus.equalsIgnoreCase("PAID"))) {
+            throw new ValidationException("Cannot revert CANCELLED request to "+ newStatus.toUpperCase());
+        }
+    }
 
     @Override
     public PayrollResponseDTO createPayroll(PayrollRequestDTO dto) {
@@ -444,14 +452,6 @@ public class PayrollServiceImpl implements PayrollService {
     public PayrollNotificationResponseDTO generatePayrollNotification(String employeeId) {
         List<PayrollRecord> payrolls = payrollRepository.findByEmployeeId(employeeId);
 
-//        if (payrolls.isEmpty()) {
-//            return new PayrollNotificationResponseDTO(
-//                    "error",
-//                    "No payroll records found for employee ID: " + employeeId,
-//                    employeeId  // Convert to Long for DTO
-//            );
-//        }
-
         if (payrolls.isEmpty()) {
             throw new ResourceNotFoundException("No payroll records found for employee ID: " + employeeId);
         }
@@ -483,6 +483,7 @@ public class PayrollServiceImpl implements PayrollService {
 //        }
 
         PayrollRecord payrollRecord = payrollRecordOptional.get();
+        validateStatusTransition(payrollRecord.getStatus(), status);
         payrollRecord.setStatus(status);
         payrollRecord.setUpdatedDate(LocalDateTime.now());
         PayrollRecord updated = payrollRepository.save(payrollRecord);
