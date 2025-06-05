@@ -17,21 +17,27 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJpYXQiOjE3NDcxMzQyNzEsImV4cCI6MTc0NzEzNzg3MX0.L9LbasHFFYR6pETubibcpc9BfK5tZcv-oqPJZKgJVWo",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
 									"type": "string"
 								}
 							]
 						},
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Be",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "http://localhost:8081/getAll/users",
+							"raw": "http://localhost/user/getAll/users",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
+								"user",
 								"getAll",
 								"users"
 							]
@@ -47,7 +53,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJpYXQiOjE3NDcxMzQyNzEsImV4cCI6MTc0NzEzNzg3MX0.L9LbasHFFYR6pETubibcpc9BfK5tZcv-oqPJZKgJVWo",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuaXB1bmkiLCJhdXRob3JpdGllcyI6W3siYXV0aG9yaXR5IjoiRW1wbG95ZWUifV0sInVzZXJJZCI6IkUxMDMiLCJpYXQiOjE3NDg5MzIxNDUsImV4cCI6MTc0ODkzNTc0NX0.IWynqMbHcddZLI4X6W3EAauvSSGXm60VkHoxHY",
 									"type": "string"
 								}
 							]
@@ -56,7 +62,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"userId\": \"E1090\",\r\n  \"userFullName\": \"Judy Kaushalya\",\r\n  \"userAddress\": \"123 Main St updated\",\r\n  \"userTelephone\": \"0766675656\",\r\n  \"userType\": \"Employee\",\r\n  \"departmentId\": 3,\r\n  \"roleId\": 3\r\n}",
+							"raw": "{\r\n  \"userId\": \"E102\",\r\n  \"userFullName\": \"hansani update\",\r\n  \"userAddress\": \"123 Main St updated\",\r\n  \"userTelephone\": \"0766675656\",\r\n  \"userType\": \"Employee\",\r\n  \"departmentId\": 1,\r\n  \"roleId\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -64,16 +70,16 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8081/update/users/E1090?Content-Type=application/json",
+							"raw": "http://localhost/user/update/users/E102?Content-Type=application/json",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
+								"user",
 								"update",
 								"users",
-								"E1090"
+								"E102"
 							],
 							"query": [
 								{
@@ -93,7 +99,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJpYXQiOjE3NDY4NTgxNTQsImV4cCI6MTc0Njg2MTc1NH0.NLc_OHg7jq2bE9XyZ6lzQhHSY4Vd6FsausWXWUNYuBI",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkVtcGxveWVlIn1dLCJ1c2VySWQiOiJFMTAyIiwiaWF0IjoxNzQ5MDI4NjE1LCJleHAiOjE3NDkwMzIyMTV9.MGokZmYVZBv5W3MmgIbOu8FYu0c3agKQmTofpBo8",
 									"type": "string"
 								}
 							]
@@ -101,16 +107,17 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8081/get/users/E1001166",
+							"raw": "http://localhost:8081/user/get/users/E101",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8081",
 							"path": [
+								"user",
 								"get",
 								"users",
-								"E1001166"
+								"E101"
 							]
 						}
 					},
@@ -124,7 +131,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkVtcGxveWVlIn1dLCJ1c2VySWQiOiJFMTAyIiwiaWF0IjoxNzQ5MDI4NjE1LCJleHAiOjE3NDkwMzIyMTV9.MGokZmYVZBv5W3MmgIbOu8FYu0c3agKQ0GSmTofpBo8",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
 									"type": "string"
 								}
 							]
@@ -133,7 +140,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"userId\": \"E103\",\r\n  \"userFullName\": \"Nipuni\",\r\n  \"userAddress\": \"123 Maxxin St\",\r\n  \"userTelephone\": \"0766667556\",\r\n  \"userType\": \"Employee\",\r\n  \"departmentId\": 1,\r\n  \"roleId\": 1\r\n}",
+							"raw": "{\r\n  \"userId\": \"E101\",\r\n  \"userFullName\": \"Judy\",\r\n  \"userAddress\": \"123 Maxxin St\",\r\n  \"userTelephone\": \"0766667556\",\r\n  \"userType\": \"Employee\",\r\n  \"departmentId\": 1,\r\n  \"roleId\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -141,12 +148,11 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8081/user/create/users?Content-Type=application/json",
+							"raw": "http://localhost/user/create/users?Content-Type=application/json",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
 								"user",
 								"create",
@@ -170,7 +176,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJpYXQiOjE3NDY4NTgxNTQsImV4cCI6MTc0Njg2MTc1NH0.NLc_OHg7jq2bE9XyZ6lzQhHSY4Vd6FsausWXWUNYuBI",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
 									"type": "string"
 								}
 							]
@@ -178,16 +184,16 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8081/delete/users/E1hdjhw00",
+							"raw": "http://localhost/user/delete/users/E101",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
+								"user",
 								"delete",
 								"users",
-								"E1hdjhw00"
+								"E101"
 							]
 						}
 					},
@@ -201,7 +207,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5a3kiLCJhdXRob3JpdGllcyI6W3siYXV0aG9yaXR5IjoiQWRtaW4ifV0sImlhdCI6MTc0NzU4NTM1NywiZXhwIjoxNzQ3NTg4OTU3fQ.vQcmPRjgTfc_z_eQS7l706MD2JRmvp3UmKCgVLGzs68",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
 									"type": "string"
 								}
 							]
@@ -209,22 +215,20 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8081/user/get/users/search?name=kak",
+							"raw": "http://localhost/user/search/user?name=judy",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
 								"user",
-								"get",
-								"users",
-								"search"
+								"search",
+								"user"
 							],
 							"query": [
 								{
 									"key": "name",
-									"value": "kak"
+									"value": "judy"
 								}
 							]
 						}
@@ -239,7 +243,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJpYXQiOjE3NDcxMzQyNzEsImV4cCI6MTc0NzEzNzg3MX0.L9LbasHFFYR6pETubibcpc9BfK5tZcv-oqPJZKgJVWo",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
 									"type": "string"
 								}
 							]
@@ -247,16 +251,16 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8081/get/userrole/E1000",
+							"raw": "http://localhost/user/get/userrole/E101",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
+								"user",
 								"get",
 								"userrole",
-								"E1000"
+								"E101"
 							]
 						}
 					},
@@ -270,7 +274,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJpYXQiOjE3NDcxMzQyNzEsImV4cCI6MTc0NzEzNzg3MX0.L9LbasHFFYR6pETubibcpc9BfK5tZcv-oqPJZKgJVWo",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
 									"type": "string"
 								}
 							]
@@ -278,16 +282,16 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8081/get/userdepartment/E1000",
+							"raw": "http://localhost/user/get/userdepartment/E101",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
+								"user",
 								"get",
 								"userdepartment",
-								"E1000"
+								"E101"
 							]
 						}
 					},
@@ -306,7 +310,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ4OTMxOTY5LCJleHAiOjE3NDg5MzU1Njl9.8ejchC7Y883KA2tq-vTwSeRn0jELr04EU9UKsKgiJhw",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
 									"type": "string"
 								}
 							]
@@ -351,7 +355,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJpYXQiOjE3NDcxMzQyNzEsImV4cCI6MTc0NzEzNzg3MX0.L9LbasHFFYR6pETubibcpc9BfK5tZcv-oqPJZKgJVWo",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKAp-U",
 									"type": "string"
 								}
 							]
@@ -359,16 +363,16 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8081/delete/departments/2",
+							"raw": "http://localhost/user/delete/departments/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
+								"user",
 								"delete",
 								"departments",
-								"2"
+								"1"
 							]
 						}
 					},
@@ -382,7 +386,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJKdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IlN1cGVyX0FkbWluIn1dLCJpYXQiOjE3NDU1NzU4NzQsImV4cCI6MTc0NTU3OTQ3NH0._2vfl0t0WwncAObatsbbXslDCswlpHHYSOeLRoUUgSU",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkVmc5Dsm5coLecKm6KdAp-U",
 									"type": "string"
 								}
 							]
@@ -390,15 +394,16 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8081/departments/1",
+							"raw": "http://localhost/user/get/departments/2",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
+								"user",
+								"get",
 								"departments",
-								"1"
+								"2"
 							]
 						}
 					},
@@ -420,13 +425,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8081/departments",
+							"raw": "http://localhost/user/getAll/departments",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
+								"user",
+								"getAll",
 								"departments"
 							]
 						}
@@ -441,7 +447,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJpYXQiOjE3NDY3ODQ0MjYsImV4cCI6MTc0Njc4ODAyNn0.7KDRIm_oAyxWdaFzGN_8Nj3lD6T4o9xUJLKVBvyDMBM",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJpYXQiOjE3NDY3ODQ0MjYsImV4cCI6MTc0Njc4ODAyNn0.7KDRIm_oAyxWdaFzGN_8Nj3lD6TxUJLKVBvyDMBM",
 									"type": "string"
 								}
 							]
@@ -449,21 +455,20 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8081/get/departments/search?name=en",
+							"raw": "http://localhost/user/search/departments?name=sa",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
-								"get",
-								"departments",
-								"search"
+								"user",
+								"search",
+								"departments"
 							],
 							"query": [
 								{
 									"key": "name",
-									"value": "en"
+									"value": "sa"
 								}
 							]
 						}
@@ -478,7 +483,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJpYXQiOjE3NDY3ODQ0MjYsImV4cCI6MTc0Njc4ODAyNn0.7KDRIm_oAyxWdaFzGN_8Nj3lD6T4o9xUJLKVBvyDMBM",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
 									"type": "string"
 								}
 							]
@@ -495,16 +500,16 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8081/update/departments/3?Content-Type=application/json",
+							"raw": "http://localhost/user/update/departments/2?Content-Type=application/json",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
+								"user",
 								"update",
 								"departments",
-								"3"
+								"2"
 							],
 							"query": [
 								{
@@ -529,7 +534,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ4OTMxOTY5LCJleHAiOjE3NDg5MzU1Njl9.8ejchC7Y883KA2tq-vTwSeRn0jELr04EU9UKsKgiJhw",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
 									"type": "string"
 								}
 							]
@@ -574,7 +579,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJpYXQiOjE3NDcxMzQyNzEsImV4cCI6MTc0NzEzNzg3MX0.L9LbasHFFYR6pETubibcpc9BfK5tZcv-oqPJZKgJVWo",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
 									"type": "string"
 								}
 							]
@@ -582,16 +587,16 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8081/delete/roles/2",
+							"raw": "http://localhost/user/delete/roles/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
+								"user",
 								"delete",
 								"roles",
-								"2"
+								"1"
 							]
 						}
 					},
@@ -605,7 +610,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJKdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IlN1cGVyX0FkbWluIn1dLCJpYXQiOjE3NDU1NzU4NzQsImV4cCI6MTc0NTU3OTQ3NH0._2vfl0t0WwncAObatsbbXslDCswlpHHYSOeLRoUUgSU",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
 									"type": "string"
 								}
 							]
@@ -613,13 +618,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8081/roles/2",
+							"raw": "http://localhost/user/get/roles/2",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
+								"user",
+								"get",
 								"roles",
 								"2"
 							]
@@ -635,7 +641,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJpYXQiOjE3NDcxMzQyNzEsImV4cCI6MTc0NzEzNzg3MX0.L9LbasHFFYR6pETubibcpc9BfK5tZcv-oqPJZKgJVWo",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
 									"type": "string"
 								}
 							]
@@ -643,14 +649,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8081/get/roles",
+							"raw": "http://localhost/user/getAll/roles",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
-								"get",
+								"user",
+								"getAll",
 								"roles"
 							]
 						}
@@ -665,7 +671,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJKdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IlN1cGVyX0FkbWluIn1dLCJpYXQiOjE3NDU1NzU4NzQsImV4cCI6MTc0NTU3OTQ3NH0._2vfl0t0WwncAObatsbbXslDCswlpHHYSOeLRoUUgSU",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
 									"type": "string"
 								}
 							]
@@ -673,15 +679,15 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8081/roles/search?name=ma",
+							"raw": "http://localhost/user/search/roles?name=ma",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
-								"roles",
-								"search"
+								"user",
+								"search",
+								"roles"
 							],
 							"query": [
 								{
@@ -701,7 +707,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJpYXQiOjE3NDY1OTI0NDUsImV4cCI6MTc0NjU5NjA0NX0.bgrEb6PiiofdZbjmhdzUGt7FoMij3w9Yr-IIPgqxeH8",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
 									"type": "string"
 								}
 							]
@@ -718,16 +724,16 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8081/update/roles/3?Content-Type=application/json",
+							"raw": "http://localhost/user/update/roles/2?Content-Type=application/json",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
+								"user",
 								"update",
 								"roles",
-								"3"
+								"2"
 							],
 							"query": [
 								{
@@ -761,7 +767,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"username\": \"hansani\",\r\n  \"password\": \"123456\",\r\n  \"role\": \"Employee\"\r\n}\r\n",
+							"raw": "{\r\n  \"userId\": \"EMP101\",  \r\n  \"username\": \"judytest\",\r\n  \"password\": \"123456\",\r\n  \"role\": \"Employee\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -769,12 +775,11 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8081/auth/register",
+							"raw": "http://localhost/auth/register",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
 								"auth",
 								"register"
@@ -786,11 +791,14 @@
 				{
 					"name": "login",
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"userId\": \"E102\",  \r\n  \"username\": \"judy\",\r\n  \"password\": \"123456\"\r\n}\r\n",
+							"raw": "{\r\n  \"userId\": \"E101\",  \r\n  \"username\": \"judy\",\r\n  \"password\": \"123456\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -798,12 +806,11 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/auth/login",
+							"raw": "http://localhost/auth/login",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
 							"path": [
 								"auth",
 								"login"
@@ -819,7 +826,14 @@
 					},
 					"request": {
 						"auth": {
-							"type": "noauth"
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
+									"type": "string"
+								}
+							]
 						},
 						"method": "GET",
 						"header": [
