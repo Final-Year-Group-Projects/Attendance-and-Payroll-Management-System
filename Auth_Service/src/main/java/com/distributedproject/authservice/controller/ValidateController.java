@@ -54,8 +54,14 @@ public class ValidateController {
         try {
             String username = jwtService.extractUsername(token);
             String role = jwtService.extractRole(token);
+            String userId = jwtService.extractUserId(token); // new line
+
             logger.info("Token validated successfully for username: {}", username);
-            return ResponseEntity.ok(Map.of("username", username, "role", role));
+            return ResponseEntity.ok(Map.of(
+                    "username", username,
+                    "role", role,
+                    "userId", userId // include in response
+            ));
         } catch (Exception e) {
             logger.error("Token validation failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token: " + e.getMessage());

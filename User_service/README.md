@@ -5,6 +5,8 @@ The **User Service** handles all operations related to user management such as c
 ## Architecture Diagram
 ![Image](https://github.com/user-attachments/assets/55da1de6-4f58-4f85-845e-bf2e09397500)
 
+
+---
 ## API Endpoints
 
 #### Create new user, new department and new role
@@ -76,6 +78,7 @@ curl -X GET "http://localhost:8084/user/search/roles?name=Intern" -H "Authorizat
 ```
 
 
+---
 ### Admin access endpoints
 * All endpoints
 
@@ -84,3 +87,26 @@ curl -X GET "http://localhost:8084/user/search/roles?name=Intern" -H "Authorizat
 * Can Search users, departments and roles by their name
 * Can Get users, departments and roles by their ID
 * Can Update their own user details (not others)
+
+
+---
+## How to Run
+
+#### stops and deletes all containers defined and create new one
+```
+docker-compose down -v
+```
+
+```
+docker-compose up --build
+```
+Then run above curls
+
+
+---
+You can import the full API request collection into Postman using the link below:
+
+To use:
+1. Open Postman
+2. Click `Import`
+3. Choose the file `user_service_endpoints.json`

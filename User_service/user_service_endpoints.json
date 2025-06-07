@@ -1,0 +1,981 @@
+{
+	"info": {
+		"_postman_id": "e47db105-8b8f-4a9b-b8de-5c4345413354",
+		"name": "Distributed_project",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "43270785"
+	},
+	"item": [
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Get all users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Be",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/user/getAll/users",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"getAll",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User By ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuaXB1bmkiLCJhdXRob3JpdGllcyI6W3siYXV0aG9yaXR5IjoiRW1wbG95ZWUifV0sInVzZXJJZCI6IkUxMDMiLCJpYXQiOjE3NDg5MzIxNDUsImV4cCI6MTc0ODkzNTc0NX0.IWynqMbHcddZLI4X6W3EAauvSSGXm60VkHoxHY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userId\": \"E102\",\r\n  \"userFullName\": \"hansani update\",\r\n  \"userAddress\": \"123 Main St updated\",\r\n  \"userTelephone\": \"0766675656\",\r\n  \"userType\": \"Employee\",\r\n  \"departmentId\": 1,\r\n  \"roleId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/user/update/users/E102?Content-Type=application/json",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"update",
+								"users",
+								"E102"
+							],
+							"query": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkVtcGxveWVlIn1dLCJ1c2VySWQiOiJFMTAyIiwiaWF0IjoxNzQ5MDI4NjE1LCJleHAiOjE3NDkwMzIyMTV9.MGokZmYVZBv5W3MmgIbOu8FYu0c3agKQmTofpBo8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8081/user/get/users/E101",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"user",
+								"get",
+								"users",
+								"E101"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create New User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userId\": \"E101\",\r\n  \"userFullName\": \"Judy\",\r\n  \"userAddress\": \"123 Maxxin St\",\r\n  \"userTelephone\": \"0766667556\",\r\n  \"userType\": \"Employee\",\r\n  \"departmentId\": 1,\r\n  \"roleId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/user/create/users?Content-Type=application/json",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"create",
+								"users"
+							],
+							"query": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User By ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/user/delete/users/E101",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"delete",
+								"users",
+								"E101"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Users by Name",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/user/search/user?name=judy",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"search",
+								"user"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "judy"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get user role",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/user/get/userrole/E101",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"get",
+								"userrole",
+								"E101"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Department",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/user/get/userdepartment/E101",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"get",
+								"userdepartment",
+								"E101"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Departments",
+			"item": [
+				{
+					"name": "Create new Department",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"departmentName\": \"Sales and Marketing\",\r\n  \"departmentHead\": \"judy\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/user/create/departments?Content-Type=application/json",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"create",
+								"departments"
+							],
+							"query": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Department",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKAp-U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/user/delete/departments/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"delete",
+								"departments",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Dept by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkVmc5Dsm5coLecKm6KdAp-U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/user/get/departments/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"get",
+								"departments",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all departments",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJKdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IlN1cGVyX0FkbWluIn1dLCJpYXQiOjE3NDU5ODk1NzksImV4cCI6MTc0NTk5MzE3OX0._oyJJfAvSWjoFOaPaXEXrIzWyuvx-8FpG6urUsyoRbM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/user/getAll/departments",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"getAll",
+								"departments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Departmnets by Name",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJpYXQiOjE3NDY3ODQ0MjYsImV4cCI6MTc0Njc4ODAyNn0.7KDRIm_oAyxWdaFzGN_8Nj3lD6TxUJLKVBvyDMBM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/user/search/departments?name=sa",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"search",
+								"departments"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "sa"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Department by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"departmentName\": \"Finance\",\r\n  \"departmentHead\": \"Judy Kaushalya\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/user/update/departments/2?Content-Type=application/json",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"update",
+								"departments",
+								"2"
+							],
+							"query": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Role",
+			"item": [
+				{
+					"name": "Create new role",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"roleName\": \"Manager\",\r\n  \"roleDescription\": \"example desriptuon for finance\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/user/create/roles?Content-Type=application/json",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"create",
+								"roles"
+							],
+							"query": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Role",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/user/delete/roles/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"delete",
+								"roles",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get roles by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/user/get/roles/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"get",
+								"roles",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all roles",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/user/getAll/roles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"getAll",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get role by name",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/user/search/roles?name=ma",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"search",
+								"roles"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "ma"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update role",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"roleName\": \"Intern\",\r\n  \"roleDescription\": \"example descipejfn bhdhbwidbhw\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/user/update/roles/2?Content-Type=application/json",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"user",
+								"update",
+								"roles",
+								"2"
+							],
+							"query": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "create user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJpYXQiOjE3NDYwNzQ1NTYsImV4cCI6MTc0NjA3ODE1Nn0.hfe6gpyfZTwrBPkIBI4x7R9IYZGb9KHaOXDUvZAKfsg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userId\": \"EMP101\",  \r\n  \"username\": \"judytest\",\r\n  \"password\": \"123456\",\r\n  \"role\": \"Employee\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/auth/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userId\": \"E101\",  \r\n  \"username\": \"judy\",\r\n  \"password\": \"123456\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/auth/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "validate token",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ5MDkwMjk4LCJleHAiOjE3NDkwOTM4OTh9.K0dJKGqDLNqvVKbNwkKTfVmc5Dsm5coLecKm6KdAp-U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ4OTMwNzUzLCJleHAiOjE3NDg5MzQzNTN9.Akqww3bTiBKlEW4sNBdDNj23xq4x1ShpuHgzCxMrFXw",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/auth/validate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"auth",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "forgot password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"judy\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/auth/forgot-password?Content-Type=application/json",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"auth",
+								"forgot-password"
+							],
+							"query": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "reser password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"token\": \"resetTokenFromEmail\",\r\n  \"newPassword\": \"newSecurePassword123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/auth/reset-password?Content-Type=application/json",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"auth",
+								"reset-password"
+							],
+							"query": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "logout",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWR5a2F1c2hhbHlhIiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IkFkbWluIn1dLCJ1c2VySWQiOiJFMTAxIiwiaWF0IjoxNzQ4OTI2ODY3LCJleHAiOjE3NDg5MzA0Njd9._kcpJNCmsMfjot6xPUmB_GNDZz_VHCHRzVk5gbA1zwc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/auth/logout",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
