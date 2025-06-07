@@ -134,9 +134,13 @@ public class PayrollServiceImpl implements PayrollService {
         try {
             user = userServiceClient.getUserDetails(dto.getEmployeeId());
             if (user == null) {
-                throw new ValidationException("Employee ID does not exist");
+                throw new ValidationException("User does not exist");
             }
             role = user.getRole();
+            if (role == null || role.isBlank()) {
+                // Handle scenario where role is null or blank
+                throw new ValidationException("User role is null or blank from UserService response");
+            }
         } catch (Exception e) {
             System.err.println("UserService unavailable");
             if (dto.getRole() == null) {
@@ -153,6 +157,13 @@ public class PayrollServiceImpl implements PayrollService {
         try {
             attendance = attendanceServiceClient.getAttendanceDetails(
                     dto.getEmployeeId(), dto.getMonth(), dto.getYear());
+
+            // Check if the service returned null or if any critical fields are null
+            if (attendance == null || attendance.getWorkingDays() == null ||
+                    attendance.getApprovedLeaves() == null || attendance.getNotApprovedLeaves() == null) {
+                throw new ValidationException("Attendance service returned incomplete data. All fields (working days, approved leaves, not approved leaves) must be present.");
+            }
+
 //            validateWorkingDays(attendance.getWorkingDays(), attendance.getApprovedLeaves(), attendance.getNotApprovedLeaves());
         } catch (Exception e) {
             System.err.println("AttendanceService unavailable");
