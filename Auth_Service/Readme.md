@@ -33,3 +33,12 @@ docker-compose down -v
 docker-compose up --build
 ```
 Then run above curls
+
+
+---
+You can import the full API request collection into Postman using the link below:
+
+To use:
+1. Open Postman
+2. Click `Import`
+3. Choose the file `auth_service_endpoints.json`

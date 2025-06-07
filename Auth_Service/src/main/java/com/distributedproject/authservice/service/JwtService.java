@@ -18,10 +18,11 @@ public class JwtService {
     // Use the secure method to generate a 256-bit secret key
     private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails, String userId) {
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
                 .claim("authorities", userDetails.getAuthorities())
+                .claim("userId", userId) // Include userId
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hour
                 .signWith(secretKey, SignatureAlgorithm.HS256)
@@ -53,4 +54,15 @@ public class JwtService {
 
         return null;
     }
+
+    public String extractUserId(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("userId", String.class);
+    }
+
 }
