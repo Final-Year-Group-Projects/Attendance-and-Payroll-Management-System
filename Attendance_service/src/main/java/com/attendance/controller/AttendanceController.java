@@ -59,7 +59,7 @@ public class AttendanceController {
             @RequestAttribute("userId") String tokenUserId) {
         logger.info("Recording attendance for employeeId: {}", employeeId);
 
-        validateEmployeeId(employeeId, tokenUserId);
+        validateEmployeeId(employeeId, tokenUserId, false, null);
 
         if (!employeeId.matches("^[ESM]\\d{3}$")) {
             logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
@@ -89,7 +89,7 @@ public class AttendanceController {
             @RequestAttribute("userId") String tokenUserId) {
         logger.info("Recording check-in for employeeId: {}, request: {}", employeeId, request);
 
-        validateEmployeeId(employeeId, tokenUserId);
+        validateEmployeeId(employeeId, tokenUserId, false, null);
 
         if (!employeeId.matches("^[ESM]\\d{3}$")) {
             logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
@@ -151,10 +151,11 @@ public class AttendanceController {
     @GetMapping("/{employeeId}")
     public ResponseEntity<List<Attendance>> getAttendanceRecords(
             @PathVariable String employeeId,
-            @RequestAttribute("userId") String tokenUserId) {
+            @RequestAttribute("userId") String tokenUserId,
+            @RequestAttribute("role") String role) {
         logger.info("Retrieving attendance records for employeeId: {}", employeeId);
 
-        validateEmployeeId(employeeId, tokenUserId);
+        validateEmployeeId(employeeId, tokenUserId, true, role);
 
         if (!employeeId.matches("^[ESM]\\d{3}$")) {
             logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
@@ -194,10 +195,11 @@ public class AttendanceController {
             @PathVariable String employeeId,
             @RequestParam("startDate") String startDate,
             @RequestParam("endDate") String endDate,
-            @RequestAttribute("userId") String tokenUserId) {
+            @RequestAttribute("userId") String tokenUserId,
+            @RequestAttribute("role") String role) {
         logger.info("Retrieving total working hours for employeeId: {} from {} to {}", employeeId, startDate, endDate);
 
-        validateEmployeeId(employeeId, tokenUserId);
+        validateEmployeeId(employeeId, tokenUserId, true, role);
 
         if (!employeeId.matches("^[ESM]\\d{3}$")) {
             logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
@@ -227,7 +229,7 @@ public class AttendanceController {
             throw new IllegalArgumentException("Employee ID header is required");
         }
 
-        validateEmployeeId(employeeId, tokenUserId);
+        validateEmployeeId(employeeId, tokenUserId, false, null);
 
         logger.info("Processing leave request for employee ID: {}", employeeId);
 
@@ -260,10 +262,11 @@ public class AttendanceController {
     public ResponseEntity<AttendanceCountResponse> getAttendanceCount(
             @PathVariable String employeeId,
             @RequestParam("month") String month,
-            @RequestAttribute("userId") String tokenUserId) {
+            @RequestAttribute("userId") String tokenUserId,
+            @RequestAttribute("role") String role) {
         logger.info("Retrieving attendance count for employeeId: {} for month: {}", employeeId, month);
 
-        validateEmployeeId(employeeId, tokenUserId);
+        validateEmployeeId(employeeId, tokenUserId, true, role);
 
         if (!employeeId.matches("^[ESM]\\d{3}$")) {
             logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
@@ -297,10 +300,11 @@ public class AttendanceController {
     public ResponseEntity<LeaveBalanceResponse> getLeaveBalance(
             @PathVariable String employeeId,
             @RequestParam("month") String month,
-            @RequestAttribute("userId") String tokenUserId) {
+            @RequestAttribute("userId") String tokenUserId,
+            @RequestAttribute("role") String role) {
         logger.info("Retrieving leave balance for employeeId: {} for month: {}", employeeId, month);
 
-        validateEmployeeId(employeeId, tokenUserId);
+        validateEmployeeId(employeeId, tokenUserId, true, role);
 
         if (!employeeId.matches("^[ESM]\\d{3}$")) {
             logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
@@ -391,10 +395,11 @@ public class AttendanceController {
             @PathVariable String employeeId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestAttribute("userId") String tokenUserId) {
+            @RequestAttribute("userId") String tokenUserId,
+            @RequestAttribute("role") String role) {
         logger.info("Retrieving leave requests for employeeId: {}, startDate: {}, endDate: {}", employeeId, startDate, endDate);
 
-        validateEmployeeId(employeeId, tokenUserId);
+        validateEmployeeId(employeeId, tokenUserId, true, role);
 
         if (!employeeId.matches("^[ESM]\\d{3}$")) {
             logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
@@ -431,10 +436,11 @@ public class AttendanceController {
             @PathVariable String employeeId,
             @RequestParam("month") int month,
             @RequestParam("year") int year,
-            @RequestAttribute("userId") String tokenUserId) {
+            @RequestAttribute("userId") String tokenUserId,
+            @RequestAttribute("role") String role) {
         logger.info("Retrieving attendance details for employeeId: {}, month: {}, year: {}", employeeId, month, year);
 
-        validateEmployeeId(employeeId, tokenUserId);
+        validateEmployeeId(employeeId, tokenUserId, true, role);
 
         if (!employeeId.matches("^[ESM]\\d{3}$")) {
             logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
@@ -455,10 +461,22 @@ public class AttendanceController {
         return ResponseEntity.ok(details);
     }
 
-    private void validateEmployeeId(String employeeId, String tokenUserId) {
-        if (tokenUserId != null && !employeeId.equals(tokenUserId)) {
-            logger.warn("Access denied: Employee ID {} does not match token user ID {}", employeeId, tokenUserId);
-            throw new IllegalArgumentException("Access denied: Employee ID in request does not match token user ID");
+    private void validateEmployeeId(String employeeId, String tokenUserId, boolean isGetRequest, String role) {
+        if (tokenUserId != null) {
+            if (isGetRequest) {
+                // For GET requests, allow admins and super_admins to access any employeeId
+                String normalizedRole = role != null ? role.trim().toLowerCase() : "";
+                if (!"admin".equals(normalizedRole) && !"super_admin".equals(normalizedRole) && !employeeId.equals(tokenUserId)) {
+                    logger.warn("Access denied: Employee ID {} does not match token user ID {} for non-admin user", employeeId, tokenUserId);
+                    throw new IllegalArgumentException("Access denied: Employee ID in request does not match token user ID");
+                }
+            } else {
+                // For non-GET requests, always enforce employeeId match
+                if (!employeeId.equals(tokenUserId)) {
+                    logger.warn("Access denied: Employee ID {} does not match token user ID {} for non-GET request", employeeId, tokenUserId);
+                    throw new IllegalArgumentException("Access denied: Employee ID in request does not match token user ID");
+                }
+            }
         }
     }
 }
