@@ -55,8 +55,11 @@ public class AttendanceController {
     @PostMapping("/{employeeId}")
     public ResponseEntity<Attendance> recordAttendance(
             @PathVariable String employeeId,
-            @Valid @RequestBody AttendanceRequest request) {
+            @Valid @RequestBody AttendanceRequest request,
+            @RequestAttribute("userId") String tokenUserId) {
         logger.info("Recording attendance for employeeId: {}", employeeId);
+
+        validateEmployeeId(employeeId, tokenUserId);
 
         if (!employeeId.matches("^[ESM]\\d{3}$")) {
             logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
@@ -82,8 +85,11 @@ public class AttendanceController {
     @PostMapping("/check-in/{employeeId}")
     public ResponseEntity<Attendance> checkIn(
             @PathVariable String employeeId,
-            @Valid @RequestBody CheckInRequest request) {
+            @Valid @RequestBody CheckInRequest request,
+            @RequestAttribute("userId") String tokenUserId) {
         logger.info("Recording check-in for employeeId: {}, request: {}", employeeId, request);
+
+        validateEmployeeId(employeeId, tokenUserId);
 
         if (!employeeId.matches("^[ESM]\\d{3}$")) {
             logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
@@ -143,8 +149,12 @@ public class AttendanceController {
             @ApiResponse(responseCode = "500", description = "Server error")
     })
     @GetMapping("/{employeeId}")
-    public ResponseEntity<List<Attendance>> getAttendanceRecords(@PathVariable String employeeId) {
+    public ResponseEntity<List<Attendance>> getAttendanceRecords(
+            @PathVariable String employeeId,
+            @RequestAttribute("userId") String tokenUserId) {
         logger.info("Retrieving attendance records for employeeId: {}", employeeId);
+
+        validateEmployeeId(employeeId, tokenUserId);
 
         if (!employeeId.matches("^[ESM]\\d{3}$")) {
             logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
@@ -183,8 +193,11 @@ public class AttendanceController {
     public ResponseEntity<TotalWorkingHoursResponse> getTotalWorkingHours(
             @PathVariable String employeeId,
             @RequestParam("startDate") String startDate,
-            @RequestParam("endDate") String endDate) {
+            @RequestParam("endDate") String endDate,
+            @RequestAttribute("userId") String tokenUserId) {
         logger.info("Retrieving total working hours for employeeId: {} from {} to {}", employeeId, startDate, endDate);
+
+        validateEmployeeId(employeeId, tokenUserId);
 
         if (!employeeId.matches("^[ESM]\\d{3}$")) {
             logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
@@ -207,11 +220,14 @@ public class AttendanceController {
     @PostMapping("/leaves/request")
     public ResponseEntity<Leave> requestLeave(
             @RequestHeader(value = "employeeId", required = true) String employeeId,
-            @Valid @RequestBody LeaveRequest request) {
+            @Valid @RequestBody LeaveRequest request,
+            @RequestAttribute("userId") String tokenUserId) {
         if (employeeId == null) {
             logger.warn("Employee ID header is missing");
             throw new IllegalArgumentException("Employee ID header is required");
         }
+
+        validateEmployeeId(employeeId, tokenUserId);
 
         logger.info("Processing leave request for employee ID: {}", employeeId);
 
@@ -243,8 +259,11 @@ public class AttendanceController {
     @GetMapping("/employee/{employeeId}/attendance-count")
     public ResponseEntity<AttendanceCountResponse> getAttendanceCount(
             @PathVariable String employeeId,
-            @RequestParam("month") String month) {
+            @RequestParam("month") String month,
+            @RequestAttribute("userId") String tokenUserId) {
         logger.info("Retrieving attendance count for employeeId: {} for month: {}", employeeId, month);
+
+        validateEmployeeId(employeeId, tokenUserId);
 
         if (!employeeId.matches("^[ESM]\\d{3}$")) {
             logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
@@ -277,8 +296,11 @@ public class AttendanceController {
     @GetMapping("/employee/{employeeId}/leave-balance")
     public ResponseEntity<LeaveBalanceResponse> getLeaveBalance(
             @PathVariable String employeeId,
-            @RequestParam("month") String month) {
+            @RequestParam("month") String month,
+            @RequestAttribute("userId") String tokenUserId) {
         logger.info("Retrieving leave balance for employeeId: {} for month: {}", employeeId, month);
+
+        validateEmployeeId(employeeId, tokenUserId);
 
         if (!employeeId.matches("^[ESM]\\d{3}$")) {
             logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
@@ -347,7 +369,6 @@ public class AttendanceController {
             throw new IllegalArgumentException("Invalid employeeId format. Use [ESM]ddd (e.g., E001, S001, M001)");
         }
 
-        // Since role validation is handled by TokenValidationFilter, assume requestingEmployeeId is valid
         Leave leave = leaveRepository.findById(leaveId)
                 .orElseThrow(() -> {
                     logger.warn("Leave request with ID {} not found", leaveId);
@@ -369,8 +390,11 @@ public class AttendanceController {
     public ResponseEntity<List<Leave>> getLeaveRequests(
             @PathVariable String employeeId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestAttribute("userId") String tokenUserId) {
         logger.info("Retrieving leave requests for employeeId: {}, startDate: {}, endDate: {}", employeeId, startDate, endDate);
+
+        validateEmployeeId(employeeId, tokenUserId);
 
         if (!employeeId.matches("^[ESM]\\d{3}$")) {
             logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
@@ -395,6 +419,7 @@ public class AttendanceController {
 
         return ResponseEntity.ok(leaveRequests);
     }
+
     @Operation(summary = "Get monthly attendance and leave details for an employee")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Details retrieved successfully"),
@@ -405,8 +430,11 @@ public class AttendanceController {
     public ResponseEntity<AttendanceSummaryResponse> getAttendanceDetails(
             @PathVariable String employeeId,
             @RequestParam("month") int month,
-            @RequestParam("year") int year) {
+            @RequestParam("year") int year,
+            @RequestAttribute("userId") String tokenUserId) {
         logger.info("Retrieving attendance details for employeeId: {}, month: {}, year: {}", employeeId, month, year);
+
+        validateEmployeeId(employeeId, tokenUserId);
 
         if (!employeeId.matches("^[ESM]\\d{3}$")) {
             logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
@@ -425,5 +453,12 @@ public class AttendanceController {
 
         AttendanceSummaryResponse details = attendanceService.getAttendanceDetails(employeeId, month, year);
         return ResponseEntity.ok(details);
+    }
+
+    private void validateEmployeeId(String employeeId, String tokenUserId) {
+        if (tokenUserId != null && !employeeId.equals(tokenUserId)) {
+            logger.warn("Access denied: Employee ID {} does not match token user ID {}", employeeId, tokenUserId);
+            throw new IllegalArgumentException("Access denied: Employee ID in request does not match token user ID");
+        }
     }
 }

@@ -53,10 +53,15 @@ public class TokenValidationFilter extends OncePerRequestFilter {
             }
 
             Map<String, Object> responseBody = validationResponse.getBody();
+            String tokenUserId = (String) responseBody.get("userId");
             String role = (String) responseBody.get("role");
 
             String path = request.getRequestURI();
             String method = request.getMethod();
+
+            // Store info in request attributes for downstream use if needed
+            request.setAttribute("userId", tokenUserId);
+            request.setAttribute("role", role);
 
             String normalizedRole = role != null ? role.trim().toLowerCase() : "";
 
