@@ -395,4 +395,35 @@ public class AttendanceController {
 
         return ResponseEntity.ok(leaveRequests);
     }
+    @Operation(summary = "Get monthly attendance and leave details for an employee")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Details retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input or employee not found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @GetMapping("/{employeeId}/details")
+    public ResponseEntity<AttendanceSummaryResponse> getAttendanceDetails(
+            @PathVariable String employeeId,
+            @RequestParam("month") int month,
+            @RequestParam("year") int year) {
+        logger.info("Retrieving attendance details for employeeId: {}, month: {}, year: {}", employeeId, month, year);
+
+        if (!employeeId.matches("^[ESM]\\d{3}$")) {
+            logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
+            throw new IllegalArgumentException("Invalid employeeId format. Use [ESM]ddd (e.g., E001, S001, M001)");
+        }
+
+        if (month < 1 || month > 12) {
+            logger.warn("Invalid month value: {}. Month must be between 1 and 12", month);
+            throw new IllegalArgumentException("Month must be between 1 and 12");
+        }
+
+        if (year < 2000 || year > 2100) {
+            logger.warn("Invalid year value: {}. Year must be between 2000 and 2100", year);
+            throw new IllegalArgumentException("Year must be between 2000 and 2100");
+        }
+
+        AttendanceSummaryResponse details = attendanceService.getAttendanceDetails(employeeId, month, year);
+        return ResponseEntity.ok(details);
+    }
 }

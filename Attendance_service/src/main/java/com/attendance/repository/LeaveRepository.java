@@ -9,4 +9,6 @@ import java.util.List;
 public interface LeaveRepository extends JpaRepository<Leave, Long> {
     List<Leave> findByEmployeeIdAndStartDateBetween(String employeeId, LocalDate startDate, LocalDate endDate);
     List<Leave> findByEmployeeId(String employeeId);
+    List<Leave> findByEmployeeIdAndStartDateBetweenAndStatus(String employeeId, LocalDate startDate, LocalDate endDate, String status);
+    List<Leave> findByEmployeeIdAndStartDateBetweenAndStatusNot(String employeeId, LocalDate startDate, LocalDate endDate, String status);
 }
