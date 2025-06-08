@@ -9,19 +9,20 @@ public class UserServiceClientFallback implements UserServiceClient {
 
     private static final Logger logger = LoggerFactory.getLogger(UserServiceClientFallback.class);
 
+
     @Override
-    public EmployeeDTO getUserById(Long id) {
+    public EmployeeDTO getUserById(String id) {
         logger.info("Fallback getUserById called with id: {}", id);
-        if (id == null || id == 999L) {
+        if (id == null || "999".equals(id)) { // Compare as String instead of Long
             logger.info("Returning null for id: {}", id);
             return null;
         }
         EmployeeDTO employee = new EmployeeDTO();
-        employee.setId(id);
+        employee.setId(id); // Set as String
         employee.setFirstName("Fallback");
         employee.setLastName("User");
         employee.setEmail("fallback@" + id + ".com");
-        if (id == 2L) { // Change to id=2 for admin, id=1 for employee
+        if ("2".equals(id)) { // Compare as String instead of Long
             employee.setRole("Admin");
             logger.info("Set role to Admin for id: {}", id);
         } else {

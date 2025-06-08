@@ -8,21 +8,21 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 @FeignClient(name = "USER-SERVICE", fallback = UserServiceClientFallback.class, configuration = FeignClientConfiguration.class)
 public interface UserServiceClient {
-    @GetMapping("/users/{id}")
-    EmployeeDTO getUserById(@PathVariable("id") Long id);
+    @GetMapping("/user/get/users/{userId}")
+    EmployeeDTO getUserById(@PathVariable("userId") String userId);
 
     @PostMapping("/auth/validate")
     UserDTO validateUser(AuthRequest authRequest);
 
     class EmployeeDTO {
-        private Long id;
+        private String id; // Remains String
         private String firstName;
         private String lastName;
         private String email;
         private String role;
 
-        public Long getId() { return id; }
-        public void setId(Long id) { this.id = id; }
+        public String getId() { return id; }
+        public void setId(String id) { this.id = id; }
         public String getFirstName() { return firstName; }
         public void setFirstName(String firstName) { this.firstName = firstName; }
         public String getLastName() { return lastName; }

@@ -57,7 +57,7 @@ public class AttendanceService {
         return hours;
     }
 
-    public double calculateTotalWorkingHours(Long employeeId, LocalDate startDate, LocalDate endDate) {
+    public double calculateTotalWorkingHours(String employeeId, LocalDate startDate, LocalDate endDate) { // Changed from Long to String
         logger.info("Calculating total working hours for employeeId: {} from {} to {}", employeeId, startDate, endDate);
 
         if (startDate.isAfter(endDate)) {
@@ -65,7 +65,7 @@ public class AttendanceService {
             throw new IllegalArgumentException("Start date must be before or equal to end date");
         }
 
-        List<Attendance> records = attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, startDate, endDate);
+        List<Attendance> records = attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, startDate, endDate); // Already String in repository
         if (records.isEmpty()) {
             logger.warn("No attendance records found for employeeId: {} between {} and {}", employeeId, startDate, endDate);
             return 0.0;
@@ -95,7 +95,7 @@ public class AttendanceService {
         return totalHours;
     }
 
-    public Leave saveLeaveRequest(Long employeeId, LocalDate startDate, LocalDate endDate, String reason, String leaveType) {
+    public Leave saveLeaveRequest(String employeeId, LocalDate startDate, LocalDate endDate, String reason, String leaveType) { // Changed from Long to String
         logger.info("Saving leave request for employeeId: {} from {} to {} with leaveType: {}",
                 employeeId, startDate, endDate, leaveType);
 
@@ -114,7 +114,7 @@ public class AttendanceService {
 
         LocalDate monthStart = startDate.withDayOfMonth(1);
         LocalDate monthEnd = monthStart.plusMonths(1).minusDays(1);
-        List<Leave> existingLeaves = leaveRepository.findByEmployeeIdAndStartDateBetween(employeeId, monthStart, monthEnd);
+        List<Leave> existingLeaves = leaveRepository.findByEmployeeIdAndStartDateBetween(employeeId, monthStart, monthEnd); // Already String in repository
 
         long annualDays = existingLeaves.stream()
                 .filter(l -> l.getLeaveType().equalsIgnoreCase("ANNUAL") && l.getStatus().equalsIgnoreCase("APPROVED"))
@@ -141,19 +141,19 @@ public class AttendanceService {
             throw new IllegalArgumentException("Maximum 2 half days allowed per month");
         }
 
-        Leave leave = new Leave(employeeId, startDate, endDate, reason, "PENDING", normalizedLeaveType);
+        Leave leave = new Leave(employeeId, startDate, endDate, reason, "PENDING", normalizedLeaveType); // Already String in constructor
         Leave savedLeave = leaveRepository.save(leave);
         logger.info("Leave request saved successfully for employeeId: {}", employeeId);
         return savedLeave;
     }
 
-    public long getAttendanceCountPerMonth(Long employeeId, LocalDate month) {
+    public long getAttendanceCountPerMonth(String employeeId, LocalDate month) { // Changed from Long to String
         logger.info("Calculating attendance count for employeeId: {} for month: {}", employeeId, month);
 
         LocalDate monthStart = month.withDayOfMonth(1);
         LocalDate monthEnd = monthStart.plusMonths(1).minusDays(1);
 
-        List<Attendance> records = attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, monthStart, monthEnd);
+        List<Attendance> records = attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, monthStart, monthEnd); // Already String in repository
 
         long attendedDays = records.stream()
                 .filter(record -> record.getCheckInTime() != null && record.getCheckOutTime() != null)
@@ -165,13 +165,13 @@ public class AttendanceService {
         return attendedDays;
     }
 
-    public LeaveBalanceResponse getLeaveBalance(Long employeeId, LocalDate month) {
+    public LeaveBalanceResponse getLeaveBalance(String employeeId, LocalDate month) { // Changed from Long to String
         logger.info("Calculating leave balance for employeeId: {} for month: {}", employeeId, month);
 
         LocalDate monthStart = month.withDayOfMonth(1);
         LocalDate monthEnd = monthStart.plusMonths(1).minusDays(1);
 
-        List<Leave> leaves = leaveRepository.findByEmployeeIdAndStartDateBetween(employeeId, monthStart, monthEnd);
+        List<Leave> leaves = leaveRepository.findByEmployeeIdAndStartDateBetween(employeeId, monthStart, monthEnd); // Already String in repository
 
         long usedAnnualDays = leaves.stream()
                 .filter(l -> l.getLeaveType().equalsIgnoreCase("ANNUAL") && l.getStatus().equalsIgnoreCase("APPROVED"))
@@ -213,7 +213,7 @@ public class AttendanceService {
         logger.info("Leave request with leaveId: {} deleted successfully", leaveId);
     }
 
-    public Leave updateLeaveStatus(Long leaveId, String newStatus, Long employeeId) {
+    public Leave updateLeaveStatus(Long leaveId, String newStatus, String employeeId) { // Changed from Long to String
         logger.info("Attempting to update leave status for leaveId: {} to {} by employeeId: {}", leaveId, newStatus, employeeId);
 
         Leave leave = leaveRepository.findById(leaveId)
@@ -227,7 +227,7 @@ public class AttendanceService {
             throw new IllegalStateException("Cannot update leave status: It must be in PENDING status");
         }
 
-        if (!leave.getEmployeeId().equals(employeeId)) {
+        if (!leave.getEmployeeId().equals(employeeId)) { // Compare String with String
             logger.warn("EmployeeId {} is not authorized to update leaveId: {}", employeeId, leaveId);
             throw new IllegalStateException("Unauthorized: Only the requesting employee can update the leave");
         }

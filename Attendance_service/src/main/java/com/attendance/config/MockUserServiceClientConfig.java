@@ -4,14 +4,14 @@ import com.attendance.client.UserServiceClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@Configuration
+//@Configuration
 public class MockUserServiceClientConfig {
 
-    @Bean
+    //@Bean
     public UserServiceClient userServiceClient() {
         return new UserServiceClient() {
             @Override
-            public EmployeeDTO getUserById(Long id) {
+            public EmployeeDTO getUserById(String id) {
                 EmployeeDTO employee = new EmployeeDTO();
                 employee.setId(id);
                 employee.setFirstName("Mock");

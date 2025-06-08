@@ -12,7 +12,7 @@ public class Leave {
     private Long id;
 
     @Column(name = "employee_id", nullable = false)
-    private Long employeeId;
+    private String employeeId;
 
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
@@ -35,7 +35,7 @@ public class Leave {
         // Default constructor required by JPA
     }
 
-    public Leave(Long employeeId, LocalDate startDate, LocalDate endDate, String reason, String status, String leaveType) {
+    public Leave(String employeeId, LocalDate startDate, LocalDate endDate, String reason, String status, String leaveType) {
         this.employeeId = employeeId;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -56,12 +56,12 @@ public class Leave {
     }
 
     @SuppressWarnings("unused")
-    public Long getEmployeeId() {
+    public String getEmployeeId() { // Changed from Long to String
         return employeeId;
     }
 
     @SuppressWarnings("unused")
-    public void setEmployeeId(Long employeeId) {
+    public void setEmployeeId(String employeeId) { // Changed from Long to String
         this.employeeId = employeeId;
     }
 
