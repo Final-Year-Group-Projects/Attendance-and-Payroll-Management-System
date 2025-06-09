@@ -1,14 +1,6 @@
 package com.attendance.controller;
 
-import com.attendance.client.UserServiceClient;
-import com.attendance.dto.AttendanceRequest;
-import com.attendance.dto.CheckInRequest;
-import com.attendance.dto.CheckOutRequest;
-import com.attendance.dto.LeaveRequest;
-import com.attendance.dto.WorkingHoursResponse;
-import com.attendance.dto.TotalWorkingHoursResponse;
-import com.attendance.dto.AttendanceCountResponse;
-import com.attendance.dto.LeaveBalanceResponse;
+import com.attendance.dto.*;
 import com.attendance.entity.Attendance;
 import com.attendance.entity.Leave;
 import com.attendance.exception.ValidationException;
@@ -22,7 +14,6 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,35 +34,16 @@ public class AttendanceController {
     private final AttendanceService attendanceService;
     private final AttendanceRepository attendanceRepository;
     private final LeaveRepository leaveRepository;
-    private final UserServiceClient userServiceClient;
-
-    @Value("${app.feign.enabled:false}")
-    private boolean feignEnabled;
 
     @Autowired
     public AttendanceController(
             AttendanceService attendanceService,
             AttendanceRepository attendanceRepository,
-            LeaveRepository leaveRepository,
-            UserServiceClient userServiceClient) {
+            LeaveRepository leaveRepository) {
         this.attendanceService = attendanceService;
         this.attendanceRepository = attendanceRepository;
         this.leaveRepository = leaveRepository;
-        this.userServiceClient = userServiceClient;
         logger.info("AttendanceController initialized");
-    }
-
-    private UserServiceClient.EmployeeDTO getMockEmployee(Long id) {
-        if (id == null || id <= 0 || id > 100) { // Assume valid employee IDs are between 1 and 100
-            return null;
-        }
-        UserServiceClient.EmployeeDTO employee = new UserServiceClient.EmployeeDTO();
-        employee.setId(id);
-        employee.setFirstName(id == 2L ? "Admin" : "Test");
-        employee.setLastName("User");
-        employee.setEmail(id == 2L ? "admin@example.com" : "test@example.com");
-        employee.setRole(id == 2L ? "Admin" : "Employee");
-        return employee;
     }
 
     @Operation(summary = "Record attendance for an employee (check-in and check-out) - Legacy")
@@ -82,21 +54,16 @@ public class AttendanceController {
     })
     @PostMapping("/{employeeId}")
     public ResponseEntity<Attendance> recordAttendance(
-            @PathVariable Long employeeId,
-            @Valid @RequestBody AttendanceRequest request) {
+            @PathVariable String employeeId,
+            @Valid @RequestBody AttendanceRequest request,
+            @RequestAttribute("userId") String tokenUserId) {
         logger.info("Recording attendance for employeeId: {}", employeeId);
 
-        UserServiceClient.EmployeeDTO employee;
-        if (feignEnabled) {
-            employee = userServiceClient.getUserById(employeeId);
-            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
-        } else {
-            employee = getMockEmployee(employeeId);
-            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
-        }
-        if (employee == null) {
-            logger.warn("Employee with ID {} not found", employeeId);
-            throw new IllegalArgumentException("Employee not found");
+        validateEmployeeId(employeeId, tokenUserId, false, null);
+
+        if (!employeeId.matches("^[ESM]\\d{3}$")) {
+            logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
+            throw new IllegalArgumentException("Invalid employeeId format. Use [ESM]ddd (e.g., E001, S001, M001)");
         }
 
         Attendance attendance = new Attendance();
@@ -117,29 +84,25 @@ public class AttendanceController {
     })
     @PostMapping("/check-in/{employeeId}")
     public ResponseEntity<Attendance> checkIn(
-            @PathVariable Long employeeId,
-            @Valid @RequestBody CheckInRequest request) {
-        logger.info("Recording check-in for employeeId: {}", employeeId);
+            @PathVariable String employeeId,
+            @Valid @RequestBody CheckInRequest request,
+            @RequestAttribute("userId") String tokenUserId) {
+        logger.info("Recording check-in for employeeId: {}, request: {}", employeeId, request);
 
-        UserServiceClient.EmployeeDTO employee;
-        if (feignEnabled) {
-            employee = userServiceClient.getUserById(employeeId);
-            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
-        } else {
-            employee = getMockEmployee(employeeId);
-            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
-        }
-        if (employee == null) {
-            logger.warn("Employee with ID {} not found", employeeId);
-            throw new IllegalArgumentException("Employee not found");
+        validateEmployeeId(employeeId, tokenUserId, false, null);
+
+        if (!employeeId.matches("^[ESM]\\d{3}$")) {
+            logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
+            throw new IllegalArgumentException("Invalid employeeId format. Use [ESM]ddd (e.g., E001, S001, M001)");
         }
 
         Attendance attendance = new Attendance();
         attendance.setEmployeeId(employeeId);
-        attendance.setDate(LocalDate.parse(request.getDate(), DATE_FORMATTER));
-        attendance.setCheckInTime(LocalTime.parse(request.getCheckInTime(), TIME_FORMATTER));
+        attendance.setDate(request.getDate());
+        attendance.setCheckInTime(request.getCheckInTime());
 
         Attendance savedAttendance = attendanceService.saveAttendance(attendance);
+        logger.debug("Saved attendance: {}", savedAttendance);
         return ResponseEntity.ok(savedAttendance);
     }
 
@@ -186,20 +149,17 @@ public class AttendanceController {
             @ApiResponse(responseCode = "500", description = "Server error")
     })
     @GetMapping("/{employeeId}")
-    public ResponseEntity<List<Attendance>> getAttendanceRecords(@PathVariable Long employeeId) {
+    public ResponseEntity<List<Attendance>> getAttendanceRecords(
+            @PathVariable String employeeId,
+            @RequestAttribute("userId") String tokenUserId,
+            @RequestAttribute("role") String role) {
         logger.info("Retrieving attendance records for employeeId: {}", employeeId);
 
-        UserServiceClient.EmployeeDTO employee;
-        if (feignEnabled) {
-            employee = userServiceClient.getUserById(employeeId);
-            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
-        } else {
-            employee = getMockEmployee(employeeId);
-            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
-        }
-        if (employee == null) {
-            logger.warn("Employee with ID {} not found", employeeId);
-            throw new IllegalArgumentException("Employee not found");
+        validateEmployeeId(employeeId, tokenUserId, true, role);
+
+        if (!employeeId.matches("^[ESM]\\d{3}$")) {
+            logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
+            throw new IllegalArgumentException("Invalid employeeId format. Use [ESM]ddd (e.g., E001, S001, M001)");
         }
 
         List<Attendance> records = attendanceRepository.findByEmployeeId(employeeId);
@@ -232,22 +192,18 @@ public class AttendanceController {
     })
     @GetMapping("/employee/{employeeId}/hours")
     public ResponseEntity<TotalWorkingHoursResponse> getTotalWorkingHours(
-            @PathVariable Long employeeId,
+            @PathVariable String employeeId,
             @RequestParam("startDate") String startDate,
-            @RequestParam("endDate") String endDate) {
+            @RequestParam("endDate") String endDate,
+            @RequestAttribute("userId") String tokenUserId,
+            @RequestAttribute("role") String role) {
         logger.info("Retrieving total working hours for employeeId: {} from {} to {}", employeeId, startDate, endDate);
 
-        UserServiceClient.EmployeeDTO employee;
-        if (feignEnabled) {
-            employee = userServiceClient.getUserById(employeeId);
-            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
-        } else {
-            employee = getMockEmployee(employeeId);
-            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
-        }
-        if (employee == null) {
-            logger.warn("Employee with ID {} not found", employeeId);
-            throw new IllegalArgumentException("Employee not found");
+        validateEmployeeId(employeeId, tokenUserId, true, role);
+
+        if (!employeeId.matches("^[ESM]\\d{3}$")) {
+            logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
+            throw new IllegalArgumentException("Invalid employeeId format. Use [ESM]ddd (e.g., E001, S001, M001)");
         }
 
         LocalDate start = LocalDate.parse(startDate, DATE_FORMATTER);
@@ -265,26 +221,21 @@ public class AttendanceController {
     })
     @PostMapping("/leaves/request")
     public ResponseEntity<Leave> requestLeave(
-            @RequestHeader(value = "employeeId", required = true) Long employeeId,
-            @Valid @RequestBody LeaveRequest request) {
+            @RequestHeader(value = "employeeId", required = true) String employeeId,
+            @Valid @RequestBody LeaveRequest request,
+            @RequestAttribute("userId") String tokenUserId) {
         if (employeeId == null) {
             logger.warn("Employee ID header is missing");
             throw new IllegalArgumentException("Employee ID header is required");
         }
 
+        validateEmployeeId(employeeId, tokenUserId, false, null);
+
         logger.info("Processing leave request for employee ID: {}", employeeId);
 
-        UserServiceClient.EmployeeDTO employee;
-        if (feignEnabled) {
-            employee = userServiceClient.getUserById(employeeId);
-            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
-        } else {
-            employee = getMockEmployee(employeeId);
-            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
-        }
-        if (employee == null) {
-            logger.warn("Employee with ID {} not found", employeeId);
-            throw new IllegalArgumentException("Employee not found");
+        if (!employeeId.matches("^[ESM]\\d{3}$")) {
+            logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
+            throw new IllegalArgumentException("Invalid employeeId format. Use [ESM]ddd (e.g., E001, S001, M001)");
         }
 
         LocalDate startDate = request.getStartDate();
@@ -309,21 +260,17 @@ public class AttendanceController {
     })
     @GetMapping("/employee/{employeeId}/attendance-count")
     public ResponseEntity<AttendanceCountResponse> getAttendanceCount(
-            @PathVariable Long employeeId,
-            @RequestParam("month") String month) {
+            @PathVariable String employeeId,
+            @RequestParam("month") String month,
+            @RequestAttribute("userId") String tokenUserId,
+            @RequestAttribute("role") String role) {
         logger.info("Retrieving attendance count for employeeId: {} for month: {}", employeeId, month);
 
-        UserServiceClient.EmployeeDTO employee;
-        if (feignEnabled) {
-            employee = userServiceClient.getUserById(employeeId);
-            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
-        } else {
-            employee = getMockEmployee(employeeId);
-            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
-        }
-        if (employee == null) {
-            logger.warn("Employee with ID {} not found", employeeId);
-            throw new IllegalArgumentException("Employee not found");
+        validateEmployeeId(employeeId, tokenUserId, true, role);
+
+        if (!employeeId.matches("^[ESM]\\d{3}$")) {
+            logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
+            throw new IllegalArgumentException("Invalid employeeId format. Use [ESM]ddd (e.g., E001, S001, M001)");
         }
 
         if (!month.matches("\\d{4}-(0[1-9]|1[0-2])")) {
@@ -351,21 +298,17 @@ public class AttendanceController {
     })
     @GetMapping("/employee/{employeeId}/leave-balance")
     public ResponseEntity<LeaveBalanceResponse> getLeaveBalance(
-            @PathVariable Long employeeId,
-            @RequestParam("month") String month) {
+            @PathVariable String employeeId,
+            @RequestParam("month") String month,
+            @RequestAttribute("userId") String tokenUserId,
+            @RequestAttribute("role") String role) {
         logger.info("Retrieving leave balance for employeeId: {} for month: {}", employeeId, month);
 
-        UserServiceClient.EmployeeDTO employee;
-        if (feignEnabled) {
-            employee = userServiceClient.getUserById(employeeId);
-            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
-        } else {
-            employee = getMockEmployee(employeeId);
-            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
-        }
-        if (employee == null) {
-            logger.warn("Employee with ID {} not found", employeeId);
-            throw new IllegalArgumentException("Employee not found");
+        validateEmployeeId(employeeId, tokenUserId, true, role);
+
+        if (!employeeId.matches("^[ESM]\\d{3}$")) {
+            logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
+            throw new IllegalArgumentException("Invalid employeeId format. Use [ESM]ddd (e.g., E001, S001, M001)");
         }
 
         if (!month.matches("\\d{4}-(0[1-9]|1[0-2])")) {
@@ -401,19 +344,6 @@ public class AttendanceController {
                     return new IllegalArgumentException("Leave request not found for leaveId: " + leaveId);
                 });
 
-        UserServiceClient.EmployeeDTO employee;
-        if (feignEnabled) {
-            employee = userServiceClient.getUserById(leave.getEmployeeId());
-            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
-        } else {
-            employee = getMockEmployee(leave.getEmployeeId());
-            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
-        }
-        if (employee == null) {
-            logger.warn("Employee with ID {} not found for leaveId: {}", leave.getEmployeeId(), leaveId);
-            throw new IllegalArgumentException("Employee not found for the leave request");
-        }
-
         attendanceService.deleteLeaveRequest(leaveId);
         return ResponseEntity.noContent().build();
     }
@@ -429,7 +359,7 @@ public class AttendanceController {
     public ResponseEntity<Leave> updateLeaveStatus(
             @PathVariable Long leaveId,
             @RequestParam("status") String status,
-            @RequestHeader(value = "employeeId", required = true) Long requestingEmployeeId) {
+            @RequestHeader(value = "employeeId", required = true) String requestingEmployeeId) {
         logger.info("Processing leave status update for leaveId: {} to status: {} by employeeId: {}",
                 leaveId, status, requestingEmployeeId);
 
@@ -438,47 +368,17 @@ public class AttendanceController {
             throw new IllegalArgumentException("Employee ID header is required");
         }
 
-        // Validate the requesting employee exists and check their role
-        UserServiceClient.EmployeeDTO requestingEmployee;
-        if (feignEnabled) {
-            requestingEmployee = userServiceClient.getUserById(requestingEmployeeId);
-            logger.debug("Received requesting employee role from Feign: {}", requestingEmployee != null ? requestingEmployee.getRole() : "null");
-        } else {
-            requestingEmployee = getMockEmployee(requestingEmployeeId);
-            logger.debug("Using mock requesting employee role: {}", requestingEmployee != null ? requestingEmployee.getRole() : "null");
-        }
-        if (requestingEmployee == null) {
-            logger.warn("Requesting employee with ID {} not found", requestingEmployeeId);
-            throw new IllegalArgumentException("Requesting employee not found");
-        }
-        if (!"Admin".equalsIgnoreCase(requestingEmployee.getRole())) {
-            logger.warn("Employee with ID {} does not have Admin role to approve/reject leaveId: {}",
-                    requestingEmployeeId, leaveId);
-            throw new IllegalStateException("Unauthorized: Only Admins can approve or reject leaves");
+        if (!requestingEmployeeId.matches("^[ESM]\\d{3}$")) {
+            logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", requestingEmployeeId);
+            throw new IllegalArgumentException("Invalid employeeId format. Use [ESM]ddd (e.g., E001, S001, M001)");
         }
 
-        // Validate that the leave exists and fetch its employee ID
         Leave leave = leaveRepository.findById(leaveId)
                 .orElseThrow(() -> {
                     logger.warn("Leave request with ID {} not found", leaveId);
                     return new IllegalArgumentException("Leave request not found for leaveId: " + leaveId);
                 });
 
-        // Validate the employee associated with the leave
-        UserServiceClient.EmployeeDTO employee;
-        if (feignEnabled) {
-            employee = userServiceClient.getUserById(leave.getEmployeeId());
-            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
-        } else {
-            employee = getMockEmployee(leave.getEmployeeId());
-            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
-        }
-        if (employee == null) {
-            logger.warn("Employee with ID {} not found for leaveId: {}", leave.getEmployeeId(), leaveId);
-            throw new IllegalArgumentException("Employee not found for the leave request");
-        }
-
-        // Update the leave status using the service method that includes employeeId
         Leave updatedLeave = attendanceService.updateLeaveStatus(leaveId, status, requestingEmployeeId);
         return ResponseEntity.ok(updatedLeave);
     }
@@ -492,26 +392,20 @@ public class AttendanceController {
     })
     @GetMapping("/leaves/employee/{employeeId}")
     public ResponseEntity<List<Leave>> getLeaveRequests(
-            @PathVariable Long employeeId,
+            @PathVariable String employeeId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestAttribute("userId") String tokenUserId,
+            @RequestAttribute("role") String role) {
         logger.info("Retrieving leave requests for employeeId: {}, startDate: {}, endDate: {}", employeeId, startDate, endDate);
 
-        // Validate employee existence
-        UserServiceClient.EmployeeDTO employee;
-        if (feignEnabled) {
-            employee = userServiceClient.getUserById(employeeId);
-            logger.debug("Received employee role from Feign: {}", employee != null ? employee.getRole() : "null");
-        } else {
-            employee = getMockEmployee(employeeId);
-            logger.debug("Using mock employee role: {}", employee != null ? employee.getRole() : "null");
-        }
-        if (employee == null) {
-            logger.warn("Employee with ID {} not found", employeeId);
-            throw new IllegalArgumentException("Employee not found");
+        validateEmployeeId(employeeId, tokenUserId, true, role);
+
+        if (!employeeId.matches("^[ESM]\\d{3}$")) {
+            logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
+            throw new IllegalArgumentException("Invalid employeeId format. Use [ESM]ddd (e.g., E001, S001, M001)");
         }
 
-        // Fetch leave requests based on date range
         List<Leave> leaveRequests;
         if (startDate != null && endDate != null) {
             if (endDate.isBefore(startDate)) {
@@ -529,5 +423,60 @@ public class AttendanceController {
         }
 
         return ResponseEntity.ok(leaveRequests);
+    }
+
+    @Operation(summary = "Get monthly attendance and leave details for an employee")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Details retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input or employee not found"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @GetMapping("/{employeeId}/details")
+    public ResponseEntity<AttendanceSummaryResponse> getAttendanceDetails(
+            @PathVariable String employeeId,
+            @RequestParam("month") int month,
+            @RequestParam("year") int year,
+            @RequestAttribute("userId") String tokenUserId,
+            @RequestAttribute("role") String role) {
+        logger.info("Retrieving attendance details for employeeId: {}, month: {}, year: {}", employeeId, month, year);
+
+        validateEmployeeId(employeeId, tokenUserId, true, role);
+
+        if (!employeeId.matches("^[ESM]\\d{3}$")) {
+            logger.warn("Invalid employeeId format: {}. Expected format: [ESM]ddd (e.g., E001, S001, M001)", employeeId);
+            throw new IllegalArgumentException("Invalid employeeId format. Use [ESM]ddd (e.g., E001, S001, M001)");
+        }
+
+        if (month < 1 || month > 12) {
+            logger.warn("Invalid month value: {}. Month must be between 1 and 12", month);
+            throw new IllegalArgumentException("Month must be between 1 and 12");
+        }
+
+        if (year < 2000 || year > 2100) {
+            logger.warn("Invalid year value: {}. Year must be between 2000 and 2100", year);
+            throw new IllegalArgumentException("Year must be between 2000 and 2100");
+        }
+
+        AttendanceSummaryResponse details = attendanceService.getAttendanceDetails(employeeId, month, year);
+        return ResponseEntity.ok(details);
+    }
+
+    private void validateEmployeeId(String employeeId, String tokenUserId, boolean isGetRequest, String role) {
+        if (tokenUserId != null) {
+            if (isGetRequest) {
+                // For GET requests, allow admins and super_admins to access any employeeId
+                String normalizedRole = role != null ? role.trim().toLowerCase() : "";
+                if (!"admin".equals(normalizedRole) && !"super_admin".equals(normalizedRole) && !employeeId.equals(tokenUserId)) {
+                    logger.warn("Access denied: Employee ID {} does not match token user ID {} for non-admin user", employeeId, tokenUserId);
+                    throw new IllegalArgumentException("Access denied: Employee ID in request does not match token user ID");
+                }
+            } else {
+                // For non-GET requests, always enforce employeeId match
+                if (!employeeId.equals(tokenUserId)) {
+                    logger.warn("Access denied: Employee ID {} does not match token user ID {} for non-GET request", employeeId, tokenUserId);
+                    throw new IllegalArgumentException("Access denied: Employee ID in request does not match token user ID");
+                }
+            }
+        }
     }
 }
