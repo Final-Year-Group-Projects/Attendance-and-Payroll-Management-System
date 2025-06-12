@@ -9,6 +9,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDTO {
+    @JsonProperty("userId")
     private String employeeId;
+
+    @JsonProperty("userType")
     private String role;
 }
