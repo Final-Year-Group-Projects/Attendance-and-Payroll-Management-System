@@ -14,7 +14,7 @@ public class JacksonConfig {
     @Bean
     public JavaTimeModule javaTimeModule() {
         JavaTimeModule module = new JavaTimeModule();
-        module.addDeserializer(LocalDate.class, new LocalDateDeserializer(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+        module.addDeserializer(LocalDate.class, new LocalDateDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         return module;
     }
 }

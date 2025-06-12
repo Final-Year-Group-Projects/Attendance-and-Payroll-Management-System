@@ -8,6 +8,6 @@ import java.util.List;
 
 // Must extend JpaRepository
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
-    List<Attendance> findByEmployeeId(Long employeeId);
-    List<Attendance> findByEmployeeIdAndDateBetween(Long employeeId, LocalDate startDate, LocalDate endDate);
+    List<Attendance> findByEmployeeId(String employeeId);
+    List<Attendance> findByEmployeeIdAndDateBetween(String employeeId, LocalDate startDate, LocalDate endDate);
 }

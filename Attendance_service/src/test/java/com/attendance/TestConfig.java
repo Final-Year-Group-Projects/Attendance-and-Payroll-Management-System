@@ -21,12 +21,12 @@ public class TestConfig {
 
         // Mock getUserById
         EmployeeDTO employeeDTO = new EmployeeDTO();
-        employeeDTO.setId(1L);
+        employeeDTO.setId("E001"); // Changed from 1L to "E001"
         employeeDTO.setFirstName("John");
         employeeDTO.setLastName("Doe");
         employeeDTO.setEmail("john.doe@example.com");
         employeeDTO.setRole("ADMIN");
-        Mockito.when(mockClient.getUserById(1L)).thenReturn(employeeDTO);
+        Mockito.when(mockClient.getUserById("E001")).thenReturn(employeeDTO); // Changed from 1L to "E001"
 
         // Mock validateUser
         UserDTO userDTO = new UserDTO();

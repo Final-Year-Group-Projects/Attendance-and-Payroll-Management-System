@@ -120,6 +120,16 @@ These endpoints are accessible to both employees and admins.
         - `200 OK` with list of leave requests.
         - `204 No Content` if no leave requests found.
         - `400 Bad Request` if employee not found or invalid date range.
+  
+- **GET `/attendance/{employeeId}/details`**
+    - **Description**: Retrieve detailed monthly attendance and leave summary for an employee.
+    - **Request Parameters**:
+        - `month` (query param): Month (1-12).
+        - `year` (query param): Year (e.g., 2025).
+    - **Response**:
+        - `200 OK` with attendance and leave details.
+        - `400 Bad Request` for invalid month/year or employee ID format.
+    - **Note**: Admins and super_admins can access any employeeId; employees are restricted to their own data.
 
 ## Prerequisites
 - **Java 17** or higher.
@@ -193,6 +203,7 @@ USER_SERVICE_URL=http://localhost:8084
 
 
 Note : Make sure to add Bearer token as Authorization header for all requests.
+       EmployeeId shoud string - E001, S001, M001 (Example formats)
 User Access Endpoints
 
 POST /attendance/{employeeId}Record both check-in and check-out for an employee:
@@ -314,3 +325,10 @@ Notes:
 Replace 1 with the actual leaveId.
 Replace 2 with the employeeId of an admin user.
 Expected: 200 OK with updated leave details, 403 Forbidden if not an admin, or 404 Not Found if leaveId is invalid.
+
+GET /attendance/{employeeId}/details - Retrieve detailed monthly attendance and leave summary for an employee:
+
+
+curl -X GET "http://localhost:8081/attendance/1/details?month=5&year=2025" \
+-H "Authorization: Bearer <your-token>"
+Notes: Replace 1 with the actual employeeId. Adjust month (1-12) and year as needed. Expected: 200 OK with attendance and leave details, 400 Bad Request for invalid month/year or employee ID format.

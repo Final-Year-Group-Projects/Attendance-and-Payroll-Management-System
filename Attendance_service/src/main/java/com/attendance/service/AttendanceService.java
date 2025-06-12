@@ -1,5 +1,6 @@
 package com.attendance.service;
 
+import com.attendance.dto.AttendanceSummaryResponse;
 import com.attendance.dto.LeaveBalanceResponse;
 import com.attendance.entity.Attendance;
 import com.attendance.entity.Leave;
@@ -57,7 +58,7 @@ public class AttendanceService {
         return hours;
     }
 
-    public double calculateTotalWorkingHours(Long employeeId, LocalDate startDate, LocalDate endDate) {
+    public double calculateTotalWorkingHours(String employeeId, LocalDate startDate, LocalDate endDate) {
         logger.info("Calculating total working hours for employeeId: {} from {} to {}", employeeId, startDate, endDate);
 
         if (startDate.isAfter(endDate)) {
@@ -95,7 +96,7 @@ public class AttendanceService {
         return totalHours;
     }
 
-    public Leave saveLeaveRequest(Long employeeId, LocalDate startDate, LocalDate endDate, String reason, String leaveType) {
+    public Leave saveLeaveRequest(String employeeId, LocalDate startDate, LocalDate endDate, String reason, String leaveType) {
         logger.info("Saving leave request for employeeId: {} from {} to {} with leaveType: {}",
                 employeeId, startDate, endDate, leaveType);
 
@@ -147,7 +148,7 @@ public class AttendanceService {
         return savedLeave;
     }
 
-    public long getAttendanceCountPerMonth(Long employeeId, LocalDate month) {
+    public long getAttendanceCountPerMonth(String employeeId, LocalDate month) {
         logger.info("Calculating attendance count for employeeId: {} for month: {}", employeeId, month);
 
         LocalDate monthStart = month.withDayOfMonth(1);
@@ -165,7 +166,7 @@ public class AttendanceService {
         return attendedDays;
     }
 
-    public LeaveBalanceResponse getLeaveBalance(Long employeeId, LocalDate month) {
+    public LeaveBalanceResponse getLeaveBalance(String employeeId, LocalDate month) {
         logger.info("Calculating leave balance for employeeId: {} for month: {}", employeeId, month);
 
         LocalDate monthStart = month.withDayOfMonth(1);
@@ -213,7 +214,7 @@ public class AttendanceService {
         logger.info("Leave request with leaveId: {} deleted successfully", leaveId);
     }
 
-    public Leave updateLeaveStatus(Long leaveId, String newStatus, Long employeeId) {
+    public Leave updateLeaveStatus(Long leaveId, String newStatus, String employeeId) {
         logger.info("Attempting to update leave status for leaveId: {} to {} by employeeId: {}", leaveId, newStatus, employeeId);
 
         Leave leave = leaveRepository.findById(leaveId)
@@ -242,5 +243,41 @@ public class AttendanceService {
         Leave updatedLeave = leaveRepository.save(leave);
         logger.info("Leave status for leaveId: {} updated to {} by employeeId: {}", leaveId, normalizedStatus, employeeId);
         return updatedLeave;
+    }
+
+    public AttendanceSummaryResponse getAttendanceDetails(String employeeId, int month, int year) {
+        logger.info("Retrieving attendance details for employeeId: {}, month: {}, year: {}", employeeId, month, year);
+
+        if (month < 1 || month > 12) {
+            logger.warn("Invalid month value: {}. Month must be between 1 and 12", month);
+            throw new IllegalArgumentException("Month must be between 1 and 12");
+        }
+
+        if (year < 2000 || year > 2100) {
+            logger.warn("Invalid year value: {}. Year must be between 2000 and 2100", year);
+            throw new IllegalArgumentException("Year must be between 2000 and 2100");
+        }
+
+        // Calculate the start and end of the month
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+        // Count working days (unique attendance dates)
+        List<Attendance> attendances = attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, startDate, endDate);
+        int workingDays = (int) attendances.stream()
+                .filter(record -> record.getCheckInTime() != null && record.getCheckOutTime() != null)
+                .map(Attendance::getDate)
+                .distinct()
+                .count();
+
+        // Count approved leaves
+        List<Leave> approvedLeaves = leaveRepository.findByEmployeeIdAndStartDateBetweenAndStatus(employeeId, startDate, endDate, "APPROVED");
+        int approvedLeavesCount = approvedLeaves.size();
+
+        // Count not approved leaves (PENDING, REJECTED, etc.)
+        List<Leave> notApprovedLeaves = leaveRepository.findByEmployeeIdAndStartDateBetweenAndStatusNot(employeeId, startDate, endDate, "APPROVED");
+        int notApprovedLeavesCount = notApprovedLeaves.size();
+
+        return new AttendanceSummaryResponse(employeeId, month, year, workingDays, approvedLeavesCount, notApprovedLeavesCount);
     }
 }
