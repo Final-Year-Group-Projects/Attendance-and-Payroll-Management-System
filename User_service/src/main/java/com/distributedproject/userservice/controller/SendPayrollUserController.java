@@ -12,7 +12,7 @@ public class SendPayrollUserController {
 
     @GetMapping("/{employeeId}/details")
     public UserDTO getUserDetails(@PathVariable String employeeId) {
-        return new UserDTO(employeeId, "Software Engineer");
+        return new UserDTO(employeeId, "Engineer");
     }
 }
 

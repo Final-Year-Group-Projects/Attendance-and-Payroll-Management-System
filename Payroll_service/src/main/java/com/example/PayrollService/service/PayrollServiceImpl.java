@@ -16,6 +16,8 @@ import com.example.PayrollService.repository.PayrollRepository;
 import com.example.PayrollService.repository.ReimbursementRepository;
 import com.example.PayrollService.util.ValidationUtils;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -52,6 +54,7 @@ public class PayrollServiceImpl implements PayrollService {
     private static final double MINIMUM_WAGE = 1000.00;
     private static final int MAX_WORKING_DAYS = 31;
     private static final List<String> VALID_PAYROLL_STATUSES = List.of("GENERATED", "PAID", "CANCELLED");
+    private static final Logger log = LoggerFactory.getLogger(PayrollServiceImpl.class);
 
     // Validation helper methods
     private void validateWorkingDays(int workingDays, int approvedLeaves, int notApprovedLeaves) {
@@ -136,7 +139,9 @@ public class PayrollServiceImpl implements PayrollService {
             if (user == null) {
                 throw new ValidationException("User does not exist");
             }
+            log.info("User Details received from Feign: {}", user);
             role = user.getRole();
+            log.info("Role received from Feign: {}", role);
             if (role == null || role.isBlank()) {
                 // Handle scenario where role is null or blank
                 throw new ValidationException("User role is null or blank from UserService response");
@@ -149,7 +154,7 @@ public class PayrollServiceImpl implements PayrollService {
             }
             role = dto.getRole(); // Use Postman-provided role
         }
-        RoleSalaryConfig config = validateRoleConfiguration(dto.getRole());
+        RoleSalaryConfig config = validateRoleConfiguration(role);
 
 
         // 2. Try to fetch attendance details with fallback and validations
@@ -163,7 +168,7 @@ public class PayrollServiceImpl implements PayrollService {
                     attendance.getApprovedLeaves() == null || attendance.getNotApprovedLeaves() == null) {
                 throw new ValidationException("Attendance service returned incomplete data. All fields (working days, approved leaves, not approved leaves) must be present.");
             }
-
+            log.info("Attendence Details received from Feign: {}", attendance);
 //            validateWorkingDays(attendance.getWorkingDays(), attendance.getApprovedLeaves(), attendance.getNotApprovedLeaves());
         } catch (Exception e) {
             System.err.println("AttendanceService unavailable");
@@ -183,8 +188,11 @@ public class PayrollServiceImpl implements PayrollService {
             );
         }
         int workingDays = attendance.getWorkingDays();
+        log.info("Working Days received from Feign: {}", workingDays);
         int approvedLeaves = attendance.getApprovedLeaves();
+        log.info("Approved Leaves received from Feign: {}", approvedLeaves);
         int notApprovedLeaves = attendance.getNotApprovedLeaves();
+        log.info("Not Approved Leaves received from Feign: {}", notApprovedLeaves);
         validateWorkingDays(workingDays, approvedLeaves, notApprovedLeaves);
 
 

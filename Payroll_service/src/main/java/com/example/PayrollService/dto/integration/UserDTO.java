@@ -1,5 +1,6 @@
 package com.example.PayrollService.dto.integration;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 
 import lombok.*;
@@ -8,9 +9,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDTO {
-    @NotBlank(message = "Employee ID cannot be blank")
     private String employeeId;
-
-    @NotBlank(message = "Role is required")
     private String role;
 }

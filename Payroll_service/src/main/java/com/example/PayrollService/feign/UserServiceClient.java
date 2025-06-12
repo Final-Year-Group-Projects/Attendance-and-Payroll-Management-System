@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient(name = "user-service", url = "http://api-gateway",  configuration = FeignConfig.class
 )
 public interface UserServiceClient {
-
-    // Assuming the endpoint returns { "employeeId": "...", "role": "..." }
     @GetMapping("/user/{employeeId}/details")
     UserDTO getUserDetails(@PathVariable("employeeId") String employeeId);
 }
