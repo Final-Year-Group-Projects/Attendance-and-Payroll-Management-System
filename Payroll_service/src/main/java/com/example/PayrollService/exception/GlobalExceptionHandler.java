@@ -1,6 +1,7 @@
 package com.example.PayrollService.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -10,6 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -76,6 +80,24 @@ public class GlobalExceptionHandler {
     public Map<String, Object> handleDataAccess(DataAccessException ex) {
         logger.error("Database error: {}", ex.getMessage(), ex);
         return buildError("DATABASE_ERROR", "Unexpected database error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleResponseStatusException(ResponseStatusException ex) {
+        logger.warn("Handled ResponseStatusException: {}", ex.getReason());
+
+        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+        if (status == null) {
+            status = HttpStatus.INTERNAL_SERVER_ERROR; // fallback status
+        }
+
+        Map<String, Object> error = buildError(
+                ex.getStatusCode().toString(),
+                ex.getReason(),
+                status
+        );
+
+        return new ResponseEntity<>(error, status);
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

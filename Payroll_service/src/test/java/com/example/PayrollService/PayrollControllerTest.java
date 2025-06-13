@@ -9,6 +9,7 @@ import com.example.PayrollService.repository.PayrollRepository;
 import com.example.PayrollService.repository.ReimbursementRepository;
 import com.example.PayrollService.service.PayrollService;
 import com.example.PayrollService.service.ReimbursementService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,6 +38,8 @@ class PayrollControllerTest {
     private ReimbursementService reimbursementService;
     @Mock
     private ReimbursementRepository reimbursementRepository;
+    @Mock
+    private HttpServletRequest httpServletRequest;
 
     @InjectMocks
     private PayrollCreationController payrollCreationController;
@@ -212,12 +215,16 @@ class PayrollControllerTest {
 
         ReimbursementResponseDTO mockResponse = new ReimbursementResponseDTO();
         mockResponse.setEmployeeId("E01");
+        //Mock userId and role from request
+        when(httpServletRequest.getAttribute("userId")).thenReturn("E01");
+        when(httpServletRequest.getAttribute("role")).thenReturn("Employee");
+        //Mock service method with expected parameters
+        when(reimbursementService.submitRequest(eq(request), eq("E01"), eq("Employee"))).thenReturn(mockResponse);
 
-        when(reimbursementService.submitRequest(any())).thenReturn(mockResponse);
-
-        ReimbursementResponseDTO response = reimbursementController.submitRequest(request);
+        ReimbursementResponseDTO response = reimbursementController.submitRequest(request, httpServletRequest);
 
         assertNotNull(response);
+        assertEquals("E01", response.getEmployeeId());
     }
 
     @Test
