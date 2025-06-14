@@ -9,7 +9,10 @@ import com.example.PayrollService.exception.ValidationException;
 import com.example.PayrollService.repository.ReimbursementRepository;
 import com.example.PayrollService.util.ValidationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -77,7 +80,12 @@ public class ReimbursementServiceImpl implements ReimbursementService {
     }
 
     @Override
-    public ReimbursementResponseDTO submitRequest(ReimbursementRequestDTO dto) {
+    public ReimbursementResponseDTO submitRequest(ReimbursementRequestDTO dto, String tokenUserId, String role) {
+        if ("EMPLOYEE".equalsIgnoreCase(role) && !dto.getEmployeeId().equals(tokenUserId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Employee not authorized to submit reimbursement for another employee.");
+        }
+
+
         validateReimbursementType(dto.getType());
         validateAgainstBusinessPolicies(dto.getAmount(), dto.getType().toUpperCase());
 

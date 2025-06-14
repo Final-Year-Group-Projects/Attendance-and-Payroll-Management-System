@@ -9,8 +9,10 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,16 +28,25 @@ public class PayslipController {
     private PayrollRepository payrollRepository;
 
     @GetMapping(value = "/{payrollId}/payslip", produces = MediaType.TEXT_HTML_VALUE)
-    public ResponseEntity<String> getPayslip(@PathVariable @Min(1) Long payrollId) {
-        Optional<PayrollRecord> optional = Optional.ofNullable(payrollRepository.findById(payrollId)
-                .orElseThrow(() -> new ResourceNotFoundException("Payslip not found for ID " + payrollId)));
+    public ResponseEntity<String> getPayslip(
+            @PathVariable @Min(1) Long payrollId,
+            HttpServletRequest request) {
 
+        // Extract the userId from request set by the TokenValidationFilter
+        String tokenUserId = (String) request.getAttribute("userId");
+        String role = (String) request.getAttribute("role");
 
-        if (optional.isEmpty()) {
-            return ResponseEntity.status(404).body("<h2>Payslip not found for ID " + payrollId + "</h2>");
+        // Fetch the payroll record
+        PayrollRecord record = payrollRepository.findById(payrollId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payslip not found for ID " + payrollId));
+
+        // Check if the token's userId matches the employeeId in the payroll record
+        if ("employee".equalsIgnoreCase(role)) {
+            if (!record.getEmployeeId().toString().equals(tokenUserId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("<h2>Access denied: This payslip does not belong to you.</h2>");
+            }
         }
-
-        PayrollRecord record = optional.get();
 
         String html = "<html><body style='font-family:sans-serif;'>"
                 + "<h2>Payslip for Employee ID: " + record.getEmployeeId() + "</h2>"
@@ -63,7 +74,12 @@ public class PayslipController {
     }
 
     @GetMapping(value = "/{payrollId}/payslip/pdf", produces = "application/pdf")
-    public ResponseEntity<byte[]> downloadPayslipPdf(@PathVariable @Min(1) Long payrollId) {
+    public ResponseEntity<byte[]> downloadPayslipPdf(@PathVariable @Min(1) Long payrollId,
+                                                     HttpServletRequest request) {
+
+        String tokenUserId = (String) request.getAttribute("userId");
+        String role = (String) request.getAttribute("role");
+
         Optional<PayrollRecord> optional = Optional.ofNullable(payrollRepository.findById(payrollId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payslip not found for ID " + payrollId)));
 
@@ -72,6 +88,14 @@ public class PayslipController {
         }
 
         PayrollRecord record = optional.get();
+
+        if ("employee".equalsIgnoreCase(role)) {
+            if (!record.getEmployeeId().toString().equals(tokenUserId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .contentType(MediaType.TEXT_HTML)
+                        .body("Access denied: You are not authorized to access payslip for other employees.".getBytes());
+            }
+        }
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {

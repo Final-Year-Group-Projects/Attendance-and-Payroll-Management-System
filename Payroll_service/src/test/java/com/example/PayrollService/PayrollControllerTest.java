@@ -9,6 +9,7 @@ import com.example.PayrollService.repository.PayrollRepository;
 import com.example.PayrollService.repository.ReimbursementRepository;
 import com.example.PayrollService.service.PayrollService;
 import com.example.PayrollService.service.ReimbursementService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -37,6 +39,8 @@ class PayrollControllerTest {
     private ReimbursementService reimbursementService;
     @Mock
     private ReimbursementRepository reimbursementRepository;
+    @Mock
+    private HttpServletRequest httpServletRequest;
 
     @InjectMocks
     private PayrollCreationController payrollCreationController;
@@ -164,7 +168,10 @@ class PayrollControllerTest {
         PayrollRecord record = createTestPayrollRecord();
         when(payrollRepository.findById(1L)).thenReturn(Optional.of(record));
 
-        ResponseEntity<String> response = payslipController.getPayslip(1L);
+        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+        when(mockRequest.getAttribute("userId")).thenReturn(String.valueOf(record.getEmployeeId()));
+
+        ResponseEntity<String> response = payslipController.getPayslip(1L, mockRequest);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -175,9 +182,12 @@ class PayrollControllerTest {
         when(payrollRepository.findById(1L))
                 .thenReturn(Optional.empty());
 
+        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+        when(mockRequest.getAttribute("userId")).thenReturn("1");
+
         // Expect the controller to throw ResourceNotFoundException
         assertThrows(ResourceNotFoundException.class, () -> {
-            payslipController.getPayslip(1L);
+            payslipController.getPayslip(1L, mockRequest);
         });
     }
 
@@ -186,19 +196,24 @@ class PayrollControllerTest {
         when(payrollRepository.findById(1L))
                 .thenReturn(Optional.empty());
 
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
         // Expect the controller to throw ResourceNotFoundException
         assertThrows(ResourceNotFoundException.class, () -> {
-            payslipController.downloadPayslipPdf(1L);
+            payslipController.downloadPayslipPdf(1L,request);
         });
     }
+
     @Test
     void downloadPayslipPdf_ExistingId_ReturnsPdfContent() {
         PayrollRecord record = createTestPayrollRecord();
         when(payrollRepository.findById(1L)).thenReturn(Optional.of(record));
 
-        ResponseEntity<byte[]> response = payslipController.downloadPayslipPdf(1L);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        ResponseEntity<byte[]> response = payslipController.downloadPayslipPdf(1L,request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
         assertTrue(response.getBody().length > 0);
     }
 
@@ -212,12 +227,16 @@ class PayrollControllerTest {
 
         ReimbursementResponseDTO mockResponse = new ReimbursementResponseDTO();
         mockResponse.setEmployeeId("E01");
+        //Mock userId and role from request
+        when(httpServletRequest.getAttribute("userId")).thenReturn("E01");
+        when(httpServletRequest.getAttribute("role")).thenReturn("Employee");
+        //Mock service method with expected parameters
+        when(reimbursementService.submitRequest(eq(request), eq("E01"), eq("Employee"))).thenReturn(mockResponse);
 
-        when(reimbursementService.submitRequest(any())).thenReturn(mockResponse);
-
-        ReimbursementResponseDTO response = reimbursementController.submitRequest(request);
+        ReimbursementResponseDTO response = reimbursementController.submitRequest(request, httpServletRequest);
 
         assertNotNull(response);
+        assertEquals("E01", response.getEmployeeId());
     }
 
     @Test
