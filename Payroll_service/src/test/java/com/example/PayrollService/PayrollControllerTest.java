@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -167,7 +168,10 @@ class PayrollControllerTest {
         PayrollRecord record = createTestPayrollRecord();
         when(payrollRepository.findById(1L)).thenReturn(Optional.of(record));
 
-        ResponseEntity<String> response = payslipController.getPayslip(1L);
+        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+        when(mockRequest.getAttribute("userId")).thenReturn(String.valueOf(record.getEmployeeId()));
+
+        ResponseEntity<String> response = payslipController.getPayslip(1L, mockRequest);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -178,9 +182,12 @@ class PayrollControllerTest {
         when(payrollRepository.findById(1L))
                 .thenReturn(Optional.empty());
 
+        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+        when(mockRequest.getAttribute("userId")).thenReturn("1");
+
         // Expect the controller to throw ResourceNotFoundException
         assertThrows(ResourceNotFoundException.class, () -> {
-            payslipController.getPayslip(1L);
+            payslipController.getPayslip(1L, mockRequest);
         });
     }
 
@@ -189,19 +196,24 @@ class PayrollControllerTest {
         when(payrollRepository.findById(1L))
                 .thenReturn(Optional.empty());
 
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
         // Expect the controller to throw ResourceNotFoundException
         assertThrows(ResourceNotFoundException.class, () -> {
-            payslipController.downloadPayslipPdf(1L);
+            payslipController.downloadPayslipPdf(1L,request);
         });
     }
+
     @Test
     void downloadPayslipPdf_ExistingId_ReturnsPdfContent() {
         PayrollRecord record = createTestPayrollRecord();
         when(payrollRepository.findById(1L)).thenReturn(Optional.of(record));
 
-        ResponseEntity<byte[]> response = payslipController.downloadPayslipPdf(1L);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        ResponseEntity<byte[]> response = payslipController.downloadPayslipPdf(1L,request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
         assertTrue(response.getBody().length > 0);
     }
 
