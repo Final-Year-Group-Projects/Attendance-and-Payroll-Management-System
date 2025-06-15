@@ -30,7 +30,6 @@ public class PayrollRequestDTO {
 
     @Min(value = 0, message = "Not approved leaves cannot be negative")
     private Integer notApprovedLeaves;
-
-    @NotBlank(message = "Employee Role cannot be blank")
+    
     private String role;
 }

@@ -38,7 +38,7 @@ All endpoints require a valid Bearer token for authorization.
 
 `Base URL: http://localhost/payroll/`
 
-###  Admin Endpoints
+###  Admin Only Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -48,12 +48,11 @@ All endpoints require a valid Bearer token for authorization.
 | DELETE | `/payrolls/{payrollId}` | Delete payroll by ID |
 | DELETE | `/payrolls/employee/{employeeId}` | Delete all payrolls for an employee |
 | GET    | `/payrolls/all` | Get all payroll records |
-| POST   | `/payrolls/generateAll?month={month}&year={year}` | Bulk payroll generation |
 | PUT    | `/payrolls/{payrollId}/status?status={status}` | Update payroll status |
 | PUT    | `/reimbursements/{id}/status?status={status}` | Approve or reject reimbursement |
 | DELETE | `/reimbursements/{id}` | Delete reimbursement request |
 
-###  User Endpoints
+###  Admin and User Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -67,9 +66,30 @@ All endpoints require a valid Bearer token for authorization.
 ---
 
 ##  Integrations
+This microservice integrates with user service & attendance service using OpenFeign clients and accessed via api-gateway.
 
-- **User Service**: fetch user info and roles `USER_SERVICE_URL=http://localhost:8084`
-- **Attendance Service**: retrieve attendance data for payroll calculation `ATTENDENCE_SERVICE_URL=http://localhost:8081`
+- **User Service**
+
+    Purpose: To fetch employee details using `userId`.
+
+    Feign Client: `UserServiceClient`
+
+    Endpoint: 
+        ```GET /user/get/users/{userId}```
+
+    Returns: `UserDTO` with employee information.
+
+
+- **Attendance Service**: 
+
+    Purpose: To retrieve attendance details of an employee for a specific month and year using `userId`.
+
+    Feign Client: `AttendanceServiceClient`
+
+    Endpoint:
+        ```GET /attendance/{employeeId}/details?month={month}&year={year}```
+
+    Returns: `AttendanceDTO` with working days, approved leaves, not approved leaves.
 
 ---
 
@@ -77,82 +97,77 @@ All endpoints require a valid Bearer token for authorization.
 
 ### 1. Create Payroll Record 
 ```
-curl -X POST "http://localhost:8082/payroll/payrolls" -H "Authorization: Bearer <token>" -H "Content-Type: application/json" -d '{"employeeId":"H01","month":4,"year":2024,"workingDays":16,"approvedLeaves":3,"notApprovedLeaves":1,"role":"HR"}'
+curl -X POST "http://localhost:8082/payrolls" -H "Authorization: Bearer <token>" -H "Content-Type: application/json" -d '{"employeeId":"E001","month":5,"year":2025}'
 ```
 
-### 2. Bulk Generate Payrolls 
+### 2. Send Payroll Notification 
 ```
-curl -X POST "http://localhost:8082/payroll/payrolls/generateAll?month=3&year=2025" -H "Authorization: Bearer <token>"
-```
-
-### 3. Send Payroll Notification 
-```
-curl -X POST "http://localhost:8082/payroll/payrolls/H01/notify" -H "Authorization: Bearer <token>"
+curl -X POST "http://localhost:8082/payrolls/E001/notify" -H "Authorization: Bearer <token>"
 ```
 
-### 4. Submit Reimbursement Request 
+### 3. Submit Reimbursement Request 
 ```
-curl -X POST "http://localhost:8082/payroll/reimbursements" -H "Authorization: Bearer <token>" -H "Content-Type: application/json" -d '{"employeeId":"H01","type":"MEDICAL","amount":100,"description":"Medicine and Hospital Fee"}'
-```
-
-### 5. Get Payroll by ID 
-```
-curl -X GET "http://localhost:8082/payroll/payrolls/1" -H "Authorization: Bearer <token>"
+curl -X POST "http://localhost:8082/payrolls/reimbursements" -H "Authorization: Bearer <token>" -H "Content-Type: application/json" -d '{"employeeId":"E001","type":"MEDICAL","amount":100,"description":"Medicine and Hospital Fee"}'
 ```
 
-### 6. Get All Payrolls  
+### 4. Get Payroll by ID 
 ```
-curl -X GET "http://localhost:8082/payroll/payrolls/all" -H "Authorization: Bearer <token>"
-```
-
-### 7. Get Employee Payrolls 
-```
-curl -X GET "http://localhost:8082/payroll/payrolls/employee/H01" -H "Authorization: Bearer <token>"
+curl -X GET "http://localhost:8082/payrolls/1" -H "Authorization: Bearer <token>"
 ```
 
-### 8. View HTML Payslip 
+### 5. Get All Payrolls  
 ```
-curl -X GET "http://localhost:8082/payroll/payrolls/1/payslip" -H "Authorization: Bearer <token>"
-```
-
-### 9. Download PDF Payslip 
-```
-curl -X GET "http://localhost:8082/payroll/payrolls/1/payslip/pdf" -H "Authorization: Bearer <token>" -o payslip.pdf
+curl -X GET "http://localhost:8082/payrolls/all" -H "Authorization: Bearer <token>"
 ```
 
-### 10. Get Employee Reimbursements 
+### 6. Get Employee Payrolls 
 ```
-curl -X GET "http://localhost:8082/payroll/reimbursements/employee/H01" -H "Authorization: Bearer <token>"
-```
-
-### 11. Update Payroll Record 
-```
-curl -X PUT "http://localhost:8082/payroll/payrolls/1" -H "Authorization: Bearer <token>" -H "Content-Type: application/json" -d '{"employeeId":"H01","month":5,"year":2025,"workingDays":17,"approvedLeaves":2,"notApprovedLeaves":1,"role":"HR"}'
+curl -X GET "http://localhost:8082/payrolls/employee/E001" -H "Authorization: Bearer <token>"
 ```
 
-### 12. Update Payroll Status 
+### 7. View HTML Payslip 
 ```
-curl -X PUT "http://localhost:8082/payroll/payrolls/1/status?status=CANCELLED" -H "Authorization: Bearer <token>"
-```
-
-### 13. Update Reimbursement Status 
-```
-curl -X PUT "http://localhost:8082/payroll/reimbursements/1/status?status=APPROVED" -H "Authorization: Bearer <token>"
+curl -X GET "http://localhost:8082/payrolls/1/payslip" -H "Authorization: Bearer <token>"
 ```
 
-### 14. Delete Payroll by ID 
+### 8. Download PDF Payslip 
 ```
-curl -X DELETE "http://localhost:8082/payroll/payrolls/1" -H "Authorization: Bearer <token>"
-```
-
-### 15. Delete All Employee Payrolls
-```
-curl -X DELETE "http://localhost:8082/payroll/payrolls/employee/H01" -H "Authorization: Bearer <token>"
+curl -X GET "http://localhost:8082/payrolls/1/payslip/pdf" -H "Authorization: Bearer <token>" -o payslip.pdf
 ```
 
-### 16. Delete Reimbursement 
+### 9. Get Employee Reimbursements 
 ```
-curl -X DELETE "http://localhost:8082/payroll/reimbursements/1" -H "Authorization: Bearer <token>"
+curl -X GET "http://localhost:8082/payrolls/reimbursements/employee/E001" -H "Authorization: Bearer <token>"
+```
+
+### 10. Update Payroll Record 
+```
+curl -X PUT "http://localhost:8082/payrolls/1" -H "Authorization: Bearer <token>" -H "Content-Type: application/json" -d '{"employeeId":"E001","month":5,"year":2025}'
+```
+
+### 11. Update Payroll Status 
+```
+curl -X PUT "http://localhost:8082/payrolls/1/status?status=CANCELLED" -H "Authorization: Bearer <token>"
+```
+
+### 12. Update Reimbursement Status 
+```
+curl -X PUT "http://localhost:8082/payrolls/reimbursements/1/status?status=APPROVED" -H "Authorization: Bearer <token>"
+```
+
+### 13. Delete Payroll by ID 
+```
+curl -X DELETE "http://localhost:8082/payrolls/1" -H "Authorization: Bearer <token>"
+```
+
+### 14. Delete All Employee Payrolls
+```
+curl -X DELETE "http://localhost:8082/payrolls/employee/E001" -H "Authorization: Bearer <token>"
+```
+
+### 15. Delete Reimbursement 
+```
+curl -X DELETE "http://localhost:8082/payrolls/reimbursements/1" -H "Authorization: Bearer <token>"
 ```
 ---
 
