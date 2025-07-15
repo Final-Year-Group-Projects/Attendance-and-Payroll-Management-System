@@ -24,9 +24,10 @@ Each service has its own dedicated PostgreSQL database for data isolation and sc
     * user-db
     * payroll-db
 
-Docker Compose manages and links all containers within a dedicated Docker network for clean, reproducible deployments.
-![img.png](img.png)
+5. [x] **Docker Compose** :  manages and links all containers within a dedicated Docker network for clean, reproducible deployments.
+<img width="913" height="671" alt="Image" src="https://github.com/user-attachments/assets/430f9ee1-d575-4071-87a3-ec3b6a3289e2" />
 ---
+
 ### Prerequisites
 
 Before you begin, ensure you have the following installed on your machine:
