@@ -1,65 +1,66 @@
-Attendance and Payroll Management System
+# Attendance and Payroll Management System
+This project is a distributed system for managing attendance and payroll, built using Spring Boot microservices, PostgreSQL databases, Eureka Server for service discovery, and an NGINX API gateway. It uses Docker Compose to orchestrate and manage all services for local and cloud-agnostic deployment.
 
-This project is a distributed system for managing attendance and payroll, built using Spring Boot services, PostgreSQL databases, a Eureka server for service discovery, and an NGINX API gateway. It uses Docker Compose to manage all services.
+## Project Architecture
+The system follows a microservices architecture with clear service separation:
 
-Prerequisites
+1. [x] **API Gateway (NGINX)** : Acts as the reverse proxy, routing client requests to appropriate services.
+2. [x] **Eureka Server** : Service discovery server allowing services to register themselves and discover others dynamically.
+3. [x] **Spring Boot Microservices:**
+
+   * attendance-service: Manages employee attendance data.
+
+   * auth-service: Manages authentication and authorization.
+
+   * user-service: Manages user profile and HR-related data.
+
+   * payroll-service: Handles payroll calculations and processing.
+
+4. [x] **PostgreSQL Databases:**
+Each service has its own dedicated PostgreSQL database for data isolation and scalability:
+
+    * attendance-db
+    * auth-db
+    * user-db
+    * payroll-db
+
+5. [x] **Docker Compose** :  manages and links all containers within a dedicated Docker network for clean, reproducible deployments.
+<img width="913" height="671" alt="Image" src="https://github.com/user-attachments/assets/430f9ee1-d575-4071-87a3-ec3b6a3289e2" />
+---
+
+### Prerequisites
 
 Before you begin, ensure you have the following installed on your machine:
-Docker: Install Docker Desktop (includes Docker Compose) for your operating system:
+* Docker: Install Docker Desktop (includes Docker Compose) for your operating system:
 Windows/Mac: Download from Docker Desktop
 Linux: Follow the Docker installation guide
-Git: To clone the repository. Install from Git Downloads.
+* Git: To clone the repository. Install from Git Downloads.
 A terminal (e.g., Command Prompt, PowerShell, or Bash).
-PostgreSQL Client (optional): Install psql or a GUI like pgAdmin if you plan to access the databases internally (e.g., sudo apt install postgresql-client on Ubuntu).
+* PostgreSQL Client (optional): Install psql or a GUI like pgAdmin if you plan to access the databases internally (e.g., sudo apt install postgresql-client on Ubuntu).
 
-Setup Instructions
+### Setup Instructions
 
 Follow these steps to set up and run the project:
 
 1. Clone the Repository
 
-Clone this repository to your local machine:
-
-git clone <repository-url>
-cd <repository-directory>
-
-Replace <repository-url> with the URL of your Git repository, and <repository-directory> with the directory name of your project.
+    ```bash
+    git clone https://github.com/Final-Year-Group-Projects/Attendance-and-Payroll-Management-System
+    ```
 
 2. Create the .env File
+    
+    A .env.example file has been added to the codebase. Copy it to create your environment file:
 
-The project uses environment variables to configure database credentials and database names. Create a file named .env in the root directory of the project (where docker-compose.yml is located).
-
-Copy the following template into your .env file and fill in the values:
-
-SPRING_DATASOURCE_USERNAME=
-SPRING_DATASOURCE_PASSWORD=
-ATTENDANCE_DB_NAME=
-AUTH_DB_NAME=
-USER_DB_NAME=
-PAYROLL_DB_NAME=
-
-
-
-SPRING_DATASOURCE_USERNAME: The username for the PostgreSQL databases (e.g., postgres).
-SPRING_DATASOURCE_PASSWORD: The password for the PostgreSQL databases (choose a strong password).
-ATTENDANCE_DB_NAME: The name of the attendance database (e.g., attendance_db).
-AUTH_DB_NAME: The name of the authentication database (e.g., auth_db).
-USER_DB_NAME: The name of the user database (e.g., user_db).
-PAYROLL_DB_NAME: The name of the payroll database (e.g., payroll_db).
-
-Important: Do not commit the .env file to Git. It should be listed in your .gitignore file to keep sensitive data secure.
 
 3. Build and Run the Services
 
-Use Docker Compose to build and start all services (Eureka server, application services, databases, and API gateway).
+    Use Docker Compose to build and start all services (Eureka server, application services, databases, and API gateway).
 
-Run the following command in the project directory:
-
-docker-compose up -d --build
-
-
--d: Runs the containers in the background (detached mode).
---build: Builds the Docker images for the services if they don’t already exist.
+    Run the following command in the project directory:
+    ```bash
+    docker-compose up -d --build
+    ```
 
 This will start:
 Eureka server (eureka) on port 8761.
@@ -69,18 +70,16 @@ API gateway (api-gateway) on port 80.
 
 4. Verify the Services Are Running
 
-Check the status of the containers to ensure they’re running:
+    Check the status of the containers to ensure they’re running:
+    ```bash
+    docker-compose ps
+    ```
 
-docker-compose ps
-
-
-All services should show a state of Up (e.g., Up (healthy) for services with health checks).
-If any service is not running, check the logs for errors:
-
-docker-compose logs <service-name>
-
-Example: docker-compose logs attendance-service
-
+    All services should show a state of Up (e.g., Up (healthy) for services with health checks).
+    If any service is not running, check the logs for errors:
+    ```bash
+    docker-compose logs <service-name>
+    ```
 5. Access the Services
 Eureka Dashboard: Open http://localhost:8761 in your browser to see the service registry. You should see attendance_service, auth_service, user_service, and payroll_service listed.
 API Gateway: Access the application through the NGINX gateway at http://localhost. The gateway routes requests to the appropriate services based on the nginx.conf configuration.
